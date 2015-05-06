@@ -1,6 +1,7 @@
 
   [FunctorSource]: $catsBaseUrl$/core/src/main/scala/cats/Functor.scala
   [@blaisorblade]: https://twitter.com/blaisorblade
+  [fafm]: http://learnyouahaskell.com/functors-applicative-functors-and-monoids
 
 ### Functor
 
@@ -52,7 +53,7 @@ object Functor {
 This looks almost like the `map` method on Scala collection library,
 except this `map` doesn't do the `CanBuildFrom` auto conversion.
 
-#### Either as functors
+#### Either as a functor
 
 Cats defines a `Functor` instance for `Either[A, B]`.
 
@@ -70,7 +71,7 @@ we should either avoid using it unless you're sure that standard library doesn't
 or you're using it from a polymorphic function.
 One workaround is to opt for the function syntax.
 
-#### Function as functors
+#### Function as a functor
 
 Cats also defines `Functor` instance for `Function1`.
 
@@ -79,7 +80,7 @@ scala> val h = ((x: Int) => x + 1) map {_ * 7}
 scala> h(3)
 ```
 
-This is interesting. Basically `map` gives us a way to compose functions, except the order is in reverse from `f compose g`. Another way of looking at `Function1` is that it's an infinite map from the domain to the range. Now let's skip the input and output stuff and go to [Functors, Applicative Functors and Monoids](http://learnyouahaskell.com/functors-applicative-functors-and-monoids).
+This is interesting. Basically `map` gives us a way to compose functions, except the order is in reverse from `f compose g`. Another way of looking at `Function1` is that it's an infinite map from the domain to the range. Now let's skip the input and output stuff and go to [Functors, Applicative Functors and Monoids][fafm].
 
 > How are functions functors?
 > ...
