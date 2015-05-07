@@ -105,7 +105,7 @@ Here are the laws for `Applicative`:
 
 - identity: `pure id <*> v = v`
 - homomorphism: `pure f <*> pure x = pure (f x)`
-- interchange: `u <*> pure y = pure ($ y) <*> u`
+- interchange: `u <*> pure y = pure (\$ y) <*> u`
 
 Cats defines another law
 

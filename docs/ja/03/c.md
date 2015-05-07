@@ -104,7 +104,7 @@ scala> f(3)
 
 - identity: `pure id <*> v = v`
 - homomorphism: `pure f <*> pure x = pure (f x)`
-- interchange: `u <*> pure y = pure ($ y) <*> u`
+- interchange: `u <*> pure y = pure (\$ y) <*> u`
 
 Cats はもう 1つ別の法則を定義している:
 
