@@ -26,9 +26,35 @@ trait FunctorLaws[F[_]] extends InvariantLaws[F] {
 }
 ```
 
-これは [Discipline][Discipline] というライブラリに基いている。
-使うためには、好きなテストフレームワークに組み込むために自分でケーキを焼かなければならない。
-以下は specs2 用だ:
+#### REPL からの法則のチェック
+
+これは ScalaCheck のラッパーである [Discipline][Discipline] というライブラリに基いている。
+ScalaCheck を使って REPL からテストを実行することができる。
+
+```scala
+scala> import cats._, cats.std.all._
+import cats._
+import cats.std.all._
+
+scala> import cats.laws.discipline.FunctorTests
+import cats.laws.discipline.FunctorTests
+
+scala> val rs = FunctorTests[Either[Int, ?]].functor[Int, Int, Int]
+rs: cats.laws.discipline.FunctorTests[[X_kp1]scala.util.Either[Int,X_kp1]]#RuleSet = cats.laws.discipline.FunctorTests$$anon$2@7993373d
+
+scala> rs.all.check
++ functor.covariant composition: OK, passed 100 tests.
++ functor.covariant identity: OK, passed 100 tests.
++ functor.invariant composition: OK, passed 100 tests.
++ functor.invariant identity: OK, passed 100 tests.
+```
+
+`rs.all` は `org.scalacheck.Properties` を返し、これは `check` メソッドを実装する。
+
+#### Discipline + Specs2 を用いた法則のチェック
+
+好みのテストフレームワークに組み込むために自分でケーキを焼かなければならない。
+以下は Specs2 用だ:
 
 ```scala
 package example
@@ -51,8 +77,10 @@ import cats._
 import cats.laws.discipline.FunctorTests
 
 class EitherSpec extends CatsSpec { def is = s2"""
-  \${checkAll("Either[Int, Int]", FunctorTests[Either[Int, ?]].functor[Int, Int, Int])}
+  Either[Int, ?] forms a functor                           \$e1
   """
+
+  def e1 = checkAll("Either[Int, Int]", FunctorTests[Either[Int, ?]].functor[Int, Int, Int])
 }
 ```
 
@@ -138,9 +166,12 @@ class COptionSpec extends CatsSpec {
     }
   implicit def coptionArbiteraryK: ArbitraryK[COption] =
     new ArbitraryK[COption] { def synthesize[A: Arbitrary]: Arbitrary[COption[A]] = implicitly }
+  
   def is = s2"""
-  \${checkAll("COption[Int]", FunctorTests[COption].functor[Int, Int, Int])}
+  COption[Int] forms a functor                             \$e1
   """
+
+  def e1 = checkAll("COption[Int]", FunctorTests[COption].functor[Int, Int, Int])
 }
 ```
 

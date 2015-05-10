@@ -6,7 +6,7 @@ out: checking-laws-with-discipline.html
   [kindProjector]: https://github.com/non/kind-projector
   [Discipline]: http://typelevel.org/blog/2013/11/17/discipline.html
 
-### Checking laws with discipline
+### Checking laws with Discipline
 
 Compiler can't check for the laws, but Cat ships with `FunctorLaws` traits that describes this in [code][FunctorLawsSource]:
 
@@ -25,8 +25,34 @@ trait FunctorLaws[F[_]] extends InvariantLaws[F] {
 }
 ```
 
-This is based on a library called [Discipline][Discipline].
-To use this, you can bake your own cake pattern into a test framework of choice.
+#### Checking laws from REPL
+
+This is based on a library called [Discipline][Discipline], which is a wrapper around ScalaCheck.
+We can run these tests from REPL with ScalaCheck.
+
+```scala
+scala> import cats._, cats.std.all._
+import cats._
+import cats.std.all._
+
+scala> import cats.laws.discipline.FunctorTests
+import cats.laws.discipline.FunctorTests
+
+scala> val rs = FunctorTests[Either[Int, ?]].functor[Int, Int, Int]
+rs: cats.laws.discipline.FunctorTests[[X_kp1]scala.util.Either[Int,X_kp1]]#RuleSet = cats.laws.discipline.FunctorTests$$anon$2@7993373d
+
+scala> rs.all.check
++ functor.covariant composition: OK, passed 100 tests.
++ functor.covariant identity: OK, passed 100 tests.
++ functor.invariant composition: OK, passed 100 tests.
++ functor.invariant identity: OK, passed 100 tests.
+```
+
+`rs.all` returns `org.scalacheck.Properties`, which implements `check` method.
+
+#### Checking laws with Discipline + Specs2
+
+You can also bake your own cake pattern into a test framework of choice.
 Here's for specs2:
 
 ```scala
@@ -51,8 +77,10 @@ import cats._
 import cats.laws.discipline.FunctorTests
 
 class EitherSpec extends CatsSpec { def is = s2"""
-  \${checkAll("Either[Int, Int]", FunctorTests[Either[Int, ?]].functor[Int, Int, Int])}
+  Either[Int, ?] forms a functor                           \$e1
   """
+
+  def e1 = checkAll("Either[Int, Int]", FunctorTests[Either[Int, ?]].functor[Int, Int, Int])
 }
 ```
 
@@ -60,7 +88,7 @@ The `Either[Int, ?]` is using [non/kind-projector][kindProjector].
 Running the test from sbt displays the following output:
 
 ```
-s> test
+> test
 [info] EitherSpec
 [info]   
 [info] 
@@ -78,7 +106,7 @@ s> test
 [info] Passed: Total 4, Failed 0, Errors 0, Passed 4
 ```
 
-### Breaking the law
+#### Breaking the law
 
 LYAHFGG:
 
@@ -139,9 +167,12 @@ class COptionSpec extends CatsSpec {
     }
   implicit def coptionArbiteraryK: ArbitraryK[COption] =
     new ArbitraryK[COption] { def synthesize[A: Arbitrary]: Arbitrary[COption[A]] = implicitly }
+  
   def is = s2"""
-  \${checkAll("COption[Int]", FunctorTests[COption].functor[Int, Int, Int])}
+  COption[Int] forms a functor                             \$e1
   """
+
+  def e1 = checkAll("COption[Int]", FunctorTests[COption].functor[Int, Int, Int])
 }
 ```
 
