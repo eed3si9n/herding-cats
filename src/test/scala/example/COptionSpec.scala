@@ -16,7 +16,10 @@ class COptionSpec extends CatsSpec {
     }
   implicit def coptionArbiteraryK: ArbitraryK[COption] =
     new ArbitraryK[COption] { def synthesize[A: Arbitrary]: Arbitrary[COption[A]] = implicitly }
+  
   def is = s2"""
-  ${checkAll("COption[Int]", FunctorTests[COption].functor[Int, Int, Int])}
+  COption[Int] forms a functor                             $e1
   """
+
+  def e1 = checkAll("COption[Int]", FunctorTests[COption].functor[Int, Int, Int])
 }
