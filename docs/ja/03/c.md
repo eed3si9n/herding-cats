@@ -39,11 +39,11 @@ scala> Applicative[List].pure(1)
 scala> Applicative[Option].pure(1)
 ```
 
-これは、`Apply[F].apply` を書くときに `{{...}.some}` としなくて済むのが便利かも。
+これは、`Apply[F].ap` を書くときに `{{...}.some}` としなくて済むのが便利かも。
 
 ```console
 scala> val F = Applicative[Option]
-scala> F.apply(F.pure(9)) { F.pure((_: Int) + 3) }
+scala> F.ap(F.pure(9)) { F.pure((_: Int) + 3) }
 ```
 
 `Option` を抽象化したコードになった。
@@ -110,9 +110,9 @@ Cats はもう 1つ別の法則を定義している:
 
 ```scala
   def applicativeMap[A, B](fa: F[A], f: A => B): IsEq[F[B]] =
-    fa.map(f) <-> fa.apply(F.pure(f))
+    fa.map(f) <-> fa.ap(F.pure(f))
 ```
 
-`F.apply` と `F.pure` を合成したとき、それは `F.map` と同じ効果を得られるということみたいだ。
+`F.ap` と `F.pure` を合成したとき、それは `F.map` と同じ効果を得られるということみたいだ。
 
 結構長くなったけど、ここまでたどり着けて良かったと思う。続きはまたあとで。

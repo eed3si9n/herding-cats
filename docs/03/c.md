@@ -39,11 +39,11 @@ scala> Applicative[List].pure(1)
 scala> Applicative[Option].pure(1)
 ```
 
-This actually comes in handy using `Apply[F].apply` so we can avoid calling `{{...}.some}`.
+This actually comes in handy using `Apply[F].ap` so we can avoid calling `{{...}.some}`.
 
 ```console
 scala> val F = Applicative[Option]
-scala> F.apply(F.pure(9)) { F.pure((_: Int) + 3) }
+scala> F.ap(F.pure(9)) { F.pure((_: Int) + 3) }
 ```
 
 We've abstracted `Option` away from the code.
@@ -111,9 +111,9 @@ Cats defines another law
 
 ```scala
   def applicativeMap[A, B](fa: F[A], f: A => B): IsEq[F[B]] =
-    fa.map(f) <-> fa.apply(F.pure(f))
+    fa.map(f) <-> fa.ap(F.pure(f))
 ```
 
-This seem to say that if you combine `F.apply` and `F.pure`, you should get the same effect as `F.map`.
+This seem to say that if you combine `F.ap` and `F.pure`, you should get the same effect as `F.map`.
 
 It took us a while, but I am glad we got this far. We'll pick it up from here later.

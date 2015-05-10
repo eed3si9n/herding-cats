@@ -24,7 +24,7 @@ Cats splits this into `Apply` and `Applicative`. Here's the contract for `Apply`
 
 ```scala
 /**
- * Weaker version of Applicative[F]; has apply but not pure.
+ * Weaker version of Applicative[F]; has ap but not pure.
  *
  * Must obey the laws defined in cats.laws.ApplyLaws.
  */
@@ -35,14 +35,14 @@ trait Apply[F[_]] extends Functor[F] with ApplyArityFunctions[F] { self =>
    * Given a value and a function in the Apply context, applies the
    * function to the value.
    */
-  def apply[A, B](fa: F[A])(f: F[A => B]): F[B]
+  def ap[A, B](fa: F[A])(f: F[A => B]): F[B]
 
   ....
 }
 ```
 
 Note that `Apply` extends `Functor`.
-The `<*>` function is called `apply` in Cats's `Apply`.
+The `<*>` function is called `ap` in Cats's `Apply`. (This was origianlly called `apply`, but was renamed to `ap`. +1)
 
 LYAHFGG:
 
@@ -72,13 +72,13 @@ scala> none[Int]
 
 #### Option as an Apply
 
-Here's how we can use it with `Apply[Option].apply`:
+Here's how we can use it with `Apply[Option].ap`:
 
 ```console
-scala> Apply[Option].apply(9.some) {{(_: Int) + 3}.some }
-scala> Apply[Option].apply(10.some) {{(_: Int) + 3}.some }
-scala> Apply[Option].apply(none[String]) {{(_: String) + "hahah"}.some }
-scala> Apply[Option].apply("woot".some) { none[String => String] }
+scala> Apply[Option].ap(9.some) {{(_: Int) + 3}.some }
+scala> Apply[Option].ap(10.some) {{(_: Int) + 3}.some }
+scala> Apply[Option].ap(none[String]) {{(_: String) + "hahah"}.some }
+scala> Apply[Option].ap("woot".some) { none[String => String] }
 ```
 
 If either side fails, we get `None`.
@@ -89,14 +89,14 @@ the typeclass contract into an operator, magically.
 
 ```console
 scala> import cats.syntax.apply._
-scala> 9.some.apply({(_: Int) + 3}.some)
-scala> 10.some.apply({(_: Int) + 3}.some)
-scala> none[String].apply({(_: String) + "hahah"}.some)
-scala> "woot".some.apply(none[String => String])
+scala> 9.some ap ({(_: Int) + 3}.some)
+scala> 10.some ap ({(_: Int) + 3}.some)
+scala> none[String] ap ({(_: String) + "hahah"}.some)
+scala> "woot".some ap (none[String => String])
 ```
 
 I see what it did, but I would be confused if I saw this in some code.
-Abbreviating `apply` here would be a bad idea.
+<s>Abbreviating `apply` here would be a bad idea.</s>
 
 #### The Applicative Style
 
@@ -157,13 +157,13 @@ trait Apply[F[_]] extends Functor[F] with ApplyArityFunctions[F] { self =>
    * Given a value and a function in the Apply context, applies the
    * function to the value.
    */
-  def apply[A, B](fa: F[A])(f: F[A => B]): F[B]
+  def ap[A, B](fa: F[A])(f: F[A => B]): F[B]
 
   /**
-   * apply2 is a binary version of apply, defined in terms of apply.
+   * ap2 is a binary version of ap, defined in terms of ap.
    */
-  def apply2[A, B, Z](fa: F[A], fb: F[B])(f: F[(A, B) => Z]): F[Z] =
-    apply(fb)(apply(fa)(map(f)(f => (a: A) => (b: B) => f(a, b))))
+  def ap2[A, B, Z](fa: F[A], fb: F[B])(f: F[(A, B) => Z]): F[Z] =
+    ap(fb)(ap(fa)(map(f)(f => (a: A) => (b: B) => f(a, b))))
 
   /**
    * Applies the pure (binary) function f to the effectful values fa and fb.
@@ -171,7 +171,7 @@ trait Apply[F[_]] extends Functor[F] with ApplyArityFunctions[F] { self =>
    * map2 can be seen as a binary version of [[cats.Functor]]#map.
    */
   def map2[A, B, Z](fa: F[A], fb: F[B])(f: (A, B) => Z): F[Z] =
-    apply(fb)(map(fa)(a => (b: B) => f(a, b)))
+    ap(fb)(map(fa)(a => (b: B) => f(a, b)))
 
   ....
 }
@@ -187,10 +187,10 @@ scala> Apply[Option].map2(3.some, List(4).some) { _ :: _ }
 
 The results match up.
 
-The 2-parameter version of `Apply[F].apply` is called `Apply[F].apply2`:
+The 2-parameter version of `Apply[F].ap` is called `Apply[F].ap2`:
 
 ```console
-scala> Apply[Option].apply2(3.some, List(4).some) {{ (_: Int) :: (_: List[Int]) }.some }
+scala> Apply[Option].ap2(3.some, List(4).some) {{ (_: Int) :: (_: List[Int]) }.some }
 ```
 
 There's a special case of `map2` called `tuple2`, which works like this:
@@ -203,8 +203,8 @@ scala> Apply[Option].tuple2(1.some, none[Int])
 
 If you are wondering what happens when you have a function with more than two
 parameters, note that `Apply[F[_]]` extends `ApplyArityFunctions[F]`.
-This is an auto-generated code that defines `apply3`, `map3`, `tuple3`, ... up to
-`apply22`, `map22`, `tuple22`.
+This is an auto-generated code that defines `ap3`, `map3`, `tuple3`, ... up to
+`ap22`, `map22`, `tuple22`.
 
 #### `*>` and `<*` operator
 
@@ -248,7 +248,7 @@ trait ApplyLaws[F[_]] extends FunctorLaws[F] {
 
   def applyComposition[A, B, C](fa: F[A], fab: F[A => B], fbc: F[B => C]): IsEq[F[C]] = {
     val compose: (B => C) => (A => B) => (A => C) = _.compose
-    fa.apply(fab).apply(fbc) <-> fa.apply(fab.apply(fbc.map(compose)))
+    fa.ap(fab).ap(fbc) <-> fa.ap(fab.ap(fbc.map(compose)))
   }
 }
 ```

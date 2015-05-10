@@ -25,7 +25,7 @@ Cats はこれを `Apply` と `Applicative` に分けている。以下が `Appl
 
 ```scala
 /**
- * Weaker version of Applicative[F]; has apply but not pure.
+ * Weaker version of Applicative[F]; has ap but not pure.
  *
  * Must obey the laws defined in cats.laws.ApplyLaws.
  */
@@ -36,14 +36,14 @@ trait Apply[F[_]] extends Functor[F] with ApplyArityFunctions[F] { self =>
    * Given a value and a function in the Apply context, applies the
    * function to the value.
    */
-  def apply[A, B](fa: F[A])(f: F[A => B]): F[B]
+  def ap[A, B](fa: F[A])(f: F[A => B]): F[B]
 
   ....
 }
 ```
 
 `Apply` は `Functor` を拡張することに注目してほしい。
-`<*>` 関数は、Cats の `Apply` では `apply` と呼ばれる。
+`<*>` 関数は、Cats の `Apply` では `ap` と呼ばれる。(これは最初は `apply` と呼ばれていたが、`ap` に直された。+1)
 
 LYAHFGG:
 
@@ -73,13 +73,13 @@ scala> none[Int]
 
 #### Apply としての Option
 
-これを `Apply[Option].apply` と一緒に使ってみる:
+これを `Apply[Option].ap` と一緒に使ってみる:
 
 ```console
-scala> Apply[Option].apply(9.some) {{(_: Int) + 3}.some }
-scala> Apply[Option].apply(10.some) {{(_: Int) + 3}.some }
-scala> Apply[Option].apply(none[String]) {{(_: String) + "hahah"}.some }
-scala> Apply[Option].apply("woot".some) { none[String => String] }
+scala> Apply[Option].ap(9.some) {{(_: Int) + 3}.some }
+scala> Apply[Option].ap(10.some) {{(_: Int) + 3}.some }
+scala> Apply[Option].ap(none[String]) {{(_: String) + "hahah"}.some }
+scala> Apply[Option].ap("woot".some) { none[String => String] }
 ```
 
 どちらかが失敗すると、`None` が返ってくる。
@@ -89,14 +89,14 @@ simulacrum は型クラス・コントラクト内で定義された関数を演
 
 ```console
 scala> import cats.syntax.apply._
-scala> 9.some.apply({(_: Int) + 3}.some)
-scala> 10.some.apply({(_: Int) + 3}.some)
-scala> none[String].apply({(_: String) + "hahah"}.some)
-scala> "woot".some.apply(none[String => String])
+scala> 9.some ap ({(_: Int) + 3}.some)
+scala> 10.some ap ({(_: Int) + 3}.some)
+scala> none[String] ap ({(_: String) + "hahah"}.some)
+scala> "woot".some ap (none[String => String])
 ```
 
 何が起こったのかは理解できるけど、どこかのコードでこれが出てきたら僕は混乱すると思う。
-この `apply` は省略禁止。
+<s>この `apply` は省略禁止。</s>
 
 #### Applicative Style
 
@@ -155,13 +155,13 @@ trait Apply[F[_]] extends Functor[F] with ApplyArityFunctions[F] { self =>
    * Given a value and a function in the Apply context, applies the
    * function to the value.
    */
-  def apply[A, B](fa: F[A])(f: F[A => B]): F[B]
+  def ap[A, B](fa: F[A])(f: F[A => B]): F[B]
 
   /**
-   * apply2 is a binary version of apply, defined in terms of apply.
+   * ap2 is a binary version of ap, defined in terms of ap.
    */
-  def apply2[A, B, Z](fa: F[A], fb: F[B])(f: F[(A, B) => Z]): F[Z] =
-    apply(fb)(apply(fa)(map(f)(f => (a: A) => (b: B) => f(a, b))))
+  def ap2[A, B, Z](fa: F[A], fb: F[B])(f: F[(A, B) => Z]): F[Z] =
+    ap(fb)(ap(fa)(map(f)(f => (a: A) => (b: B) => f(a, b))))
 
   /**
    * Applies the pure (binary) function f to the effectful values fa and fb.
@@ -169,7 +169,7 @@ trait Apply[F[_]] extends Functor[F] with ApplyArityFunctions[F] { self =>
    * map2 can be seen as a binary version of [[cats.Functor]]#map.
    */
   def map2[A, B, Z](fa: F[A], fb: F[B])(f: (A, B) => Z): F[Z] =
-    apply(fb)(map(fa)(a => (b: B) => f(a, b)))
+    ap(fb)(map(fa)(a => (b: B) => f(a, b)))
 
   ....
 }
@@ -185,10 +185,10 @@ scala> Apply[Option].map2(3.some, List(4).some) { _ :: _ }
 
 同じ結果となった。
 
-`Apply[F].apply` の 2パラメータ版は `Apply[F].apply2` と呼ばれる:
+`Apply[F].ap` の 2パラメータ版は `Apply[F].ap2` と呼ばれる:
 
 ```console
-scala> Apply[Option].apply2(3.some, List(4).some) {{ (_: Int) :: (_: List[Int]) }.some }
+scala> Apply[Option].ap2(3.some, List(4).some) {{ (_: Int) :: (_: List[Int]) }.some }
 ```
 
 `map2` の特殊形で `tuple2` というものもあって、このように使う:
@@ -200,8 +200,8 @@ scala> Apply[Option].tuple2(1.some, none[Int])
 
 2つ以上のパラメータを受け取る関数があったときはどうなるんだろうかと気になっている人は、
 `Apply[F[_]]` が `ApplyArityFunctions[F]` を拡張することに気付いただろうか。
-これは `apply3`、`map3`、`tuple3` ... から始まって
-`apply22`、`map22`、`tuple22` まで自動生成されたコードだ。
+これは `ap3`、`map3`、`tuple3` ... から始まって
+`ap22`、`map22`、`tuple22` まで自動生成されたコードだ。
 
 #### `*>` と `<*` 演算子
 
@@ -245,7 +245,7 @@ trait ApplyLaws[F[_]] extends FunctorLaws[F] {
 
   def applyComposition[A, B, C](fa: F[A], fab: F[A => B], fbc: F[B => C]): IsEq[F[C]] = {
     val compose: (B => C) => (A => B) => (A => C) = _.compose
-    fa.apply(fab).apply(fbc) <-> fa.apply(fab.apply(fbc.map(compose)))
+    fa.ap(fab).ap(fbc) <-> fa.ap(fab.ap(fbc.map(compose)))
   }
 }
 ```
