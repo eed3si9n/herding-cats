@@ -3,12 +3,14 @@ out: Semigroup.html
 ---
 
   [clwd]: checking-laws-with-discipline.html
+  [fafm]: http://learnyouahaskell.com/functors-applicative-functors-and-monoids
 
 ### Semigroup
 
-If you have the book Learn You a Haskell for Great Good you get to start a new chapter: Monoids. For the website, it's still [Functors, Applicative Functors and Monoids](http://learnyouahaskell.com/functors-applicative-functors-and-monoids).
+If you have the book Learn You a Haskell for Great Good you get to start a new chapter: Monoids. For the website, it's still [Functors, Applicative Functors and Monoids][fafm].
 
 First, it seems like Cats is missing `newtype`/tagged type facility.
+We'll implement our own later.
 
 Haskell's `Monoid` is split into `Semigroup` and `Monoid` in Cats. They are also type aliases of `algebra.Semigroup` and `algebra.Monoid`. As with `Apply` and `Applicative`, `Semigroup` is a weaker version of `Monoid`. If you can solve the same problem, weaker is cooler because you're making fewer assumptions.
 
@@ -101,7 +103,7 @@ scala> List(1, 2, 3) |+| List(4, 5, 6)
 #### Product and Sum
 
 For `Int` a semigroup can be formed under both `+` and `*`.
-Instead fo tagged type, non/algebra provides two instances of
+Instead of tagged types, non/algebra provides two instances of
 semigroup instances for `Int`: additive and multiplicative.
 
 Trying to use operator syntax here is tricky.

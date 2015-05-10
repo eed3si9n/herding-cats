@@ -40,7 +40,7 @@ scala> import cats.laws.discipline.FunctorTests
 import cats.laws.discipline.FunctorTests
 
 scala> val rs = FunctorTests[Either[Int, ?]].functor[Int, Int, Int]
-rs: cats.laws.discipline.FunctorTests[[X_kp1]scala.util.Either[Int,X_kp1]]#RuleSet = cats.laws.discipline.FunctorTests$$anon$2@7993373d
+rs: cats.laws.discipline.FunctorTests[[X_kp1]scala.util.Either[Int,X_kp1]]#RuleSet = cats.laws.discipline.FunctorTests\$\$anon\$2@7993373d
 
 scala> rs.all.check
 + functor.covariant composition: OK, passed 100 tests.

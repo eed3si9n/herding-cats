@@ -102,7 +102,7 @@ There's a variant called `foldMap` that accepts a function.
 ```
 
 Since the standard collection library doesn't implement `foldMap`,
-we can now use this at an infix position.
+we can now use this as an operator.
 
 ```console
 scala> import cats.syntax.foldable._
