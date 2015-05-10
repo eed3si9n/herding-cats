@@ -4,8 +4,7 @@ out: using-monoids-to-fold.html
 
   [FoldableSource]: $catsBaseUrl$/core/src/main/scala/cats/Foldable.scala
 
-Using monoids to fold data structures
--------------------------------------
+### Using monoids to fold data structures
 
 LYAHFGG:
 

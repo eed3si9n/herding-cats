@@ -5,8 +5,7 @@ out: Monoid.html
   [value-classes-overview-ja]: http://docs.scala-lang.org/ja/overviews/core/value-classes.html
   [algebra13]: https://github.com/non/algebra/issues/13
 
-Monoid
-------
+### Monoid
 
 LYAHFGG:
 

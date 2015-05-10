@@ -4,8 +4,7 @@ out: using-monoids-to-fold.html
 
   [FoldableSource]: $catsBaseUrl$/core/src/main/scala/cats/Foldable.scala
 
-モノイドを使ったデータ構造の畳み込み
-------------------------------
+### モノイドを使ったデータ構造の畳み込み
 
 LYAHFGG:
 
