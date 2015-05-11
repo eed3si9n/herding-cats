@@ -218,6 +218,8 @@ scala> rs1.all.check
 Monoid則が何故 `Serializable` の検査をしているのかが分からず、混乱している。
 [non/algebra#13][algebra13] によると Spark に便利と書いてあるけど、別に分けたほうがいいのではないか。
 
+> **追記**: REPL を使って型クラスのインスタンスを定義してることが失敗の原因であると判明した!
+
 ```scala
 scala> implicit def arbConjunction(implicit ev: Arbitrary[Boolean]): Arbitrary[Conjunction] =
          Arbitrary { ev.arbitrary map { Conjunction(_) } }

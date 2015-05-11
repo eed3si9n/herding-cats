@@ -216,6 +216,8 @@ The test failed because our monoid is not `Serializable`.
 I'm confused as to why Monoid law is checking for `Serializable`.
 [non/algebra#13][algebra13] says it's convenient for Spark. I feel like this should be a separate thing.
 
+> **Update**: It turns out, the failure is due to the fact I'm using REPL to define the typeclass instances!
+
 ```scala
 scala> implicit def arbConjunction(implicit ev: Arbitrary[Boolean]): Arbitrary[Conjunction] =
          Arbitrary { ev.arbitrary map { Conjunction(_) } }
