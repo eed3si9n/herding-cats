@@ -8,7 +8,7 @@ out: checking-laws-with-discipline.html
 
 ### Checking laws with Discipline
 
-Compiler can't check for the laws, but Cat ships with `FunctorLaws` traits that describes this in [code][FunctorLawsSource]:
+The compiler can't check for the laws, but Cats ships with a `FunctorLaws` trait that describes this in [code][FunctorLawsSource]:
 
 ```scala
 /**
@@ -25,10 +25,10 @@ trait FunctorLaws[F[_]] extends InvariantLaws[F] {
 }
 ```
 
-#### Checking laws from REPL
+#### Checking laws from the REPL
 
 This is based on a library called [Discipline][Discipline], which is a wrapper around ScalaCheck.
-We can run these tests from REPL with ScalaCheck.
+We can run these tests from the REPL with ScalaCheck.
 
 ```scala
 scala> import cats._, cats.std.all._
@@ -145,7 +145,7 @@ scala> import example._
 scala> (CSome(0, "ho"): COption[String]) map {identity}
 ```
 
-This breaks the first law.
+This breaks the first law because the result of the `identity` function is not equal to the input.
 To catch this we need to supply an "arbitrary" `COption[A]` implicitly:
 
 ```scala

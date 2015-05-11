@@ -7,7 +7,7 @@ out: Semigroup.html
 
 ### Semigroup
 
-If you have the book Learn You a Haskell for Great Good you get to start a new chapter: Monoids. For the website, it's still [Functors, Applicative Functors and Monoids][fafm].
+If you have the book _Learn You a Haskell for Great Good_ you get to start a new chapter: "Monoids." For the website, it's still [Functors, Applicative Functors and Monoids][fafm].
 
 First, it seems like Cats is missing `newtype`/tagged type facility.
 We'll implement our own later.
@@ -31,7 +31,7 @@ scala> assert { List("la") ++ (List("di") ++ List("da")) === (List("la") ++ List
 
 No error means, they are equal.
 
-#### The `Semigroup` typeclass
+#### The Semigroup typeclass
 
 Here's the typeclass contract for `algebra.Semigroup`.
 
@@ -60,11 +60,11 @@ scala> "one" |+| "two"
 
 #### The Semigroup Laws
 
-The associativity is the only law for `Semigroup`.
+Associativity is the only law for `Semigroup`.
 
 - associativity `(x |+| y) |+| z = x |+| (y |+| z)`
 
-Here's how we can check the Semigroup laws from REPL.
+Here's how we can check the Semigroup laws from the REPL.
 Review [Checking laws with discipline][clwd] for the details:
 
 ```scala
@@ -115,7 +115,7 @@ scala> doSomething(3, 5)(Semigroup.additive[Int])
 scala> doSomething(3, 5)(Semigroup.multiplicative[Int])
 ```
 
-I might as well stick to function sytanx:
+I might as well stick to function syntax:
 
 ```console
 scala> Semigroup.additive[Int].combine(3, 5)

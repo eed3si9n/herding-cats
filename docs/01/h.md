@@ -7,7 +7,7 @@ LYAHFGG:
 
 > `Num` is a numeric typeclass. Its members have the property of being able to act like numbers.
 
-I could not find Cats equivalent for this typeclass,
+I could not find Cats' equivalent for this typeclass,
 but [spire][spire] defines `Numeric`. Cats doesn't define `Bounds` either.
 
 So far we've seen some of typeclasses that are *not* defined in Cats.

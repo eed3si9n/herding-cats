@@ -5,7 +5,7 @@ LYAHFGG:
 
 > `Ord` is for types that have an ordering. `Ord` covers all the standard comparing functions such as `>`, `<`, `>=` and `<=`.
 
-Cats equivalent for the `Ord` typeclass is `Order`.
+Cats' equivalent for the `Ord` typeclass is `Order`.
 As with `Eq`, `cats.Order` is actually a type alias of `algebra.Order`.
 
 ```console:new
