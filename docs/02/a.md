@@ -24,7 +24,7 @@ The conventional steps of defining a modular typeclass in Scala used to look lik
 
 Frankly, these steps are mostly copy-paste boilerplate except for the first one.
 Enter Michael Pilquist ([@mpilquist][@mpilquist])'s [simulacrum][simulacrum].
-simulacrum magically generates most of steps 2-4 just by putting `@typeclass` annotation.
+Simulacrum magically generates most of steps 2-4 just by putting `@typeclass` annotation.
 By chance, Stew O'Connor ([@stewoconnor][@stewoconnor]/[@stew][@stew])'s [#294][294] got merged,
 which refactors Cats to use it.
 
@@ -84,7 +84,7 @@ object CanTruthy {
 }
 ```
 
-To make sure it works, let's define an instance for `Int` and use it. Eventual goal is to get `1.truthy` to return `true`:
+To make sure it works, let's define an instance for `Int` and use it. The eventual goal is to get `1.truthy` to return `true`:
 
 ```console
 scala> implicit val intCanTruthy: CanTruthy[Int] = CanTruthy.fromTruthy({
@@ -100,7 +100,7 @@ One caveat is that this requires Macro Paradise plugin to compile. Once it's com
 
 ### Symbolic operators
 
-For `CanTruthy` the injected operator happened to be unary, and it matched the name of the function on the typeclass contract. simulacrum can also define operator with symbolic names using `@op` annotation:
+For `CanTruthy` the injected operator happened to be unary, and it matched the name of the function on the typeclass contract. Simulacrum can also define operator with symbolic names using `@op` annotation:
 
 ```console
 scala> @typeclass trait CanAppend[A] {

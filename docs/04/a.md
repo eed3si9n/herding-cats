@@ -5,9 +5,9 @@ out: Semigroup.html
   [clwd]: checking-laws-with-discipline.html
   [fafm]: http://learnyouahaskell.com/functors-applicative-functors-and-monoids
 
-### Semigroup
+### `Semigroup`
 
-If you have the book Learn You a Haskell for Great Good you get to start a new chapter: Monoids. For the website, it's still [Functors, Applicative Functors and Monoids][fafm].
+If you have the book _Learn You a Haskell for Great Good_ you get to start a new chapter: "Monoids." For the website, it's still [Functors, Applicative Functors and Monoids][fafm].
 
 First, it seems like Cats is missing `newtype`/tagged type facility.
 We'll implement our own later.
@@ -58,13 +58,13 @@ scala> List(1, 2, 3) |+| List(4, 5, 6)
 scala> "one" |+| "two"
 ```
 
-#### The Semigroup Laws
+#### The `Semigroup` Laws
 
-The associativity is the only law for `Semigroup`.
+Associativity is the only law for `Semigroup`.
 
 - associativity `(x |+| y) |+| z = x |+| (y |+| z)`
 
-Here's how we can check the Semigroup laws from REPL.
+Here's how we can check the Semigroup laws from the REPL.
 Review [Checking laws with discipline][clwd] for the details:
 
 ```scala
@@ -94,7 +94,7 @@ scala> rs2.all.check
 + semigroup.serializable: OK, proved property.
 ```
 
-#### Lists are Semigroups
+#### `List`s are `Semigroup`s
 
 ```console
 scala> List(1, 2, 3) |+| List(4, 5, 6)
@@ -115,7 +115,7 @@ scala> doSomething(3, 5)(Semigroup.additive[Int])
 scala> doSomething(3, 5)(Semigroup.multiplicative[Int])
 ```
 
-I might as well stick to function sytanx:
+I might as well stick to function syntax:
 
 ```console
 scala> Semigroup.additive[Int].combine(3, 5)
