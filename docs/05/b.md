@@ -2,7 +2,7 @@
 ### Monad
 
 Earlier I wrote that Cats breaks down the Monad typeclass into two typeclasses: `FlatMap` and `Monad`.
-`FlatMap`-`Monad` relationship forms a parallel with `Apply`-`Applicative` relationship:
+The `FlatMap`-`Monad` relationship forms a parallel with the `Apply`-`Applicative` relationship:
 
 ```scala
 @typeclass trait Monad[F[_]] extends FlatMap[F] with Applicative[F] {
@@ -10,9 +10,14 @@ Earlier I wrote that Cats breaks down the Monad typeclass into two typeclasses: 
 }
 ```
 
-`Monad` is a `FlatMap` with `pure`. Unlike Haskell `Monad[F]` extends `Applicative[F]` so there's no `return` vs `pure` discrepancies.
+`Monad` is a `FlatMap` with `pure`. Unlike Haskell, `Monad[F]` extends `Applicative[F]` so there's no `return` vs `pure` discrepancies.
 
 #### Walk the line
+
+<div class="floatingimage">
+<img src="files/day5-with-birds.jpg">
+<div class="credit">Derived from <a href="https://www.flickr.com/photos/72562013@N06/10016847314/">Bello Nock's Sky Walk</a> by Chris Phutully</div>
+</div>
 
 LYAHFGG:
 
@@ -95,7 +100,7 @@ highlights what a monad is.
 1. First, `pure` puts `Pole(0, 0)` into a default context: `Pole(0, 0).some`.
 2. Then, `Pole(0, 0).some >>= {_.landLeft(1)}` happens. Since it's a `Some` value, `_.landLeft(1)` gets applied to `Pole(0, 0)`, resulting to `Pole(1, 0).some`.
 3. Next, `Pole(1, 0).some >>= {_.landRight(4)}` takes place. The result is `Pole(1, 4).some`. Now we at at the max difference between left and right.
-4. `Pole(1, 4).some >>= {_.landLeft(-1)}` happens, reuslting to `none[Pole]`. The difference is too great, and pole becomes off balance.
+4. `Pole(1, 4).some >>= {_.landLeft(-1)}` happens, resulting to `none[Pole]`. The difference is too great, and pole becomes off balance.
 5. `none[Pole] >>= {_.landRight(-2)}` results automatically to `none[Pole]`.
 
 In this chain of monadic functions, the effect from function is carried over to another.
@@ -135,7 +140,7 @@ scala> 3.some >> 4.some
 scala> 3.some >> none[Int]
 ```
 
-Let's try replacing `banana` with `>> (none: Option[Pole])`:
+Let's try replacing `banana` with `>> none[Pole]`:
 
 ```console
 scala> val lbl = Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)} >>
@@ -184,7 +189,7 @@ scala> (none: Option[Int]) >>= { x => "!".some >>= { y => (x.show + y).some } }
 scala> 3.some >>= { x => "!".some >>= { y => none[String] } }
 ```
 
-Instead of the `do` notation in Haskell, Scala has `for` comprehension, which does the same thing:
+Instead of the `do` notation in Haskell, Scala has `for` comprehension, which does similar things:
 
 ```console
 scala> for {
@@ -197,7 +202,7 @@ LYAHFGG:
 
 > In a `do` expression, every line that isn't a `let` line is a monadic value.
 
-I think this applies true for Scala's `for` syntax too.
+Not quite for `for`, but we can come back to this later.
 
 #### Pierre returns
 
@@ -273,9 +278,9 @@ That's because monad is a special kind of a monoid.
 
 You might be thinking, "But wait. Isn't `Monoid` for kind `A` (or `*`)?"
 Yes, you're right. And that's the difference between monoid with lowercase *m* and `Monoid[A]`.
-Haskell-style function programming allows you to abstract out the container and execution model.
+Haskell-style functional programming allows you to abstract out the container and execution model.
 In category theory, a notion like monoid can be generalized to `A`, `F[A]`, `F[A] => F[B]` and all sorts of things.
-Instead of thinking "omg so many laws," know that there's an unlying structure that connects many of them.
+Instead of thinking "omg so many laws," know that there's an underlying structure that connects many of them.
 
 Here's how to check Monad laws using Discipline:
 

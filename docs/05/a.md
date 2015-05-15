@@ -43,7 +43,7 @@ scala> (Right(3): Either[String, Int]) flatMap { x => Right(x + 1) }
 
 #### Getting our feet wet with Option
 
-Following the book, explore `Option`. In this section I'll be less fussy about whether it's using our typeclass or standard library's implemenation. Here's `Option` as a functor:
+Following the book, let's explore `Option`. In this section I'll be less fussy about whether it's using Cats's typeclass or standard library's implemenation. Here's `Option` as a functor:
 
 ```console
 scala> :paste
