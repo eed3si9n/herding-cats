@@ -1,5 +1,5 @@
 ---
-out: about-laws.htmls
+out: about-laws.html
 ---
 
 ### About Laws

@@ -1,5 +1,5 @@
 ---
-out: about-laws.htmls
+out: about-laws.html
 ---
 
   [cargo-cult-ja]: http://ja.wikipedia.org/wiki/%E3%82%AB%E3%83%BC%E3%82%B4%E3%83%BB%E3%82%AB%E3%83%AB%E3%83%88
