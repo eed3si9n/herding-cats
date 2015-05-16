@@ -269,9 +269,40 @@ The failed pattern matching returns `None` here. This is an interesting aspect o
 
 Monad had three laws:
 
-- associativity: `(m flatMap f) flatMap g === m flatMap { x => f(x) flatMap {g} }`
 - left identity: `(Monad[F].pure(x) flatMap {f}) === f(x)`
 - right identity: `(m flatMap {Monad[F].pure(_)}) === m`
+- associativity: `(m flatMap f) flatMap g === m flatMap { x => f(x) flatMap {g} }`
+
+LYAHFGG:
+
+> The first monad law states that if we take a value, put it in a default context with `return` and then feed it to a function by using `>>=`, it's the same as just taking the value and applying the function to it. 
+
+```console
+scala> import cats.syntax.eq._
+scala> assert { (Monad[Option].pure(3) >>= { x => (x + 100000).some }) ===
+         ({ (x: Int) => (x + 100000).some })(3) }
+```
+
+LYAHFGG:
+
+> The second law states that if we have a monadic value and we use `>>=` to feed it to `return`, the result is our original monadic value.
+
+```console
+scala> assert { ("move on up".some >>= {Monad[Option].pure(_)}) === "move on up".some }
+```
+
+LYAHFGG:
+
+> The final monad law says that when we have a chain of monadic function applications with `>>=`, it shouldn't matter how they're nested. 
+
+```console
+scala> Monad[Option].pure(Pole(0, 0)) >>= {_.landRight(2)} >>= {_.landLeft(2)} >>= {_.landRight(2)}
+scala> Monad[Option].pure(Pole(0, 0)) >>= { x =>
+       x.landRight(2) >>= { y =>
+       y.landLeft(2) >>= { z =>
+       z.landRight(2)
+       }}}
+```
 
 These laws look might look familiar if you remember Monoid laws from day 4.
 That's because monad is a special kind of a monoid.

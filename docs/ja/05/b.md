@@ -268,9 +268,42 @@ scala> wopwop
 
 モナドには 3つの法則がある:
 
-- 結合律 (associativity): `(m flatMap f) flatMap g === m flatMap { x => f(x) flatMap {g} }`
 - 左単位元 (left identity): `(Monad[F].pure(x) flatMap {f}) === f(x)`
 - 右単位元 (right identity): `(m flatMap {Monad[F].pure(_)}) === m`
+- 結合律 (associativity): `(m flatMap f) flatMap g === m flatMap { x => f(x) flatMap {g} }`
+
+LYAHFGG:
+
+> 第一のモナド則が言っているのは、`return` を使って値をデフォルトの文脈に入れたものを `>>=` を使って関数に食わせた結果は、単にその値にその関数を適用した結果と等しくなりなさい、ということです。
+
+これを Scala で表現すると、
+
+```console
+scala> import cats.syntax.eq._
+scala> assert { (Monad[Option].pure(3) >>= { x => (x + 100000).some }) ===
+         ({ (x: Int) => (x + 100000).some })(3) }
+```
+
+LYAHFGG:
+
+> モナドの第二法則は、`>>=` を使ってモナド値を `return` に食わせた結果は、元のモナド値と不変であると言っています。
+
+```console
+scala> assert { ("move on up".some >>= {Monad[Option].pure(_)}) === "move on up".some }
+```
+
+LYAHFGG:
+
+> 最後のモナド則は、`>>=` を使ったモナド関数適用の連鎖があるときに、どの順序で評価しても結果は同じであるべき、というものです。
+
+```console
+scala> Monad[Option].pure(Pole(0, 0)) >>= {_.landRight(2)} >>= {_.landLeft(2)} >>= {_.landRight(2)}
+scala> Monad[Option].pure(Pole(0, 0)) >>= { x =>
+       x.landRight(2) >>= { y =>
+       y.landLeft(2) >>= { z =>
+       z.landRight(2)
+       }}}
+```
 
 4日目の Monoid則を覚えていると、見覚えがあるかもしれない。
 それは、モナドはモノイドの特殊な形だからだ。
