@@ -5,7 +5,7 @@ out: Monoid.html
   [value-classes-overview]: http://docs.scala-lang.org/overviews/core/value-classes.html
   [algebra13]: https://github.com/non/algebra/issues/13
 
-### Monoid
+### `Monoid`
 
 LYAHFGG:
 
@@ -50,13 +50,13 @@ trait Monoid[@sp(Int, Long, Float, Double) A] extends Any with Semigroup[A] {
 
 #### Monoid laws
 
-In addition to Semigroup law, monoid must satify two more laws:
+In addition to the semigroup law, monoid must satify two more laws:
 
 - associativity `(x |+| y) |+| z = x |+| (y |+| z)`
 - left identity `Monoid[A].empty |+| x = x`
 - right identity `x |+| Monoid[A].empty = x`
 
-Here's how we can check Monoid laws from REPL:
+Here's how we can check monoid laws from the REPL:
 
 ```scala
 scala> import cats._, cats.std.all._
@@ -122,7 +122,7 @@ LYAHFGG:
 
 > The *newtype* keyword in Haskell is made exactly for these cases when we want to just take one type and wrap it in something to present it as another type.
 
-Cats does not ship with tagged type facility, but Scala now has [value classes][value-classes-overview]. This will remain unboxed under certain conditions, so it should work for simple examples.
+Cats does not ship with a tagged-type facility, but Scala now has [value classes][value-classes-overview]. This will remain unboxed under certain conditions, so it should work for simple examples.
 
 ```console:new
 scala> :paste
@@ -137,7 +137,7 @@ LYAHFGG:
 > ...
 > The other way for `Bool` to be an instance of `Monoid` is to kind of do the opposite: have `&&` be the binary function and then make `True` the identity value.
 
-Cats does not provide this, but we can implement this ourselves.
+Cats does not provide this, but we can implement it ourselves.
 
 ```console:new
 scala> import cats._, cats.std.all._, cats.syntax.semigroup._
@@ -184,7 +184,7 @@ scala> val x4 = Monoid[Conjunction].empty |+| Conjunction(true)
 scala> x4.unwrap
 ```
 
-We should check if our custom new types satisfy the Monoid laws.
+We should check if our custom new types satisfy the the monoid laws.
 
 ```scala
 scala> import algebra.laws.GroupLaws
@@ -213,7 +213,7 @@ scala> rs1.all.check
 ```
 
 The test failed because our monoid is not `Serializable`.
-I'm confused as to why Monoid law is checking for `Serializable`.
+I'm confused as to why the monoid law is checking for `Serializable`.
 [non/algebra#13][algebra13] says it's convenient for Spark. I feel like this should be a separate thing.
 
 > **Update**: It turns out, the failure is due to the fact I'm using REPL to define the typeclass instances!
@@ -263,7 +263,7 @@ Let's see if this is how Cats does it.
     }
 ```
 
-If we replace `mappend` with equivalent `combine`, the rest is just pattern matching.
+If we replace `mappend` with the equivalent `combine`, the rest is just pattern matching.
 Let's try using it.
 
 ```console
@@ -357,7 +357,7 @@ scala> Last('a'.some) |+| Last('b'.some)
 scala> Last('a'.some) |+| Last(none[Char])
 ```
 
-More law checking.
+More law checking:
 
 ```scala
 scala> implicit def arbLast[A: Eq](implicit ev: Arbitrary[Option[A]]): Arbitrary[Last[A]] =

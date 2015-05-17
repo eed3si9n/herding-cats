@@ -2,7 +2,7 @@
   [fafm]: http://learnyouahaskell.com/functors-applicative-functors-and-monoids
   [mootws]: making-our-own-typeclass-with-simulacrum.html
 
-### Apply
+### `Apply`
 
 [Functors, Applicative Functors and Monoids][fafm]:
 
@@ -42,7 +42,7 @@ trait Apply[F[_]] extends Functor[F] with ApplyArityFunctions[F] { self =>
 ```
 
 Note that `Apply` extends `Functor`.
-The `<*>` function is called `ap` in Cats's `Apply`. (This was origianlly called `apply`, but was renamed to `ap`. +1)
+The `<*>` function is called `ap` in Cats's `Apply`. (This was originally called `apply`, but was renamed to `ap`. +1)
 
 LYAHFGG:
 
@@ -70,7 +70,7 @@ scala> 9.some
 scala> none[Int]
 ```
 
-#### Option as an Apply
+#### `Option` as an `Apply`
 
 Here's how we can use it with `Apply[Option].ap`:
 
@@ -96,7 +96,7 @@ scala> "woot".some ap (none[String => String])
 ```
 
 I see what it did, but I would be confused if I saw this in some code.
-<s>Abbreviating `apply` here would be a bad idea.</s>
+<s>Abbreviating `apply` here by eliding the function name would be a bad idea.</s>
 
 #### The Applicative Style
 
@@ -113,7 +113,7 @@ ghci> pure (-) <*> Just 3 <*> Just 5
 Just (-2)
 ```
 
-Cats comes with the ApplyBuilder syntax.
+Cats comes with the `ApplyBuilder` syntax.
 
 ```console
 scala> import cats.syntax.apply._
@@ -122,19 +122,19 @@ scala> (none[Int] |@| 5.some) map { _ - _ }
 scala> (3.some |@| none[Int]) map { _ - _ }
 ```
 
-#### List as an Apply
+#### `List` as an `Apply`
 
 LYAHFGG:
 
 > Lists (actually the list type constructor, `[]`) are applicative functors. What a surprise!
 
-Let's see if we can use the ApplyBuilder sytax:
+Let's see if we can use the `ApplyBuilder` sytax:
 
 ```console
 scala> (List("ha", "heh", "hmm") |@| List("?", "!", ".")) map {_ + _}
 ```
 
-#### Useful functions for Apply
+#### Useful functions for `Apply`
 
 LYAHFGG:
 
@@ -177,7 +177,7 @@ trait Apply[F[_]] extends Functor[F] with ApplyArityFunctions[F] { self =>
 }
 ```
 
-For binary operators, `map2` can be used to hide the applicative sytle.
+For binary operators, `map2` can be used to hide the applicative style.
 Here we can write the same thing in two different ways:
 
 ```console
@@ -203,12 +203,12 @@ scala> Apply[Option].tuple2(1.some, none[Int])
 
 If you are wondering what happens when you have a function with more than two
 parameters, note that `Apply[F[_]]` extends `ApplyArityFunctions[F]`.
-This is an auto-generated code that defines `ap3`, `map3`, `tuple3`, ... up to
+This is auto-generated code that defines `ap3`, `map3`, `tuple3`, ... up to
 `ap22`, `map22`, `tuple22`.
 
-#### `*>` and `<*` operator
+#### `*>` and `<*` operators
 
-`Apply` enables two operators `<*` and `*>` which are special cases of `Apply[F].map2`:
+`Apply` enables two operators, `<*` and `*>`, which are special cases of `Apply[F].map2`:
 
 
 ```scala
@@ -238,9 +238,9 @@ scala> none[Int] *> 2.some
 
 If either side fails, we get `None`.
 
-#### Apply law
+#### `Apply` law
 
-Apply has a single law called composition:
+`Apply` has a single law called composition:
 
 ```scala
 trait ApplyLaws[F[_]] extends FunctorLaws[F] {

@@ -14,7 +14,7 @@ out: Kinds.html
 > ...
 > What are kinds and what are they good for? Well, let's examine the kind of a type by using the :k command in GHCI.
 
-Scala 2.10 didn't have `:k` command, so I wrote [kind.scala](https://gist.github.com/eed3si9n/3610635).
+Scala 2.10 didn't have a `:k` command, so I wrote [kind.scala](https://gist.github.com/eed3si9n/3610635).
 Thanks to George Leontiev ([@folone](https://twitter.com/folone)) and others, `:kind` command is now part of Scala 2.11 ([scala/scala#2340][scala2340]). Let's try using it:
 
 ```scala
@@ -27,7 +27,7 @@ scala.Int's kind is A
 This is a proper type.
 ```
 
-`Int` and every other types that you can make a value out of is called a proper type and denoted with a symbol `*` (read "type"). This is analogous to value `1` at value-level. Using Scala's type variable notation this could be written as `A`.
+`Int` and every other types that you can make a value out of are called a proper type and denoted with a `*` symbol (read "type"). This is analogous to the value `1` at value-level. Using Scala's type variable notation this could be written as `A`.
 
 ```scala
 scala> :k -v Option
@@ -54,7 +54,7 @@ This is a type constructor: a 1st-order-kinded type.
 
 Scala encodes (or complects) the notion of typeclasses using type constructors.
 When looking at this, think of it as `Eq` is a typeclass for `A`, a proper type.
-This should make sense because you would pass in `Int` into `Eq`.
+This should make sense because you would pass `Int` into `Eq`.
 
 ```scala
 scala> :k -v Functor
@@ -65,7 +65,7 @@ This is a type constructor that takes type constructor(s): a higher-kinded type.
 
 Again, Scala encodes typeclasses using type constructors,
 so when looking at this, think of it as `Functor` is a typeclass for `F[A]`, a type constructor.
-This should also make sense because you would pass in `List` into `Functor`.
+This should also make sense because you would pass `List` into `Functor`.
 
 In other words, this is a type constructor that accepts another type constructor.
 This is analogous to a higher-order function, and thus called *higher-kinded type*.
@@ -74,8 +74,8 @@ These are denoted as `(* -> *) -> *`. Using Scala's type variable notation this 
 ### forms-a vs is-a
 
 The terminology around typeclasses tends to get jumbled up.
-For example, The pair `(Int, +)` forms a typeclass called monoid. 
-Colloquially, we say things like "is X a monoid?" to mean "can X form a monoid under some operation?"
+For example, the pair `(Int, +)` forms a typeclass called monoid. 
+Colloquially, we say things like "is _X_ a monoid?" to mean "can _X_ form a monoid under some operation?"
 
-An example of this is `Either[A, B]`, which we implied that it "is-a" functor yesterday.
-This is not completely accurate, because even though it might not be useful, we *could have* defined another left biased functor.
+An example of this is `Either[A, B]`, which we implied "is-a" functor yesterday.
+This is not completely accurate because, even though it might not be useful, we *could have* defined another left-biased functor.

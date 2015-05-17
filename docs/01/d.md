@@ -1,5 +1,5 @@
 
-### PartialOrder
+### `PartialOrder`
 
 In addition to `Order`, Cats also defines `PartialOrder`.
 This also is a type alias to `algebra.PartialOrder`.

@@ -1,7 +1,7 @@
   [Apply]: Apply.html
   [fafm]: http://learnyouahaskell.com/functors-applicative-functors-and-monoids
 
-### Applicative
+### `Applicative`
 
 **Note**: If you jumped to this page because you're interested in applicative functors,
 you should definitely read [Apply][Apply] first.
@@ -48,7 +48,7 @@ scala> F.ap(F.pure(9)) { F.pure((_: Int) + 3) }
 
 We've abstracted `Option` away from the code.
 
-#### Useful functions for Applicative
+#### Useful functions for `Applicative`
 
 LYAHFGG:
 
@@ -87,7 +87,7 @@ scala> sequenceA(List(List(1, 2, 3), List(4, 5, 6)))
 ```
 
 We got the right answers. What's interesting here is that we did end up needing
-`Applicative` after all, and `sequenceA` is generic in typeclassy way.
+`Applicative` after all, and `sequenceA` is generic in a typeclassy way.
 
 > Using `sequenceA` is useful when we have a list of functions and we want
 > to feed the same input to all of them and then view the list of results.
@@ -99,7 +99,7 @@ scala> val f = sequenceA[Function1[Int, ?], Int](List((_: Int) + 3, (_: Int) + 2
 scala> f(3)
 ```
 
-#### Applicative Laws
+#### `Applicative` Laws
 
 Here are the laws for `Applicative`:
 
