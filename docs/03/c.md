@@ -10,7 +10,7 @@ you should definitely read [Apply][Apply] first.
 
 > Meet the `Applicative` typeclass. It lies in the `Control.Applicative` module and it defines two methods, `pure` and `<*>`.
 
-Let's see Cats's `Applicative`:
+Let's see Cats' `Applicative`:
 
 ```scala
 @typeclass trait Applicative[F[_]] extends Apply[F] { self =>
