@@ -42,7 +42,7 @@ trait Apply[F[_]] extends Functor[F] with ApplyArityFunctions[F] { self =>
 ```
 
 Note that `Apply` extends `Functor`.
-The `<*>` function is called `ap` in Cats's `Apply`. (This was originally called `apply`, but was renamed to `ap`. +1)
+The `<*>` function is called `ap` in Cats' `Apply`. (This was originally called `apply`, but was renamed to `ap`. +1)
 
 LYAHFGG:
 
