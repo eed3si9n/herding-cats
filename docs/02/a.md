@@ -84,7 +84,7 @@ object CanTruthy {
 }
 ```
 
-To make sure it works, let's define an instance for `Int` and use it. Eventual goal is to get `1.truthy` to return `true`:
+To make sure it works, let's define an instance for `Int` and use it. The eventual goal is to get `1.truthy` to return `true`:
 
 ```console
 scala> implicit val intCanTruthy: CanTruthy[Int] = CanTruthy.fromTruthy({

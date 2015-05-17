@@ -87,7 +87,7 @@ scala> sequenceA(List(List(1, 2, 3), List(4, 5, 6)))
 ```
 
 We got the right answers. What's interesting here is that we did end up needing
-`Applicative` after all, and `sequenceA` is generic in typeclassy way.
+`Applicative` after all, and `sequenceA` is generic in a typeclassy way.
 
 > Using `sequenceA` is useful when we have a list of functions and we want
 > to feed the same input to all of them and then view the list of results.

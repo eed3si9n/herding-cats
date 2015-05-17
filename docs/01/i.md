@@ -67,4 +67,4 @@ scala> implicit val trafficLightEq: Eq[TrafficLight] =
 scala> TrafficLight.red === TrafficLight.yellow
 ```
 
-It is a bit of a boilderplate, but it works.
+It is a bit of boilerplate, but it works.

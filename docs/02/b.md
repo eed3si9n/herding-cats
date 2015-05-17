@@ -35,8 +35,8 @@ scala> Functor[List].map(List(1, 2, 3)) { _ + 1 }
 
 Let's call the above usage the *function syntax*.
 
-We now know that `@typeclass` annotation will automatically turn `map` function into `map` operator.
-The `fa` part turns into `this` of the method, and the second parameter list will now be
+We now know that `@typeclass` annotation will automatically turn a `map` function into a `map` operator.
+The `fa` part turns into the `this` of the method, and the second parameter list will now be
 the parameter list of `map` operator:
 
 ```scala
@@ -73,7 +73,7 @@ One workaround is to opt for the function syntax.
 
 #### Function as a functor
 
-Cats also defines `Functor` instance for `Function1`.
+Cats also defines a `Functor` instance for `Function1`.
 
 ```console
 scala> val h = ((x: Int) => x + 1) map {_ * 7}
@@ -87,7 +87,7 @@ This is interesting. Basically `map` gives us a way to compose functions, except
 >
 > What does the type `fmap :: (a -> b) -> (r -> a) -> (r -> b)` for this instance tell us? Well, we see that it takes a function from `a` to `b` and a function from `r` to `a` and returns a function from `r` to `b`. Does this remind you of anything? Yes! Function composition!
 
-Oh man, LYAHFGG came to the same conclusion as I did about the function composition. But wait..
+Oh man, LYAHFGG came to the same conclusion as I did about the function composition. But wait...
 
 ```haskell
 ghci> fmap (*3) (+100) 1
@@ -96,7 +96,7 @@ ghci> (*3) . (+100) \$ 1
 303
 ```
 
-In Haskell, the `fmap` seems to be working as the same order as `f compose g`. Let's check in Scala using the same numbers:
+In Haskell, the `fmap` seems to be working in the same order as `f compose g`. Let's check in Scala using the same numbers:
 
 ```console
 scala> (((_: Int) * 3) map {_ + 100}) (1)
@@ -140,7 +140,7 @@ fmap (replicate 3) :: (Functor f) => f a -> f [a]
 ```
 
 If the parameter order has been flipped, are we going to miss out on this lifting goodness?
-Fortunately, Cats implement derived functions under the `Functor` typeclass:
+Fortunately, Cats implements derived functions under the `Functor` typeclass:
 
 ```scala
 @typeclass trait Functor[F[_]] extends functor.Invariant[F] { self =>
@@ -216,4 +216,3 @@ scala> assert { (x map (f map g)) === (x map f map g) }
 ```
 
 These are laws the implementer of the functors must abide, and not something the compiler can check for you. 
-

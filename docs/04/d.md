@@ -69,7 +69,7 @@ scala> Foldable[List].foldLeft(List(1, 2, 3), 1) {_ * _}
 
 `Foldable` comes with some useful functions/operators,
 many of them taking advantage of the typeclasses.
-Let's try the `fold`. `Monoid[A]` gives us `empty` and `combine`, so that's enough information to fold things over.
+Let's try the `fold`. `Monoid[A]` gives us `empty` and `combine`, so that's enough information to fold over things.
 
 ```scala
   /**

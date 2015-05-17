@@ -36,7 +36,7 @@ scala> assert { List("la") ++ (List("di") ++ List("da")) === (List("la") ++ List
 
 エラーがないから等価ということだ。
 
-#### `Semigroup` 型クラス
+#### Semigroup 型クラス
 
 これが `algebra.Semigroup` の型クラスコントラクトだ。
 

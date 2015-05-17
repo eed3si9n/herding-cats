@@ -8,7 +8,7 @@ LYAHFGG:
 
 > `Eq` is used for types that support equality testing. The functions its members implement are `==` and `/=`.
 
-Cats equivalent for the `Eq` typeclass is also called `Eq`.
+Cats' equivalent for the `Eq` typeclass is also called `Eq`.
 Technically speaking, `cats.Eq` is actually a type alias of `algebra.Eq` from [non/algebra][algebra].
 Not sure if it matters, but it's probably a good idea that it's being reused:
 
@@ -47,9 +47,9 @@ trait Eq[@sp A] extends Any with Serializable { self =>
 ```
 
 This is an example of polymorphism. Whatever equality means for the type `A`,
-`neqv` is the opposite of it. Does not matter if it's `String`, `Int`, or whatever.
+`neqv` is the opposite of it. It does not matter if it's `String`, `Int`, or whatever.
 Another way of looking at it is that given `Eq[A]`, `===` is universally the opposite of `=!=`.
 
-I'm a bit concerned that `Eq` seems to be using the term equal and equivalent
+I'm a bit concerned that `Eq` seems to be using the terms "equal" and "equivalent"
 interchangably. [Equivalence relationship][Equivalence] could include "having the same birthday"
 whereas equality also requires substitution property.

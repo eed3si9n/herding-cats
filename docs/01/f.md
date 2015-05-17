@@ -5,7 +5,7 @@ LYAHFGG:
 
 > `Read` is sort of the opposite typeclass of `Show`. The `read` function takes a string and returns a type which is a member of `Read`.
 
-I could not find Cats equivalent for this typeclass.
+I could not find Cats' equivalent for this typeclass.
 
 I find myself defining `Read` and its variant `ReadJs` time and time again.
 Stringly typed programming is ugly.
