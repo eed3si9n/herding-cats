@@ -23,7 +23,7 @@ LYAHFGG:
 
 > Let's say that [Pierre] keeps his balance if the number of birds on the left side of the pole and on the right side of the pole is within three. So if there's one bird on the right side and four birds on the left side, he's okay. But if a fifth bird lands on the left side, then he loses his balance and takes a dive.
 
-Now let's try implementing `Pole` example from the book.
+Now let's try implementing the `Pole` example from the book.
 
 ```console:new
 scala> import cats._, cats.std.all._, cats.syntax.flatMap._
@@ -94,7 +94,7 @@ scala> val lrlr = Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)} >>=
   {_.landRight(4)} >>= {_.landLeft(-1)} >>= {_.landRight(-2)}
 ```
 
-It works. Take time to understand this example, because this example
+It works. Take time to understand this example because this example
 highlights what a monad is.
 
 1. First, `pure` puts `Pole(0, 0)` into a default context: `Pole(0, 0).some`.
@@ -103,7 +103,7 @@ highlights what a monad is.
 4. `Pole(1, 4).some >>= {_.landLeft(-1)}` happens, resulting to `none[Pole]`. The difference is too great, and pole becomes off balance.
 5. `none[Pole] >>= {_.landRight(-2)}` results automatically to `none[Pole]`.
 
-In this chain of monadic functions, the effect from function is carried over to another.
+In this chain of monadic functions, the effect from one function is carried over to the next.
 
 #### Banana on wire
 
@@ -154,13 +154,13 @@ The type inference broke down all the sudden. The problem is likely the operator
 Note: The above description is incomplete. Another exception from the assignment operator rule is if it starts with (`=`) like `===`.
 
 
-Because `>>=` (bind) ends in equals character, its precedence is the lowest, which forces `({_.landLeft(1)} >> (none: Option[Pole]))` to evaluate first. There are a few unpalatable work arounds. First we can use dot-and-parens like normal method calls:
+Because `>>=` (bind) ends in the equals character, its precedence is the lowest, which forces `({_.landLeft(1)} >> (none: Option[Pole]))` to evaluate first. There are a few unpalatable work arounds. First we can use dot-and-parens like normal method calls:
 
 ```console
 scala> Monad[Option].pure(Pole(0, 0)).>>=({_.landLeft(1)}).>>(none[Pole]).>>=({_.landRight(1)})
 ```
 
-Or recognize the precedence issue and place parens around just the right place:
+Or we can recognize the precedence issue and place parens around just the right place:
 
 ```console
 scala> (Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)}) >> none[Pole] >>= {_.landRight(1)}
@@ -174,7 +174,7 @@ LYAHFGG:
 
 > Monads in Haskell are so useful that they got their own special syntax called `do` notation.
 
-First, let write the nested lambda:
+First, let's write the nested lambda:
 
 ```console
 scala> import cats._, cats.syntax.show._
@@ -189,7 +189,7 @@ scala> (none: Option[Int]) >>= { x => "!".some >>= { y => (x.show + y).some } }
 scala> 3.some >>= { x => "!".some >>= { y => none[String] } }
 ```
 
-Instead of the `do` notation in Haskell, Scala has `for` comprehension, which does similar things:
+Instead of the `do` notation in Haskell, Scala has the `for` comprehension, which does similar things:
 
 ```console
 scala> for {
@@ -202,7 +202,7 @@ LYAHFGG:
 
 > In a `do` expression, every line that isn't a `let` line is a monadic value.
 
-Not quite for `for`, but we can come back to this later.
+That's not quite accurate for `for`, but we can come back to this later.
 
 #### Pierre returns
 
@@ -304,7 +304,7 @@ scala> Monad[Option].pure(Pole(0, 0)) >>= { x =>
        }}}
 ```
 
-These laws look might look familiar if you remember Monoid laws from day 4.
+These laws look might look familiar if you remember monoid laws from day 4.
 That's because monad is a special kind of a monoid.
 
 You might be thinking, "But wait. Isn't `Monoid` for kind `A` (or `*`)?"

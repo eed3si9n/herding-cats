@@ -34,7 +34,7 @@ Here's [the typeclass contract for `MonadFilter`][MonadFilterSource]:
 }
 ```
 
-This enables a derivative function/operator `filter` and `filterM`:
+This enables the derivative functions/operators `filter` and `filterM`:
 
 ```scala
 @typeclass trait MonadFilter[F[_]] extends Monad[F] {
@@ -70,7 +70,7 @@ Instead of type aliasing a pair, let's make this into a case class again:
 scala> case class KnightPos(c: Int, r: Int)
 ```
 
-Heres the function to calculate all of the knight's next next positions:
+Here's the function to calculate all of the knight's next positions:
 
 ```console
 scala> case class KnightPos(c: Int, r: Int) {
