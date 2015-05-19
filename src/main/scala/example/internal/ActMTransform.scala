@@ -12,8 +12,13 @@ trait ActMTransform { self: ActMMacro =>
 
   lazy val monadInstance: Tree = {
     val tree = c.macroApplication
-    val appliedMonad = typeRef(NoPrefix, typeOf[cats.Monad[Nothing]].typeSymbol, List(tree.tpe.typeConstructor))
-    c.inferImplicitValue(appliedMonad)
+    tree.tpe match {
+      case TypeRef(pre, sym, List(a1, a2)) if sym == typeOf[Function1[Nothing, Nothing]].typeSymbol =>
+        q"""implicitly[_root_.cats.Monad[({type L[A] = $a1 => A})#L]]"""
+      case _ =>
+        val appliedMonad = typeRef(NoPrefix, typeOf[cats.Monad[Nothing]].typeSymbol, List(tree.tpe.typeConstructor))
+        c.inferImplicitValue(appliedMonad)
+    }
   }
 
   def actMTransform(body: Tree): Tree = {

@@ -42,7 +42,8 @@ private[example] trait TransformUtils {
   }
 
   def isMonadOp(fun: Tree): Boolean =
-    fun.symbol == defn.conversionSymbol
+    (fun.symbol == defn.conversionSymbol) ||
+    (fun.symbol == defn.funcConversionSymbol)
 
   def isNext(fun: Tree, name: Name): Boolean =
     isMonadOp(fun) && (name == TermName("next"))
@@ -159,6 +160,7 @@ private[example] trait TransformUtils {
     
     val MonadSyntaxClass = rootMirror.staticModule("example.MonadSyntax") 
     val conversionSymbol = MonadSyntaxClass.typeSignature.member(TermName("toMonadOp"))
+    val funcConversionSymbol = MonadSyntaxClass.typeSignature.member(TermName("toFuncOp"))
     // val Async_await   = asyncBase.awaitMethod(c.universe)(c.macroApplication.symbol).ensuring(_ != NoSymbol)
     // val MacroOps_next = rootMirror.staticClass("example.MonadOp").owner.typeSignature.member(newTermName("next"))
   }
