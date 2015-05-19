@@ -7,6 +7,7 @@ val algebraStd  = "org.spire-math" %% "algebra-std" % "0.2.0-SNAPSHOT" from "htt
 val algebraLaws = "org.spire-math" %% "algebra-laws" % "0.2.0-SNAPSHOT" from "http://plastic-idolatry.com/jars/algebra-laws_2.11-0.2.0-SNAPSHOT.jar"
 val macroParaside = compilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full)
 val kindProjector = compilerPlugin("org.spire-math" %% "kind-projector" % "0.5.2")
+val resetAllAttrs = "org.scalamacros" %% "resetallattrs" % "1.0.0-M1"
 
 val specs2Version = "2.3.11" // use the version used by discipline
 val specs2Core  = "org.specs2" %% "specs2-core" % specs2Version
@@ -28,7 +29,7 @@ lazy val root = (project in file(".")).
       catsCore, catsStd,
       catsLaws % Test, 
       specs2Core % Test, specs2Scalacheck % Test, scalacheck % Test,
-      macroParaside, kindProjector
+      macroParaside, kindProjector, resetAllAttrs
     ),
     scalacOptions ++= Seq(
       "-deprecation",
