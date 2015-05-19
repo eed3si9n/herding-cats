@@ -7,6 +7,7 @@ out: do-vs-for.html
   [ScalaAsync]: https://github.com/scala/async
   [Effectful]: https://github.com/pelotom/effectful
   [BasicDef]: http://www.scala-sbt.org/0.13/tutorial/Basic-Def.html
+  [ActMSource]: https://github.com/eed3si9n/herding-cats/blob/day6/src/main/scala/example/MonadSyntax.scala
 
 ### do vs for
 
@@ -65,7 +66,7 @@ into monadic or applicative function calls using macros:
 
 Covering full array of Scala syntax in the macro is hard work,
 but by copy-pasting code from Async and Effectful I put together
-a toy macro that supports only simple expressions and `val`s.
+[a toy macro][ActMSource] that supports only simple expressions and `val`s.
 I'll omit the details, but the key function is this:
 
 ```scala

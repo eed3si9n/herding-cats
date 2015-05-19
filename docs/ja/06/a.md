@@ -9,6 +9,7 @@ out: do-vs-for.html
   [Effectful]: https://github.com/pelotom/effectful
   [BasicDef]: http://www.scala-sbt.org/0.13/tutorial/Basic-Def.html
   [BasicDefJa]: http://www.scala-sbt.org/0.13/tutorial/ja/Basic-Def.html
+  [ActMSource]: https://github.com/eed3si9n/herding-cats/blob/day6/src/main/scala/example/MonadSyntax.scala
 
 ### do vs for
 
@@ -67,7 +68,7 @@ Scala には、マクロを使って命令型的なコードをモナディッ�
 
 Scala 構文の全域をマクロでカバーするのは難しい作業だけども、
 Async と Effectful のコードをコピペすることで単純な式と `val`
-のみをサポートするオモチャマクロを作ってみた。
+のみをサポートする[オモチャマクロ][ActMSource]を作ってみた。
 詳細は省くが、ポイントは以下の関数だ:
 
 ```scala
