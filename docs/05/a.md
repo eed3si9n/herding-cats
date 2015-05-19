@@ -34,7 +34,7 @@ class FlatMapOps[F[_], A](fa: F[A])(implicit F: FlatMap[F]) {
 }
 ```
 
-It introduces `flatMap` operator and its symbolic alias `>>=`. We'll worry about the other operators later. We are use to `flapMap` from the standard library:
+It introduces the `flatMap` operator and its symbolic alias `>>=`. We'll worry about the other operators later. We are used to `flapMap` from the standard library:
 
 ```console:new
 scala> import cats._, cats.std.all._, cats.syntax.flatMap._
@@ -43,7 +43,7 @@ scala> (Right(3): Either[String, Int]) flatMap { x => Right(x + 1) }
 
 #### Getting our feet wet with Option
 
-Following the book, let's explore `Option`. In this section I'll be less fussy about whether it's using Cats' typeclass or standard library's implemenation. Here's `Option` as a functor:
+Following the book, let's explore `Option`. In this section I'll be less fussy about whether it's using Cats' typeclass or standard library's implementation. Here's `Option` as a functor:
 
 ```console
 scala> :paste
@@ -85,7 +85,7 @@ FlatMap has a single law called associativity:
 
 - associativity: `(m flatMap f) flatMap g === m flatMap { x => f(x) flatMap {g} }`
 
-Cats define two more laws in `FlatMapLaws`:
+Cats defines two more laws in `FlatMapLaws`:
 
 ```scala
 trait FlatMapLaws[F[_]] extends ApplyLaws[F] {

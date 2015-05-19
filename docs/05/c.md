@@ -22,7 +22,7 @@ scala> import cats.syntax.flatMap._
 scala> List(3, 4, 5) >>= { x => List(x, -x) }
 ```
 
-So in this monadic view, `List` context represent mathematical value that could have multiple solutions. Other than that manipulating `List`s using `for` notation is just like plain Scala:
+So in this monadic view, a `List` context represents a mathematical value that could have multiple solutions. Other than that manipulating `List`s using `for` notation is just like plain Scala:
 
 ```console
 scala> for {
