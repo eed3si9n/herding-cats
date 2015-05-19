@@ -33,7 +33,7 @@ scala> def foo = for {
 
 似ているように見えるけども、いくつかの違いがある。
 
-- Scala には標準で `Monad` 型が無い。その代わりにコンパイラが機械的に for 内容表記を `map`、 `withFilter`、 `flatMap`、 `foreach` の呼び出しに展開する。 [SLS 6.19][SLS_6_19]
+- Scala には標準で `Monad` 型が無い。その代わりにコンパイラが機械的に for 内包表記を `map`、 `withFilter`、 `flatMap`、 `foreach` の呼び出しに展開する。 [SLS 6.19][SLS_6_19]
 - `Option` や `List` など、標準ライブラリが `map`/`flatMap` を実装するものは、Cats が提供する型クラスよりも組み込みの実装が優先される。
 - Scala collection ライブラリの `map` その他は `F[A]` を `G[B]` に変換する `CanBuildFrom` を受け取る。[Scala コレクションのアーキテクチャ][focoja] 参照。
 - `CanBuildFrom` は `G[A]` から `F[B]` という変換を行うこともある。
