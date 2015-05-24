@@ -8,9 +8,7 @@ out: Reader.html
   [ltudif]: https://yow.eventer.com/yow-2012-1012/lambda-the-ultimate-dependency-injection-framework-by-runar-bjarnason-1277
   [sycpb]: http://blog.originate.com/blog/2013/10/21/reader-monad-for-dependency-injection/
 
-### Reader モナド
-
-日本語
+### Reader データ型
 
 [すごいHaskellたのしく学ぼう](http://www.amazon.co.jp/dp/4274068854) 曰く:
 

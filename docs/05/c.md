@@ -2,7 +2,7 @@
 out: List.html
 ---
 
-### List monad
+### List datatype
 
 LYAHFGG:
 

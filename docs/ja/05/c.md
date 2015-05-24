@@ -2,7 +2,7 @@
 out: List.html
 ---
 
-### List モナド
+### List データ型
 
 LYAHFGG:
 

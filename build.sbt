@@ -2,6 +2,7 @@ val catsVersion = "0.1.0-SNAPSHOT"
 val catsCore    = "org.spire-math" %% "cats-core" % catsVersion
 val catsStd     = "org.spire-math" %% "cats-std" % catsVersion
 val catsLaws    = "org.spire-math" %% "cats-laws" % catsVersion
+val catsState   = "org.spire-math" %% "cats-state" % catsVersion
 val algebraCore = "org.spire-math" %% "algebra" % "0.2.0-SNAPSHOT" from "http://plastic-idolatry.com/jars/algebra_2.11-0.2.0-SNAPSHOT.jar"
 val algebraStd  = "org.spire-math" %% "algebra-std" % "0.2.0-SNAPSHOT" from "http://plastic-idolatry.com/jars/algebra-std_2.11-0.2.0-SNAPSHOT.jar"
 val algebraLaws = "org.spire-math" %% "algebra-laws" % "0.2.0-SNAPSHOT" from "http://plastic-idolatry.com/jars/algebra-laws_2.11-0.2.0-SNAPSHOT.jar"
@@ -26,7 +27,7 @@ lazy val root = (project in file(".")).
     libraryDependencies ++= Seq(
       algebraCore, algebraStd,
       algebraLaws % Test,
-      catsCore, catsStd,
+      catsCore, catsStd, catsState,
       catsLaws % Test, 
       specs2Core % Test, specs2Scalacheck % Test, scalacheck % Test,
       macroParaside, kindProjector, resetAllAttrs
