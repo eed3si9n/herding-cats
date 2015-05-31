@@ -7,6 +7,7 @@ out: State.html
   [@retronym]: https://twitter.com/retronym
   [SI-7139]: https://issues.scala-lang.org/browse/SI-7139
   [322]: https://github.com/non/cats/pull/322
+  [fafmm]: http://learnyouahaskell.com/for-a-few-monads-more
 
 ### State datatype
 
@@ -49,7 +50,7 @@ scala> stackManip(List(5, 8, 2, 1))
 
 ### State and StateT datatype
 
-[Learn You a Haskell for Great Good](http://learnyouahaskell.com/for-a-few-monads-more) says:
+[Learn You a Haskell for Great Good][fafmm] says:
 
 > Haskell features the `State` monad, which makes dealing with stateful problems a breeze while still keeping everything nice and pure. ....
 >

@@ -120,7 +120,7 @@ scala> e2 map { _ + "!" }
 
 左側で連鎖させるには、`=> AA \/ BB` (ただし `[AA >: A, BB >: B]`) を受け取る `orElse` がある:
 
-```scala
+```console
 scala> e2 orElse Xor.right[String, String]("event 2 retry ok")
 ```
 

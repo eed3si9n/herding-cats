@@ -6,7 +6,7 @@ out: Validated.html
 
 ### Validated データ型
 
-[Validated][ValidatedSource] という、`Either` の代わりに使えるデータ構造がもう1つ Cats に定義されている:
+[Validated][ValidatedSource] という、`Either` の代わりに使えるデータ型がもう1つ Cats に定義されている:
 
 ```scala
 sealed abstract class Validated[+E, +A] extends Product with Serializable {

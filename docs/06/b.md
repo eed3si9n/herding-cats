@@ -7,10 +7,11 @@ out: Reader.html
   [dsdi]: http://functionaltalks.org/2013/06/17/runar-oli-bjarnason-dead-simple-dependency-injection/
   [ltudif]: https://yow.eventer.com/yow-2012-1012/lambda-the-ultimate-dependency-injection-framework-by-runar-bjarnason-1277
   [sycpb]: http://blog.originate.com/blog/2013/10/21/reader-monad-for-dependency-injection/
+  [fafmm]: http://learnyouahaskell.com/for-a-few-monads-more
 
 ### Reader datatype
 
-[Learn You a Haskell for Great Good](http://learnyouahaskell.com/for-a-few-monads-more) says:
+[Learn You a Haskell for Great Good][fafmm] says:
 
 > In the chapter about applicatives, we saw that the function type, `(->) r` is an instance of `Functor`.
 

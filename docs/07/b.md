@@ -52,7 +52,7 @@ object Xor extends XorInstances with XorFunctions {
 }
 ```
 
-These values are created using `right` and `left` method on `Xor`:
+These values are created using the `right` and `left` methods on `Xor`:
 
 ```console:new
 scala> import cats._, cats.data.Xor, cats.std.all._
@@ -121,7 +121,7 @@ scala> e2 map { _ + "!" }
 
 To chain on the left side, there's `orElse`, which accepts `=> AA Xor BB` where `[AA >: A, BB >: B]`:
 
-```scala
+```console
 scala> e2 orElse Xor.right[String, String]("event 2 retry ok")
 ```
 

@@ -6,7 +6,7 @@ out: Validated.html
 
 ### Validated datatype
 
-There's another data structure in Cats that we can use in place of `Either` called [Validated][ValidatedSource]:
+There's another datatype in Cats that we can use in place of `Either` called [Validated][ValidatedSource]:
 
 ```scala
 sealed abstract class Validated[+E, +A] extends Product with Serializable {
