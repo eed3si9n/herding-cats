@@ -6,7 +6,7 @@ out: Ior.html
 
 ### Ior datatype
 
-In Cats there yet another datatype that represents `A`, `B` pair called [Ior][IorSource].
+In Cats there are yet another datatype that represents `A`, `B` pair called [Ior][IorSource].
 
 ```scala
 /** Represents a right-biased disjunction that is either an `A`, or a `B`, or both an `A` and a `B`.
@@ -56,12 +56,13 @@ scala> Ior.left[NEL[String], Int](NEL("error"))
 scala> Ior.both[NEL[String], Int](NEL("warning"), 1)
 ```
 
-As noted in the scaladoc comment, `Ior` uses `Semigroup[A]` to accumulate
-failures when `flatMap` see an `Ior.both(...)` value.
+As noted in the scaladoc comment, `Ior`'s `flatMap` uses `Semigroup[A]` to accumulate
+failures when it sees an `Ior.both(...)` value.
 So we could probably use this as a hybrid of `Xor` and `Validated`.
 
-One thing I keep forgetting is that the `Semigroup` instance for
-`NonEmptyList` not available by default, so I need to derive one from `SemigroupK`.
+One gotcha that I keep forgetting is that the `Semigroup` instance for
+`NonEmptyList` not available by default.
+I need to derive one from `SemigroupK` myself.
 
 Here's how `flatMap` behaves for all nine combinations:
 
@@ -99,5 +100,5 @@ scala> for {
        } yield (e1 |+| e2 |+| e3)
 ```
 
-So `Ior.left` short curcuits all like `Xor[A, B]` and `Either[A, B]`,
-but `Ior.both` accumulates the failure values like `Validated`.
+So `Ior.left` short curcuits like the failure values in `Xor[A, B]` and `Either[A, B]`,
+but `Ior.both` accumulates the failure values like `Validated[A, B]`.

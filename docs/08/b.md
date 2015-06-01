@@ -43,7 +43,7 @@ The definition of the free monoid *M(A)* is given as follows:
 > *f_hom = M(A) => N* such that 
 > *|f_hom| ∘ i = f*, all as indicated in the following diagram:
 
-Instead of `A`, I'll use `X` here:
+Instead of `A`, I'll use `X` here. Also *|N|* means `Set[N]`:
 
 ![free monoids](files/day8-free-monoids.png)
 
@@ -57,7 +57,7 @@ def f(x: X): Set[N] = ???
 def f_hom(mx: M[X]): N
 
 // such that
-def f_hom_set(smx: Set[M[X]]): Set[N] = sma map {f_hom}
+def f_hom_set(smx: Set[M[X]]): Set[N] = smx map {f_hom}
 f == f_hom_set compose i
 ```
 
@@ -95,7 +95,7 @@ At least for this implemention of `f` we were able to show that `String` is free
 
 #### Injective
 
-This intuitively shows that `Set[M[X]]` needs to be lossless for it to allow any *f*,
+This intuitively shows that `Set[M[X]]` needs to be lossless for `X` to allow any *f*,
 meaning no two values on `X` can map into the same value in `M[X]`.
 In algebra, this is expressed as `i` is *injective* for arrows from `Char`.
 
@@ -103,7 +103,7 @@ In algebra, this is expressed as `i` is *injective* for arrows from `Char`.
 > and *x<sub>2</sub>: T => A*, if *f ∘ x<sub>1</sub> = f ∘ x<sub>2</sub>* then *x<sub>1</sub> = x<sub>2</sub>*',
 > it is said to be *injective for arrows from T*.
 
-![injective](file/day8-injective.png)
+![injective](files/day8-injective.png)
 
 #### Uniqueness
 
@@ -118,6 +118,6 @@ so it ends up being more like a free monoid.
 It turns out that the free monoid is an example of free objects,
 which we can define using a functor `Set[A]: C[A] => Set[A]`.
 
-![free objects](file/day8-free-objects.png)
+![free objects](files/day8-free-objects.png)
 
 Comparing the diagram, we see that they are mostly similar.

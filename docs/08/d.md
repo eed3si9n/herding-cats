@@ -117,7 +117,7 @@ Finally, he summarizes free monads in nice bullet points:
 > - A model for any recursive data type with data at the leaves.
 > - A free monad is an expression tree with variables at the leaves and flatMap is variable substitution.
 
-#### List using Free
+#### Free monoid using Free
 
 Let's try defining "List" using `Free`.
 

@@ -11,8 +11,8 @@ out: Free-monads.html
 
 ### Free monads
 
-We said that the [free monoid][Free-monoids] is an example of free objects.
-Similarly, free monads are an example of free objects.
+We said that [free monoids][Free-monoids] are examples of free objects.
+Similarly, free monads are examples of free objects.
 
 I'm not going to get into the details, monad is a monoid in the category of endofunctors `F: C => C`,
 using `F × F => F` as the binary operator.
@@ -187,7 +187,7 @@ scala> :paste
 
 The fact that we need to supply type parameters everywhere is a bit unfortunate.
 
-#### Free monad
+#### Free datatype
 
 WFMM:
 
@@ -208,7 +208,7 @@ instance (Functor f) => Monad (Free f) where
 
 > The `return` was our `Throw`, and `(>>=)` was our `catch`.
 
-The corresponding datatype in Cats is called [Free][FreeSource]:
+The datatype in Cats is called [Free][FreeSource]:
 
 ```scala
 /**
@@ -356,3 +356,10 @@ WFMM:
 > The free monad is the interpreter's best friend. Free monads "free the interpreter" as much as possible while still maintaining the bare minimum necessary to form a monad.
 
 Another way of looking at it is that the `Free` datatype provides a way of building a syntax tree given a container.
+
+One of the reason `Free` datatype is gaining popularity I think is that people
+are running into the limitation of combining different monads.
+It's not impossible with monad transformer, but the type signature gets hairly quickly, and the stacking leaks into
+various places in code. On the other hand, `Free` essentially gives up on encoding meaning into the monad,
+you gain flexibility because you can do whatever in the interpreter function, for instance run sequentially
+during testing, but run in parallel for production.
