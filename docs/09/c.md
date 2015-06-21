@@ -53,14 +53,14 @@ scala> val g = kleisli { (x: Int) => (x * 100).some }
 We can then compose the functions using `compose`, which runs the rhs first:
 
 ```console
-scala> import cats.flatMap.syntax._
-scala> 4.some >>= (f compose g)
+scala> import cats.syntax.flatMap._
+scala> 4.some >>= (f compose g).run
 ```
 
 There's also `andThen`, which runs the lhs first:
 
-```scala
-scala> 4.some >>= (f andThen g)
+```console
+scala> 4.some >>= (f andThen g).run
 ```
 
 Both `compose` and `andThen` works like function composition

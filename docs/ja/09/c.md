@@ -53,14 +53,14 @@ scala> val g = kleisli { (x: Int) => (x * 100).some }
 `compose` を使って関数を合成すると、右辺項が先に適用される。
 
 ```console
-scala> import cats.flatMap.syntax._
-scala> 4.some >>= (f compose g)
+scala> import cats.syntax.flatMap._
+scala> 4.some >>= (f compose g).run
 ```
 
 `andThen` を使うと、左辺項が先に適用される:
 
-```scala
-scala> 4.some >>= (f andThen g)
+```console
+scala> 4.some >>= (f andThen g).run
 ```
 
 `compose` と `andThen` は関数の合成同様に動作するが、モナディックなコンテキストを保持するのが違いだ。
