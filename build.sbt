@@ -1,11 +1,12 @@
 val catsVersion = "0.1.0-SNAPSHOT"
+val algebraVersion = "0.2.0-SNAPSHOT"
 val catsCore    = "org.spire-math" %% "cats-core" % catsVersion
 val catsStd     = "org.spire-math" %% "cats-std" % catsVersion
 val catsLaws    = "org.spire-math" %% "cats-laws" % catsVersion
 val catsState   = "org.spire-math" %% "cats-state" % catsVersion
-val algebraCore = "org.spire-math" %% "algebra" % "0.2.0-SNAPSHOT" from "http://plastic-idolatry.com/jars/algebra_2.11-0.2.0-SNAPSHOT.jar"
-val algebraStd  = "org.spire-math" %% "algebra-std" % "0.2.0-SNAPSHOT" from "http://plastic-idolatry.com/jars/algebra-std_2.11-0.2.0-SNAPSHOT.jar"
-val algebraLaws = "org.spire-math" %% "algebra-laws" % "0.2.0-SNAPSHOT" from "http://plastic-idolatry.com/jars/algebra-laws_2.11-0.2.0-SNAPSHOT.jar"
+val algebraCore = "org.spire-math" %% "algebra" % algebraVersion
+val algebraStd  = "org.spire-math" %% "algebra-std" % algebraVersion
+val algebraLaws = "org.spire-math" %% "algebra-laws" % algebraVersion
 val macroParaside = compilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full)
 val kindProjector = compilerPlugin("org.spire-math" %% "kind-projector" % "0.5.2")
 val resetAllAttrs = "org.scalamacros" %% "resetallattrs" % "1.0.0-M1"
@@ -37,6 +38,11 @@ lazy val root = (project in file(".")).
       "-encoding", "UTF-8",
       "-feature",
       "-language:_"
+    ),
+    resolvers ++= Seq(
+      "bintray/non" at "http://dl.bintray.com/non/maven",
+      Resolver.sonatypeRepo("releases"),
+      Resolver.sonatypeRepo("snapshots")
     )
   ).settings(
     packageSitePath := target.value / "herding-cats.tar.gz",
