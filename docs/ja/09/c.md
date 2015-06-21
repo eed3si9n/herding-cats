@@ -1,11 +1,11 @@
 ---
-out: Kleisli.html
+out: composing-monadic-functions.html
 ---
 
   [KleisliSource]: $catsBaseUrl$/core/src/main/scala/scalaz/Kleisli.scala
   [354]: https://github.com/non/cats/pull/354
 
-### Kleisli データ型
+### モナディック関数の合成
 
 LYAHFGG:
 
