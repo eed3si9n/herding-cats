@@ -7,21 +7,23 @@ out: monad-transfomers.html
   [sycpb]: http://blog.originate.com/blog/2013/10/21/reader-monad-for-dependency-injection/
   [Free-monads]: Free-monads.html
 
-One topic we have been dancing around, but haven't gotten into is the notion of the monad transformer.
-Luckily there's another good Haskell book that I've read that's also available online.
+これまでも出かかってきてたけど、未だ取り扱っていなかった話題としてモナド変換子という概念がある。
+幸いなことに、Haskell の良書でオンライン版も公開されている本がもう 1冊あるので、これを参考にしてみる。
 
-### Monad transformers
+### モナド変換子
 
-[Real World Haskell][mf] says:
+[Real World Haskell][mf] 曰く:
 
-> It would be ideal if we could somehow take the standard `State` monad and add failure handling to it, without resorting to the wholesale construction of custom monads by hand. The standard monads in the `mtl` library don't allow us to combine them. Instead, the library provides a set of *monad transformers* to achieve the same result.
+> もし標準の `State` モナドに何らかの方法でエラー処理を追加することができれば理想的だ。
+> 一から手書きで独自のモナドを作るのは当然避けたい。`mtl` ライブラリに入っている標準のモナド同士を組み合わせることはできない。
+> だけども、このライブラリは**モナド変換子**というものを提供して、同じことを実現できる。
 >
-> A monad transformer is similar to a regular monad, but it's not a standalone entity: instead, it modifies the behaviour of an underlying monad.
+> モナド変換子は通常のモナドに似ているが、孤立して使える実体ではなく、
+> 基盤となる別のモナドの振る舞いを変更するものだ。
 
-#### Dependency injection again
+#### Dependency injection 再び
 
-Let's look into the idea of using `Reader` datatype (`Function1`)
-for dependency injection, which we saw on [day 6][Reader].
+[6日目][Reader] にみた `Reader` データ型 (`Function1`) を DI に使うという考えをもう一度見てみよう。
 
 ```console:new
 scala> :paste
@@ -32,7 +34,9 @@ trait UserRepo {
 }
 ```
 
-Jason Arhart's [Scrap Your Cake Pattern Boilerplate: Dependency Injection Using the Reader Monad][sycpb] generalizes the notion of `Reader` datatype for supporting multiple services by creating a `Config` object:
+Jason Arhart さんの
+[Scrap Your Cake Pattern Boilerplate: Dependency Injection Using the Reader Monad][sycpb]
+は `Config` オブジェクトを作ることで `Reader` データ型を複数のサービスのサポートに一般化している:
 
 ```console
 scala> import java.net.URI
@@ -46,13 +50,14 @@ trait Config {
 }
 ```
 
-To use this, we would construct mini-programs of type `Config => A`, and compose them.
+これを使うには `Config => A` 型のミニ・プログラムを作って、それらを合成する。
 
-Suppose we want to also encode the notion of failure using `Option`.
+ここで、`Option` を使って失敗という概念もエンコードしたいとする。
 
-#### Kleisli as ReaderT
+#### ReaderT としての Kleisli
 
-We can use the `Kleisli` datatype we saw yesterday as `ReaderT`, a monad transformer version of the `Reader` datatype, and stack it on top of `Option` like this:
+昨日見た `Kleisli` データ型を `ReaderT`、つまり `Reader` データ型のモナド変換子版として使って、それを `Option`
+の上に積み上げることができる:
 
 ```console
 scala> import cats._, cats.std.all._
@@ -64,7 +69,7 @@ object ReaderTOption {
 }
 ```
 
-We can modify the `Config` to make `httpService` optional:
+`Config` を変更して `httpService` をオプショナルにする:
 
 ```console
 scala> :paste
@@ -78,7 +83,7 @@ trait Config {
 }
 ```
 
-Next we can rewrtie the "primitive" readers to return `ReaderTOption[Config, A]`:
+次に、「プリミティブ」なリーダーが `ReaderTOption[Config, A]` を返すように書き換える:
 
 ```console
 scala> :paste
@@ -100,7 +105,7 @@ trait Https {
 }
 ```
 
-We can compose these mini-programs into compound programs:
+これらのミニ・プログラムを合成して複合プログラムを書くことができる:
 
 ```console
 scala> :paste
@@ -130,15 +135,18 @@ val dummyConfig: Config = new Config {
 }
 ```
 
-The above `ReaderTOption` datatype combines `Reader`’s ability to read from some configuration once, and the `Option`’s ability to express failure.
+上の `ReaderTOption` データ型は、`Reader` の設定の読み込む能力と、
+`Option` の失敗を表現できる能力を組み合わせたものとなっている。
 
-### Stacking multiple monad transformers
+### 複数のモナド変換子を積み上げる
 
 RWH:
 
-> When we stack a monad transformer on a normal monad, the result is another monad. This suggests the possibility that we can again stack a monad transformer on top of our combined monad, to give a new monad, and in fact this is a common thing to do.
+> 普通のモナドにモナド変換子を積み上げると、別のモナドになる。
+> これは組み合わされたモナドの上にさらにモナド変換子を積み上げて、新しいモナドを作ることができる可能性を示唆する。
+> 実際に、これはよく行われていることだ。
 
-We can stack `StateT` on top of `ReaderTOption` to represent state transfer.
+状態遷移を表す `StateT` を `ReaderTOption` の上に積んでみる。
 
 ```console
 scala> import cats.state._
@@ -163,11 +171,13 @@ object StateTReaderTOption {
 }
 ```
 
-This is a bit confusing, so let's break it down. Ultimately the point of `State` datatype is to wrap `S => (S, A)`, so I kept those parameter names for `state`. Next, I needed to modify the kind of `ReaderTOption` to `* -> *` (a type constructor that takes exactly one type as its parameter).
+これは分かりづらいので、分解してみよう。
+結局の所 `State` データ型は `S => (S, A)` をラッピングするものだから、`state` のパラメータ名はそれに合わせた。
+次に、`ReaderTOption` のカインドを `* -> *` (ただ 1つのパラメータを受け取る型コンストラクタ) に変える。
 
-Similarly, we need a way of using this datatype as a `ReaderTOption`, which is expressed as `C => Option[A]` in `ro`.
+同様に、このデータ型を `ReaderTOption` として使う方法が必要なので、それは `ro` に渡される `C => Option[A]` として表した。
 
-We also can implement a `Stack` again. This time let's use `String` instead.
+これで `Stack` を実装することができる。今回は `String` を使ってみよう。
 
 ```console
 scala> type Stack = List[String]
@@ -177,7 +187,7 @@ scala> val pop = StateTReaderTOption.state[Config, Stack, String] {
        }
 ```
 
-Here's a version of `pop` and `push` using `get` and `put` primitive:
+`pop` と `push` を `get` と `push` プリミティブを使って書くこともできる:
 
 ```console
 scala> import StateTReaderTOption.{get, put}
@@ -194,7 +204,7 @@ scala> def push(x: String): StateTReaderTOption[Config, Stack, Unit] =
          } yield r
 ```
 
-We can also port `stackManip`:
+ついでに `stackManip` も移植する:
 
 ```console
 scala> def stackManip: StateTReaderTOption[Config, Stack, String] =
@@ -205,14 +215,14 @@ scala> def stackManip: StateTReaderTOption[Config, Stack, String] =
          } yield(b)
 ```
 
-Here's how we can use this:
+実行してみよう。
 
 ```console
 scala> stackManip.run(List("Hyman Roth")).run(dummyConfig)
 ```
 
-So far we have the same feature as the `State` version.
-We can modify `Users` to use `StateTReaderTOption.ro`:
+とりあえず `State` 版と同じ機能までたどりつけた。
+次に、`Users` を `StateTReaderTOption.ro` を使うように書き換える:
 
 ```console
 scala> :paste
@@ -228,7 +238,7 @@ trait Users {
 }
 ```
 
-Using this we can now manipulate the stack using the read-only configuration:
+これを使ってリードオンリーの設定を使ったスタックの操作ができるようになった:
 
 ```console
 scala> :paste
@@ -245,17 +255,18 @@ object Main extends Program {
 }
 ```
 
-We can run this program like this:
+このプログラムはこのように実行できる:
 
 ```console
 scala> Main.run(List("Hyman Roth"), dummyConfig)
 ```
 
-Now we have `StateT`, `ReaderT` and `Option` working all at the same time.
-Maybe I am not doing it right, but setting up the monad constructor functions like `state` and `ro` to set up `StateTReaderTOption` is a rather mind-bending excercise.
+これで `StateT`、`ReaderT`、それと `Option` を同時に動かすことができた。
+僕が使い方を良く分かってないせいかもしれないが、`StateTReaderTOption` に関して `state` や `ro`
+のようなモナド・コンストラクタを書き出すのは頭をひねる難問だった。
 
-Once the primitive monadic values are constructed, the usage code (like `stackManip`) looks relatively clean.
-It sure does avoid the cake pattern, but the stacked monad type `StateTReaderTOption` is sprinkled all over the code base.
+プリミティブなモナド値さえ構築できてしまえば、実際の使う側のコード (`stackManip` などは) 比較的クリーンだと言える。
+Cake パターンは確かに回避してるけども、コード中に積み上げられたモナド型である `StateTReaderTOption` が散らばっている設計になっている。
 
-If all we wanted was being able to use `getUser(id: Long)` and `push` etc.,
-an alternative is to construct a DSL with those commands using [Free monads][Free-monads] we saw on day 8.
+最終目的として `getUser(id: Long)` と `push`　などを同時に使いたいというだけの話なら、
+8日目に見た[自由モナド][Free-monads]を使うことで、これらをコマンドとして持つ DSL を構築することも代替案として考えられる。

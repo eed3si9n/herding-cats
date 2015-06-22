@@ -2,23 +2,24 @@
 out: stacking-future-and-either.html
 ---
 
-  [xuwei_k]: https://twitter.com/xuwei_k
+  [xuweik]: https://twitter.com/xuwei_k
   [combine-future-and-either]: http://d.hatena.ne.jp/xuwei/20140919/1411136788
   [seal]: https://twitter.com/xuwei_k/status/392260189673373696
+  [xw]: https://en.wikipedia.org/wiki/Xu_Wei
   [3hj86e]: http://twitpic.com/3hj86e
   [Xor]: Xor.html
   [XorTSource]: $catsBaseUrl$core/src/main/scala/cats/data/XorT.scala
 
 ### Stacking Future and Either
 
-One use of monad transformers that seem to come up often is stacking `Future` datatype with `Either`. There's a blog post by Yoshida-san ([@xuwei_k][@xuwei_k]) in Japanese called [How to combine Future and Either nicely in Scala][combine-future-and-either].
+One use of monad transformers that seem to come up often is stacking `Future` datatype with `Either`. There's a blog post by Yoshida-san ([@xuwei_k][xuweik]) in Japanese called [How to combine Future and Either nicely in Scala][combine-future-and-either].
 
 A little known fact about Yoshida-san outside of Tokyo, is that he majored in Chinese calligraphy. Apparently he spent his collge days writing ancient seal scripts and carving seals:
 
 <blockquote class="twitter-tweet" lang="en"><p lang="ja" dir="ltr">「大学では、はんこを刻ったり、篆書を書いてました」&#10;「えっ？なぜプログラマに？？？」 <a href="http://t.co/DEhqy4ELpF">pic.twitter.com/DEhqy4ELpF</a></p>&mdash; Kenji Yoshida (@xuwei_k) <a href="https://twitter.com/xuwei_k/status/392260189673373696">October 21, 2013</a></blockquote>
 <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
 
-His namesake Xu Wei was a Ming-era painter, poet, writer and dramatist famed for his free-flowing style. Here's Yoshida-san writing [functional programming language][3hj86e].
+His namesake [Xu Wei][xw] was a Ming-era painter, poet, writer and dramatist famed for his free-flowing style. Here's Yoshida-san writing [functional programming language][3hj86e].
 
 In any case, why would one want to stack `Future` and `Either` together?
 The blog post explains like this:
@@ -131,7 +132,7 @@ case class XorT[F[_], A, B](value: F[A Xor B]) {
 }
 ```
 
-Here's `UserRepo.followers`:
+Here's `UserRepo.followers` with a dummy implementation:
 
 ```console
 scala> :paste
