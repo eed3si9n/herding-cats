@@ -22,7 +22,7 @@ scala> val g = (_: Int) + 10
 scala> (g map f)(8)
 ```
 
-> We've also seen that functions are applicative functors. They allow us to operate on the eventual results of functions as if we already had their results. 
+> We've also seen that functions are applicative functors. They allow us to operate on the eventual results of functions as if we already had their results.
 
 ```console
 scala> import cats.syntax.apply._
@@ -43,7 +43,7 @@ scala> val addStuff: Int => Int = for {
 scala> addStuff(3)
 ```
 
-> Both `(*2)` and `(+10)` get applied to the number `3` in this case. `return (a+b)` does as well, but it ignores it and always presents `a+b` as the result. For this reason, the function monad is also called the *reader* monad. All the functions read from a common source. 
+> Both `(*2)` and `(+10)` get applied to the number `3` in this case. `return (a+b)` does as well, but it ignores it and always presents `a+b` as the result. For this reason, the function monad is also called the *reader* monad. All the functions read from a common source.
 
 The `Reader` monad lets us pretend the value is already there. I am guessing that this works only for functions that accepts one parameter.
 
