@@ -18,3 +18,27 @@ div.credit {
   line-height: 0.6em;
   text-align: right;
 }
+
+@media screen and (min-device-width: 800px), projection {
+  div.container {
+    width: 70%;
+  }
+  div.contents {
+    padding-top: 0px;
+  }
+  div.span-16 {
+    width: 80%;
+  }
+  div.span-16 div.span-16 {
+    width: 100%;
+  }
+  div.prepend-1 {
+    padding-left: 5%;
+  }
+  div.append-1 {
+    padding-right: 5%;
+  }
+  p {
+    width: 45em;
+  }
+}
