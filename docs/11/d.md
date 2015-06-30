@@ -10,7 +10,6 @@ EIP:
 > idiomatic effects can generally be fused into one, their product.
 
 Cats seems to be missing the functor products altogether.
-Let's try implementing one.
 
 #### Product of functors
 
@@ -18,7 +17,7 @@ Let's try implementing one. First we start with the product of
 `Functor`:
 
 ```console:new
-scala> import cats._, cats.std._
+scala> import cats._, cats.std.all._
 scala> :paste
 final case class Prod[F[_], G[_], A](first: F[A], second: G[A]) extends Serializable
 
@@ -39,6 +38,14 @@ sealed trait ProdFunctor[F[_], G[_]] extends Functor[Lambda[X => Prod[F, G, X]]]
 scala> val x = Prod(List(1), (Some(1): Option[Int]))
 scala> Functor[Lambda[X => Prod[List, Option, X]]].map(x) { _ + 1 }
 ```
+
+First, we are defining a pair-like datatype called `Prod`, which prepresents a product of typeclass instances.
+By simply passing the function `f` to both the sides, we can form `Functor` for `Prod[F, G]`
+where `F` and `G` are `Functor`.
+
+To see if it worked, we are mapping over `x` and adding `1`.
+We could make the usage code a bit nicer if we wanted,
+but it's ok for now.
 
 #### Product of apply functors
 
@@ -75,12 +82,11 @@ sealed trait ProdApply[F[_], G[_]] extends Apply[Lambda[X => Prod[F, G, X]]] wit
     Prod(F.ap(fa.first)(f.first), G.ap(fa.second)(f.second))
 }
 scala> val x = Prod(List(1), (Some(1): Option[Int]))
-scala> val f = Prod(List((_: Int) + 1), (Some((_: Int) * 2): Option[Int => Int]))
+scala> val f = Prod(List((_: Int) + 1), (Some((_: Int) * 3): Option[Int => Int]))
 scala> Apply[Lambda[X => Prod[List, Option, X]]].ap(x)(f)
 ```
 
-We could make the usage code a bit nicer if we wanted,
-but it's ok for now.
+The product of `Apply` passed in separate functions to each side.
 
 #### Product of applicative functors
 
@@ -129,6 +135,8 @@ sealed trait ProdApplicative[F[_], G[_]] extends Applicative[Lambda[X => Prod[F,
 }
 scala> Applicative[Lambda[X => Prod[List, Option, X]]].pure(1)
 ```
+
+We were able to create `Prod(List(1), Some(1))` by calling `pure(1)`.
 
 #### Composition of Applicative
 
@@ -183,11 +191,11 @@ This is similar to `Kleisli` composition of monadic functions, but *better*.
 Here's why.
 `Kliesli` composition will let you compose `A => F[B]` and `B => F[C]` using `andThen`,
 but note that `F` stays the same.
-On the other hand, `AppFunc` composes `A => F[B]` and `A => G[B]`.
+On the other hand, `AppFunc` composes `A => F[B]` and `B => G[C]`.
 
 Let's implement this.
 
-```scala
+```console
 scala> :paste
 final case class AppFunc[F[_], A, B](run: A => F[B])(implicit val FF: Applicative[F]) { self =>
   def product[G[_]](g: AppFunc[G, A, B]): AppFunc[Lambda[X => Prod[F, G, X]], A, B] =
@@ -210,7 +218,7 @@ As you can see two applicative functions are running side by side.
 
 Here's `andThen` and `compose`:
 
-```scala
+```console
 scala> :paste
 final case class AppFunc[F[_], A, B](run: A => F[B])(implicit val FF: Applicative[F]) { self =>
   def product[G[_]](g: AppFunc[G, A, B]): AppFunc[Lambda[X => Prod[F, G, X]], A, B] =

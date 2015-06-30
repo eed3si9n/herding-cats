@@ -36,7 +36,7 @@ We can abstract out 4 into a parameter:
 scala> def triangle(side: Int): Unit = {
          (1 to side) foreach { row =>
            (1 to row) foreach { col =>
-             prinln("*")
+             println("*")
            }
          }
        }
@@ -49,7 +49,7 @@ the type of list elements. This enables *parametric polymorphism*.
 
 ```console
 scala> def head[A](xs: List[A]): A = xs(0)
-````
+```
 
 The above function would work for all proper types.
 
@@ -124,7 +124,7 @@ elaborate than the list of operations covered by the type.
 > time and space.
 
 Typeclasses with laws fit in here too. For example `Monoid[A]` comes with the monoid laws.
-The laws need to be validated for each instance.
+The laws need to be validated for each instance using property-based testing tools.
 
 #### Genericity by stage
 
@@ -171,7 +171,7 @@ trait Fix[F[_,_], A]
 def cata[S[_,_]: Bifunctor, A, B](t: Fix[S, A])(f: S[A, B] => B): B = ???
 ```
 
-In the above `S` represents the shape of the datatype.
+In the above, `S` represents the shape of the datatype.
 By abstracting out the shapes, we can construct *parametrically datatype-generic* programs.
 We'll come back to this later.
 
@@ -180,7 +180,7 @@ We'll come back to this later.
 > Typical examples of the latter are pretty printers and marshallers.
 
 The example that fits in this category might be [Scala Pickling][Pickling].
-Pickling for defines picklers for common types, and it derives
+Pickling defines picklers for common types, and it derives
 pickler instances for different shapes using macro.
 
 > This approach to datatype genericity has been variously called *polytypism*,

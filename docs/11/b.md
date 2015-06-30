@@ -16,7 +16,7 @@ so we'll go with datatype-generic programming.
 
 > As we have already argued, data structure determines program structure.
 > It therefore makes sense to abstract from the determining shape, leaving only what programs of different shape have in common.
-> What datatypes such as `List` and `Tree` have in common is the fact that they are recursive — which is to say, a datatype `Fix`, parametrized both by an element type `a` of basic kind (a plain type, such as integers or strings), and by a shape type `s` of higher kind (a type constructor, such as ‘pairs of’ or ‘lists of’, but in this case with two arguments rather than one).
+> What datatypes such as `List` and `Tree` have in common is the fact that they are recursive — which is to say, a datatype `Fix`
 
 ```haskell
 data Fix s a = In {out :: s a (Fix s a)}
@@ -104,7 +104,7 @@ trait Bifunctor[F[_, _]] extends Serializable { self =>
 }
 ```
 
-Here is the `BinFunctor` instance for `GenericList`.
+Here is the `Bifunctor` instance for `GenericList`.
 
 ```console
 scala> import cats._, cats.std.all._
@@ -135,7 +135,7 @@ object DGP {
 scala> DGP.map(cons(1, nil)) { _ + 1 }
 ```
 
-The above definition of `map` is indepent from `GenericList`, abstracted by `Bifunctor` and `Fix`.
+The above definition of `map` is independent from `GenericList`, abstracted by `Bifunctor` and `Fix`.
 Another way of looking at it is that we can get `Functor` for free out of `Bifunctor` and `Fix`.
 
 ```console
@@ -210,6 +210,7 @@ scala> def pred(n: Int): GenericList[Int] =
            case 0 => ListF.NilF()
            case n => ListF.ConsF(n, n - 1)
          }
+scala> pred(4)
 ```
 
 There are several more we can derive, too.
@@ -298,6 +299,9 @@ Looks like `unfold` is working too.
 For more details on DGP in Scala, Oliveira and Gibbons wrote a paper translating the
 ideas and many more called [Scala for Generic Programmers (2008)][Oliveira2008],
 and its updated version [Scala for Generic Programmers (2010)][Oliveira2010].
+
+Datatype-generic programming described here has a limitation of datatype being recursive,
+so I don't think it's very usable as is, but there are some interesting concepts that can be exploited.
 
 #### The Origami patterns
 
