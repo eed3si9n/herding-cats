@@ -114,7 +114,7 @@ type Option[+A] = Free[Trivial, A]
 There's also iteratees implementation based on free monads.
 Finally, he summarizes free monads in nice bullet points:
 
-> - A model for any recursive datatype with data at the leaves.
+> - A model for any recursive data type with data at the leaves.
 > - A free monad is an expression tree with variables at the leaves and flatMap is variable substitution.
 
 #### Free monoid using Free
