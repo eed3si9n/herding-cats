@@ -79,9 +79,9 @@ trait Users {
 }
 ```
 
-That looks like a boilerplate (I thought we are scapping them). Moving on.
+That looks like boilerplate. (I thought we are scrapping it.) Moving on.
 
-Based on the primitive readers, we can make compose other readers,
+Based on the primitive readers, we can compose other readers,
 including the application.
 
 ```console
@@ -126,7 +126,7 @@ Main.run
 
 We got the boss man's name.
 
-We can try using `actM` instead of `for` comprehension:
+We can try using `actM` instead of a `for` comprehension:
 
 ```console
 scala> :paste
@@ -161,7 +161,7 @@ object Main extends Program {
 Main.run
 ```
 
-Inside of the `actM` block looks more natural than the `for` version,
-but the type annotations make it probably more difficult to use.
+The code inside of the `actM` block looks more natural than the `for` version,
+but the type annotations probably make it more difficult to use.
 
 That's all for today.
