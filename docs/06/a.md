@@ -134,7 +134,7 @@ scala> actM[List, Int] {
        }
 ```
 
-Error message is a bit rough, but we were able to catch this at compile-time.
+The error message is a bit rough, but we were able to catch this at compile-time.
 This will also work for any monads including `Future`.
 
 ```console
@@ -151,4 +151,4 @@ val x = {
 scala> x.value
 ```
 
-This macro is an imcomplete toy code, but it demonstrates potential usefulness for having something like this.
+This macro is incomplete toy code, but it demonstrates potential usefulness for having something like this.
