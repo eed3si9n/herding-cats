@@ -14,16 +14,16 @@ The notion of free monad goes beyond just the interpreter pattern.
 I think people are still discovering new ways of harnessing its power.
 
 Rúnar ([@runarorama][@runarorama]) has been a proponent of using `Free` in Scala.
-His talk we've covered on day 6, [Dead-Simple Dependency Injection][dsdi], uses `Free` to implement
-a mini language to implement key-value store.
+His talk that we covered on day 6, [Dead-Simple Dependency Injection][dsdi], uses `Free` to implement
+a mini language to implement a key-value store.
 The same year, Rúnar also gave a talk at Scala Days 2012 called
 [Stackless Scala With Free Monads][ssfmvid].
-I recommend watching the talk before reading the paper, but it's easier to quote the paper version
+I recommend watching the talk before reading the paper, but it's easier to quote the paper version,
 [Stackless Scala With Free Monads][ssfmpaper].
 
-Rúnar starts out with a code that uses an implementation of `State` monad to zip a list with index.
+Rúnar starts out with code that uses an implementation of the `State` monad to zip a list with its indices.
 It blows the stack when the list is larger than the stack limit.
-Then he introduces tranpoline, which is a single loop that drives the entire program.
+Then he introduces trampoline, which is a single loop that drives the entire program.
 
 ```scala
 sealed trait Trampoline [+ A] {
@@ -58,7 +58,7 @@ Next, it is revealed that `Trampoline` is a free monad of `Function0`. Here's ho
 #### Trampoline
 
 Using Trampoline any program can be transformed into a stackless one.
-`Trampoline` object defines a few useful functions for tramplining:
+`Trampoline` object defines a few useful functions for trampolining:
 
 ```scala
 object Trampoline {
@@ -111,7 +111,7 @@ type Trivial[+A] = Unit
 type Option[+A] = Free[Trivial, A]
 ```
 
-There's also iteratees implementation based on free monads.
+There's also an iteratees implementation based on free monads.
 Finally, he summarizes free monads in nice bullet points:
 
 > - A model for any recursive data type with data at the leaves.
