@@ -11,7 +11,7 @@ LYAHFGG:
 
 > When we were learning about the monad laws, we said that the `<=<` function is just like composition, only instead of working for normal functions like `a -> b`, it works for monadic functions like `a -> m b`.
 
-In Cats there's a special wrapper for function of type `A => F[B]` called [Kleisli][KleisliSource]:
+In Cats there's a special wrapper for a function of type `A => F[B]` called [Kleisli][KleisliSource]:
 
 ```scala
 /**
@@ -50,21 +50,21 @@ scala> val f = kleisli { (x: Int) => (x + 1).some }
 scala> val g = kleisli { (x: Int) => (x * 100).some }
 ```
 
-We can then compose the functions using `compose`, which runs the rhs first:
+We can then compose the functions using `compose`, which runs the right-hand side first:
 
 ```console
 scala> import cats.syntax.flatMap._
 scala> 4.some >>= (f compose g).run
 ```
 
-There's also `andThen`, which runs the lhs first:
+There's also `andThen`, which runs the left-hand side first:
 
 ```console
 scala> 4.some >>= (f andThen g).run
 ```
 
-Both `compose` and `andThen` works like function composition
-but note that it retains the monadic context.
+Both `compose` and `andThen` work like function composition
+but note that they retain the monadic context.
 
 #### lift method
 

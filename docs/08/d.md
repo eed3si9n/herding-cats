@@ -129,7 +129,7 @@ scala> val x = cons(1)
 scala> val xs = cons(1) flatMap {_ => cons(2)}
 ```
 
-As a way of interpretting the result, let's try converting this to a standard `List`:
+As a way of interpreting the result, let's try converting this to a standard `List`:
 
 ```console
 scala> implicit def tuple2Functor[A]: Functor[(A, ?)] =
