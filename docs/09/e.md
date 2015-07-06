@@ -23,7 +23,7 @@ This is a useful intuition of monads to have in comparison to `Functor`,
 
 Another intuition about monads (technically `FlatMap`) is
 that they are fractals, like the above Sierpinski triangle.
-Each part of a fractal self-similar to the whole shape.
+Each part of a fractal is self-similar to the whole shape.
 
 Take `List` for example. A `List` of `List`s can be treated a flat `List`.
 
@@ -35,7 +35,7 @@ scala> xss.flatten
 The `flatten` function embodies the crunching of the `List` data structure.
 If we think in terms of the type signature, it would be `F[F[A]] => F[A]`.
 
-#### `List` forms a monad under `++`
+#### List forms a monad under ++
 
 We can get a better idea of the flattening by reimplementing it using `foldLeft`:
 
@@ -45,7 +45,7 @@ scala> xss.foldLeft(List(): List[Int]) { _ ++ _ }
 
 We can say that `List` forms a monad under `++`.
 
-#### `Option` forms a monad under?
+#### Option forms a monad under?
 
 Now let try to figure out under what operation does `Option` form a monad:
 
@@ -65,7 +65,7 @@ scala> o3.foldLeft(None: Option[Int]) { (_, _)._2 }
 
 It seems like `Option` forms a monad under `(_, _)._2`.
 
-#### `State` as a fractal
+#### State as a fractal
 
 If we come back to the `State` datatype from the point of view of fractals,
 it becomes clear that a `State` of `State` is also a `State`.
