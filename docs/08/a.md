@@ -6,7 +6,7 @@ out: Ior.html
 
 ### Ior datatype
 
-In Cats there are yet another datatype that represents `A`, `B` pair called [Ior][IorSource].
+In Cats there is yet another datatype that represents an `A`-`B` pair called [Ior][IorSource].
 
 ```scala
 /** Represents a right-biased disjunction that is either an `A`, or a `B`, or both an `A` and a `B`.

@@ -134,7 +134,7 @@ Again, `fix` is provided so that the type inference works.
 
 #### FixE
 
-We are also going to try to implement `FixE`, which adds exception to this. Since `throw` and `catch` are reserverd, I am renaming them to `throwy` and `catchy`:
+We are also going to try to implement `FixE`, which adds an exception to this. Since `throw` and `catch` are reserved, I am renaming them to `throwy` and `catchy`:
 
 ```console
 scala> import cats._, cats.std.all._
@@ -253,7 +253,7 @@ object Free {
 ```
 
 In Cats' version, the `Free` constructor is called `Free.Suspend`,
-and `Pure` is called `Free.Pure`. We can re-implement `CharToy` commands based on `Free`:
+and `Pure` is called `Free.Pure`. We can re-implement the `CharToy` commands based on `Free`:
 
 ```console
 scala> import cats.free.Free
@@ -357,9 +357,9 @@ WFMM:
 
 Another way of looking at it is that the `Free` datatype provides a way of building a syntax tree given a container.
 
-One of the reason `Free` datatype is gaining popularity I think is that people
+One of the reasons the `Free` datatype is gaining popularity I think is that people
 are running into the limitation of combining different monads.
-It's not impossible with monad transformer, but the type signature gets hairly quickly, and the stacking leaks into
-various places in code. On the other hand, `Free` essentially gives up on encoding meaning into the monad,
-you gain flexibility because you can do whatever in the interpreter function, for instance run sequentially
+It's not impossible with monad transformer, but the type signature gets hairy quickly, and the stacking leaks into
+various places in code. On the other hand, `Free` essentially gives up on encoding meaning into the monad.
+You gain flexibility because you can do whatever in the interpreter function, for instance run sequentially
 during testing, but run in parallel for production.
