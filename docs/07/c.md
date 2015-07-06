@@ -52,7 +52,7 @@ scala> val result = (valid[String, String]("event 1 ok") |@|
 The final result is `Invalid(event 3 failed!event 2 failed!)`.
 Unlike the `Xor`'s monad, which cuts the calculation short,
 `Validated` keeps going to report back all failures.
-This would be useful for validating user's inputs on an online bacon shop.
+This would be useful for validating user input on an online bacon shop.
 
 The problem, however, is that the error messages are mushed together into one string.
 Shouldn't it be something like a list?

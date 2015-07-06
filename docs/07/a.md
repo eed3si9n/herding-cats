@@ -11,11 +11,11 @@ out: State.html
 
 ### State datatype
 
-When writing code using immutable data structure,
+When writing code using an immutable data structure,
 one pattern that arises often is passing of a value that represents some state.
 The example I like to use is Tetris. Imagine a functional implementation of Tetris
 where `Tetrix.init` creates the initial state, and then various
-transition functions returning a transformed state and some return value:
+transition functions return a transformed state and some return value:
 
 ```scala
 val (s0, _) = Tetrix.init()
@@ -26,11 +26,11 @@ val (s3, moved1) =
   else (s2, moved0)
 ```
 
-The passing of the state objects (`s0`, `s1`, `s2`, ...) becomes an error-prone boilerplate.
+The passing of the state objects (`s0`, `s1`, `s2`, ...) becomes error-prone boilerplate.
 The goal is to automate the explicit passing of the states.
 
 To follow along the book, we'll use the stack example from the book.
-Here's an implemetation without using `State`.
+Here's an implementation without using `State`.
 
 ```console:new
 scala> type Stack = List[Int]
@@ -77,7 +77,7 @@ package object state {
 
 `StateT` is a monad transformer, a type constructor for other datatypes.
 `State` partially applies `StateT` with `Trampoline`,
-which emulates call stack in-memory to prevent stackoverflow.
+which emulates a call stack with heap memory to prevent overflow.
 Here's the definition of `StateT`:
 
 ```scala
@@ -104,7 +104,7 @@ object StateT extends StateTInstances {
 
 ```
 
-To construct a `State` value, you pass in the state transition function into `State.apply`.
+To construct a `State` value, you pass the state transition function to `State.apply`.
 
 ```scala
 object State {
@@ -120,7 +120,7 @@ When I tried using `State` on the REPL, I ran into an odd behavior where I can c
 one state, but not the second. [@retronym][@retronym] pointed me to
 [SI-7139: Type alias and object with the same name cause type mismatch in REPL][SI-7139], which I was able to workaround as [#322][322].
 
-Let's look at how to implement stack with `State`:
+Let's consider how to implement stack with `State`:
 
 ```console:new
 scala> type Stack = List[Int]
@@ -146,10 +146,10 @@ scala> def stackManip: State[Stack, Int] = for {
 scala> stackManip.run(List(5, 8, 2, 1)).run
 ```
 
-The first `run` is for `StateT`, and the second is to `run` till the end `Trampoline`.
+The first `run` is for `StateT`, and the second is to `run` until the end `Trampoline`.
 
-Both `push` and `pop` are still purely functional, but we 
-were able to eliminate the state object (`s0`, `s1`, ...) passing.
+Both `push` and `pop` are still purely functional, and we 
+were able to eliminate explicitly passing the state object (`s0`, `s1`, ...).
 
 ### Getting and setting the state
 
@@ -223,8 +223,8 @@ but by chaining them we can remove some boilerplates.
 
 ### Extracting and modifying the state
 
-A slightly more advanced variants of `State.get` and `State.set(s)`
-are `State.extract(f)` and `State.modify(f)`.
+`State.extract(f)` and `State.modify(f)` are slightly more 
+advanced variants of `State.get` and `State.set(s)`.
 
 `State.extract(f)` applies the function `f: S => T` to `s`,
 and returns the result without modifying the state itself.
