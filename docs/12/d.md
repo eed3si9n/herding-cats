@@ -30,13 +30,13 @@ scala> import Func.{ appFunc, appFuncU }
 
 > The character-counting slice of the `wc` program accumulates a result in the integers-as-monoid applicative functor:
 
-Here's a type alias to treat `Int` as a monoidal functor:
+Here's a type alias to treat `Int` as a monoidal applicative:
 
 ```console
 scala> type Count[A] = Const[Int, A]
 ```
 
-In the above `A` is a phantom type we don't need, so let's just hardcode it to `Unit`:
+In the above, `A` is a phantom type we don't need, so let's just hardcode it to `Unit`:
 
 ```console
 scala> def liftInt(i: Int): Count[Unit] = Const(i)
@@ -107,7 +107,7 @@ scala> x.runA(false).run
 
 17 words.
 
-Like we did with `shape` and `content`, we can consolidate the traversal into one shot
+Like we did with `shape` and `content`, we can *fuse* the traversal into one shot
 by combining the applicative functions.
 
 ```console

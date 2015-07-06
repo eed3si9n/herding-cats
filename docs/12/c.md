@@ -23,7 +23,7 @@ scala> def contents[F[_], A](fa: F[A])(implicit FF: Traverse[F]): Const[List[A],
          }
 ```
 
-Now we can take any data structure that supports `Traverse` and turn it into a `List`.
+Now we can take any datatype that supports `Traverse` and turn it into a `List`.
 
 ```console
 scala> contents(Vector(1, 2, 3)).getConst
@@ -58,6 +58,7 @@ EIP:
 Next EIP demonstrates applicative composition by first combining `shape` and `contents` together like this:
 
 ```console
+scala> import cats.data.Prod
 scala> def decompose[F[_], A](fa: F[A])(implicit FF: Traverse[F]) =
          Prod[Const[List[A], ?], Id, F[Unit]](contents(fa), shape(fa))
 scala> val d = decompose(Vector(1, 2, 3))

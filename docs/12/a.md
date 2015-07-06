@@ -6,7 +6,7 @@ out: Traverse.html
   [TraverseSource]: $catsBaseUrl$/core/src/main/scala/cats/Traverse.scala
   [ControlMonadSequence]: https://downloads.haskell.org/~ghc/7.8.4/docs/html/libraries/base-4.7.0.2/Control-Monad.html#v:sequence
   [McBride2008]: http://strictlypositive.org/IdiomLite.pdf
-  [FutureSequence]: http://www.scala-lang.org/api/2.11.6/index.html#scala.concurrent.Future$
+  [FutureSequence]: http://www.scala-lang.org/api/2.11.6/index.html#scala.concurrent.Future\$
 
 ### Traverse
 
@@ -44,7 +44,7 @@ Note that the `f` takes the shape of `A => G[B]`.
 > When *m* is specialised to the identity applicative functor,
 > traversal reduces precisely (modulo the wrapper) to the functorial map over lists.
 
-Cat's identity applicative functor is defined as follows:
+Cats' identity applicative functor is defined as follows:
 
 
 ```scala
@@ -64,7 +64,7 @@ Cat's identity applicative functor is defined as follows:
   }
 ```
 
-Here's how we can traverse over `List(1, 2, 3)` using it.
+Here's how we can traverse over `List(1, 2, 3)` using `Id`.
 
 
 ```console:new
@@ -90,6 +90,7 @@ We're going to skip this one.
 > The function `reduce` performs that accumulation, given an argument that assigns a value to each element
 
 ```console
+scala> import cats.data.Const
 scala> def reduce[A, B, F[_]](fa: F[A])(f: A => B)
          (implicit FF: Traverse[F], BB: Monoid[B]): B =
          {
@@ -119,13 +120,14 @@ scala> def reduce[A, B, F[_]](fa: F[A])(f: A => B)
          }
 ```
 
-We'll find out what this `U` is about later.
+We'll find out what this is about later.
 
 ### sequence function
 
-`Applicative` and `Traverse` were invented together by
+`Applicative` and `Traverse` are mentioned together by
 McBride and Paterson in [Applicative programming with effects][McBride2008].
-Until a few months ago (March 2015), the [sequence][ControlMonadSequence] function
+
+As a background, until a few months ago (March 2015), the [sequence][ControlMonadSequence] function
 in `Control.Monad` package used to look like this:
 
 ```haskell
