@@ -9,7 +9,7 @@ out: typeclasses-102.html
 
 I am now going to skip over to Chapter 8 [Making Our Own Types and Typeclasses][moott] (Chapter 7 if you have the book) since the chapters in between are mostly about Haskell syntax.
 
-### A traffic light data type
+### A traffic light datatype
 
 ```haskell
 data TrafficLight = Red | Yellow | Green

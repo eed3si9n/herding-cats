@@ -84,7 +84,7 @@ In WFMM's original DSL, `Output b next` has two type parameters `b` and `next`.
 This allows `Output` to be generic about the output type.
 As demonstrated above as `Toy`, Scala can do this too.
 But doing so unnecessarily complicates the demonstration of `Free` because of
-Scala's handling of partially applied types. So we'll first hardcode the data type to `Char` as follows:
+Scala's handling of partially applied types. So we'll first hardcode the datatype to `Char` as follows:
 
 ```console
 scala> :paste
