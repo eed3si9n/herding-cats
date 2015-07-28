@@ -1,4 +1,4 @@
-val catsVersion = "0.1.2"
+val catsVersion = "0.1.3-SNAPSHOT"
 val catsAll = "org.spire-math" %% "cats" % catsVersion
 val macroParaside = compilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full)
 val kindProjector = compilerPlugin("org.spire-math" %% "kind-projector" % "0.5.2")
