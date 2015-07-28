@@ -2,7 +2,7 @@
 out: composing-monadic-functions.html
 ---
 
-  [KleisliSource]: $catsBaseUrl$/core/src/main/scala/scalaz/Kleisli.scala
+  [KleisliSource]: $catsBaseUrl$/core/src/main/scala/cats/data/Kleisli.scala
   [354]: https://github.com/non/cats/pull/354
 
 ### モナディック関数の合成
@@ -26,14 +26,14 @@ object Kleisli extends KleisliInstances with KleisliFunctions
 
 sealed trait KleisliFunctions {
   /** creates a [[Kleisli]] from a function */
-  def kleisli[F[_], A, B](f: A => F[B]): Kleisli[F, A, B] =
+  def function[F[_], A, B](f: A => F[B]): Kleisli[F, A, B] =
     Kleisli(f)
 
   ....
 }
 ```
 
-`Kleisli.kleisli` を使って `Kliesli` 値を構築する:
+`Kleisli.function` を使って `Kliesli` 値を構築する:
 
 ```console:new
 scala> :paste
@@ -45,9 +45,9 @@ object Catnip {
 }
 import Catnip._
 scala> import cats._, cats.std.all._
-scala> import cats.data.Kleisli.kleisli
-scala> val f = kleisli { (x: Int) => (x + 1).some }
-scala> val g = kleisli { (x: Int) => (x * 100).some }
+scala> import cats.data.Kleisli.function
+scala> val f = function { (x: Int) => (x + 1).some }
+scala> val g = function { (x: Int) => (x * 100).some }
 ```
 
 `compose` を使って関数を合成すると、右辺項が先に適用される。

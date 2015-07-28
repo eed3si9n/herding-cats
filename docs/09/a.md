@@ -76,7 +76,7 @@ scala> FlatMap[Option].flatten(1.some.some)
 I tried using `flatten` method for an `Xor` of an `Xor` value,
 but it didn't seem to work:
 
-```console
+```console:error
 scala> import cats.data.Xor
 scala> val xorOfXor = Xor.right[String, Xor[String, Int]](Xor.right[String, Int](1))
 scala> xorOfXor.flatten

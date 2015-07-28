@@ -8,7 +8,7 @@ LYAHFGG:
 Cats で `Ord` に対応する型クラスは `Order` だ。
 `Eq` 同様、`cats.Order` は実際には `algebra.Order` の型エイリアスだ。
 
-```console:new
+```console:new,error
 scala> import cats._, cats.std.all._, cats.syntax.order._
 scala> 1 > 2.0
 scala> 1 compare 2.0

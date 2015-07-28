@@ -18,7 +18,7 @@ Scala には既に `Any` に `toString` があるため、`Show`
 `Any` ということは逆に何でも該当してしまうので、型安全性を失うことになる。
 `toString` は何らかの親クラスが書いたゴミかもしれない:
 
-```console
+```console:error
 scala> (new {}).toString
 scala> (new {}).show
 ```

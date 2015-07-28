@@ -142,7 +142,7 @@ scala> 3.some >> none[Int]
 
 `banana` を `>> none[Pole]` に置き換えてみよう:
 
-```console
+```console:error
 scala> val lbl = Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)} >>
   none[Pole] >>= {_.landRight(1)}
 ```

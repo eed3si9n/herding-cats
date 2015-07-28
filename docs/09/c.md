@@ -2,7 +2,7 @@
 out: composing-monadic-functions.html
 ---
 
-  [KleisliSource]: $catsBaseUrl$/core/src/main/scala/scalaz/Kleisli.scala
+  [KleisliSource]: $catsBaseUrl$/core/src/main/scala/cats/data/Kleisli.scala
   [354]: https://github.com/non/cats/pull/354
 
 ### Composing monadic functions
@@ -26,14 +26,14 @@ object Kleisli extends KleisliInstances with KleisliFunctions
 
 sealed trait KleisliFunctions {
   /** creates a [[Kleisli]] from a function */
-  def kleisli[F[_], A, B](f: A => F[B]): Kleisli[F, A, B] =
+  def function[F[_], A, B](f: A => F[B]): Kleisli[F, A, B] =
     Kleisli(f)
 
   ....
 }
 ```
 
-We can use `Kleisli.kleisli` to construct a `Kliesli` value:
+We can use `Kleisli.function` to construct a `Kliesli` value:
 
 ```console:new
 scala> :paste
@@ -45,9 +45,9 @@ object Catnip {
 }
 import Catnip._
 scala> import cats._, cats.std.all._
-scala> import cats.data.Kleisli.kleisli
-scala> val f = kleisli { (x: Int) => (x + 1).some }
-scala> val g = kleisli { (x: Int) => (x * 100).some }
+scala> import cats.data.Kleisli.function
+scala> val f = function { (x: Int) => (x + 1).some }
+scala> val g = function { (x: Int) => (x * 100).some }
 ```
 
 We can then compose the functions using `compose`, which runs the right-hand side first:

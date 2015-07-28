@@ -65,7 +65,7 @@ In the above, `foo` is a simple function that returns the passed in value `fa: F
 where `F` forms an `Applicative`.
 Since `Either[String, Int]` is an applicative, it should qualify.
 
-```console
+```console:error
 scala> foo(Right(1): Either[String, Int])
 ```
 

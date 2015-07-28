@@ -12,7 +12,7 @@ Cats で `Eq` 型クラスと同じものも `Eq` と呼ばれている。
 細かい点を言うと、`cats.Eq` は実は [non/algebra][algebra] の `algebra.Eq` の型エイリアスだ。
 これがどういう影響を及ぼすかは未だ分からないけども、多分再利用してるのはいいことだろうと思う:
 
-```console
+```console:error
 scala> import cats._, cats.std.all._, cats.syntax.eq._
 scala> 1 === 1
 scala> 1 === "foo"

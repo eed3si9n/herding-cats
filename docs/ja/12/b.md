@@ -65,7 +65,7 @@ scala> def foo[F[_]: Applicative](fa: F[Int]): F[Int] = fa
 ただし、`F` は `Applicative` を形成することとする。
 `Either[String, Int]` はアプリカティブであるので、条件を満たすはずだ。
 
-```console
+```console:error
 scala> foo(Right(1): Either[String, Int])
 ```
 

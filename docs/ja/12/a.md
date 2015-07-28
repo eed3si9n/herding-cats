@@ -92,6 +92,7 @@ scala> List(1, 2, 3) traverse { (x: Int) => None }
 > `reduce` 関数は各要素に値を割り当てる関数を受け取って、累積する。
 
 ```console
+scala> import cats.data.Const
 scala> def reduce[A, B, F[_]](fa: F[A])(f: A => B)
          (implicit FF: Traverse[F], BB: Monoid[B]): B =
          {
@@ -113,7 +114,6 @@ scala> reduce(List('a', 'b', 'c')) { c: Char => c.toInt }
 `traverse` の代わりに `traverseU` を使うとこれを利用できる:
 
 ```console
-scala> import cats.data.Const
 scala> def reduce[A, B, F[_]](fa: F[A])(f: A => B)
          (implicit FF: Traverse[F], BB: Monoid[B]): B =
          {

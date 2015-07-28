@@ -128,7 +128,7 @@ scala> Monad[Option].flatMap[String, String]({
 
 `Option` から `List` への自動変換を防止できるか試してみる:
 
-```console
+```console:error
 scala> actM[List, Int] {
          val i = List(1, 2, 3).next
          val j = 1.some.next

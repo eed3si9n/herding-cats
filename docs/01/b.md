@@ -12,7 +12,7 @@ Cats' equivalent for the `Eq` typeclass is also called `Eq`.
 Technically speaking, `cats.Eq` is actually a type alias of `algebra.Eq` from [non/algebra][algebra].
 Not sure if it matters, but it's probably a good idea that it's being reused:
 
-```console
+```console:error
 scala> import cats._, cats.std.all._, cats.syntax.eq._
 scala> 1 === 1
 scala> 1 === "foo"

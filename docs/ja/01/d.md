@@ -14,7 +14,7 @@ scala> 1.0 tryCompare Double.NaN
 algebra によると、オペランドが比較不能な場合は `None` を返すとのことだ。
 だけど、`1.0` と `Double.NaN` を比較しても `Some(-1)` を返しているので、何が比較不能なのかは不明だ。
 
-```console
+```console:error
 scala> def lt[A: PartialOrder](a1: A, a2: A): Boolean = a1 <= a2
 scala> lt[Int](1, 2.0)
 scala> lt(1, 2)

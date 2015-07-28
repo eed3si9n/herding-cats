@@ -18,7 +18,7 @@ already has `toString` on `Any`.
 `Any` also means anything would match the criteria, so you lose type safety.
 The `toString` could be junk supplied by some parent class:
 
-```console
+```console:error
 scala> (new {}).toString
 scala> (new {}).show
 ```

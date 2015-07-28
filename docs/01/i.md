@@ -41,7 +41,7 @@ scala> implicit val trafficLightEq: Eq[TrafficLight] =
 
 Can I use the `Eq`?
 
-```console
+```console:error
 scala> import cats.syntax.eq._
 scala> TrafficLight.Red === TrafficLight.Yellow
 ```

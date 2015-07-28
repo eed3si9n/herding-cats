@@ -14,7 +14,7 @@ scala> 1.0 tryCompare Double.NaN
 According to algebra, it'll return `None` if operands are not comparable.
 It's returning `Some(-1)` when comparing `1.0` and `Double.NaN`, so I'm not sure when things are incomparable.
 
-```console
+```console:error
 scala> def lt[A: PartialOrder](a1: A, a2: A): Boolean = a1 <= a2
 scala> lt[Int](1, 2.0)
 scala> lt(1, 2)

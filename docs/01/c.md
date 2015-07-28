@@ -8,7 +8,7 @@ LYAHFGG:
 Cats' equivalent for the `Ord` typeclass is `Order`.
 As with `Eq`, `cats.Order` is actually a type alias of `algebra.Order`.
 
-```console:new
+```console:new,error
 scala> import cats._, cats.std.all._, cats.syntax.order._
 scala> 1 > 2.0
 scala> 1 compare 2.0
