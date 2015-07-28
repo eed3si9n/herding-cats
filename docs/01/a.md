@@ -6,26 +6,24 @@ out: sbt.html
 
 ### sbt
 
-Cats is currently experimental. How experimental?
-There's no published JAR for it yet, so you have to publish it locally.
+<s>Cats is currently experimental. How experimental?
+There's no published JAR for it yet, so you have to publish it locally.</s>
+
+A released version of Cats is now available.
 
 After that, you can test it using `build.sbt` this:
 
 ```scala
-val catsVersion = "0.1.0-SNAPSHOT"
-val catsCore    = "org.spire-math" %% "cats-core" % catsVersion
-val catsStd     = "org.spire-math" %% "cats-std" % catsVersion
-val catsLaws    = "org.spire-math" %% "cats-laws" % catsVersion
-val catsState   = "org.spire-math" %% "cats-state" % catsVersion
-val algebraCore = "org.spire-math" %% "algebra" % "0.2.0-SNAPSHOT" from "http://plastic-idolatry.com/jars/algebra_2.11-0.2.0-SNAPSHOT.jar"
-val algebraStd  = "org.spire-math" %% "algebra-std" % "0.2.0-SNAPSHOT" from "http://plastic-idolatry.com/jars/algebra-std_2.11-0.2.0-SNAPSHOT.jar"
-val algebraLaws = "org.spire-math" %% "algebra-laws" % "0.2.0-SNAPSHOT" from "http://plastic-idolatry.com/jars/algebra-laws_2.11-0.2.0-SNAPSHOT.jar"
+val catsVersion = "0.1.2"
+val catsAll = "org.spire-math" %% "cats" % catsVersion
 val macroParaside = compilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full)
 val kindProjector = compilerPlugin("org.spire-math" %% "kind-projector" % "0.5.2")
+val resetAllAttrs = "org.scalamacros" %% "resetallattrs" % "1.0.0-M1"
 
-val specs2Version = "2.3.11" // use the version used by discipline
+val specs2Version = "3.6" // use the version used by discipline
 val specs2Core  = "org.specs2" %% "specs2-core" % specs2Version
 val specs2Scalacheck = "org.specs2" %% "specs2-scalacheck" % specs2Version
+val scalacheck = "org.scalacheck" %% "scalacheck" % "1.12.4"
 
 lazy val root = (project in file(".")).
   settings(
@@ -33,12 +31,9 @@ lazy val root = (project in file(".")).
     name := "something",
     scalaVersion := "2.11.6",
     libraryDependencies ++= Seq(
-      algebraCore, algebraStd,
-      algebraLaws % Test,
-      catsCore, catsStd, catsState,
-      catsLaws % Test, 
-      specs2Core % Test, specs2Scalacheck % Test,
-      macroParaside, kindProjector
+      catsAll,
+      specs2Core % Test, specs2Scalacheck % Test, scalacheck % Test,
+      macroParaside, kindProjector, resetAllAttrs
     ),
     scalacOptions ++= Seq(
       "-deprecation",
