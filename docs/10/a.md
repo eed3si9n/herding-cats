@@ -78,7 +78,7 @@ trait Config {
 }
 ```
 
-Next we can rewrtie the "primitive" readers to return `ReaderTOption[Config, A]`:
+Next we can rewrite the "primitive" readers to return `ReaderTOption[Config, A]`:
 
 ```console
 scala> :paste
