@@ -133,7 +133,7 @@ trait FunctorSyntax extends Functor.ToFunctorOps with FunctorSyntax1
 `Apply` の　`*>` 演算子を使ってみる:
 
 ```console
-scala> import cats.syntax.apply._
+scala> import cats.syntax.monoidal._
 scala> (Right(1): Either[String, Int]) *> Right(2)
 ```
 

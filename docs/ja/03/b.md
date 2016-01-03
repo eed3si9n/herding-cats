@@ -115,7 +115,7 @@ Just (-2)
 Cats には ApplyBuilder 構文というものがある。
 
 ```console
-scala> import cats.syntax.apply._
+scala> import cats.syntax.monoidal._
 scala> (3.some |@| 5.some) map { _ - _ }
 scala> (none[Int] |@| 5.some) map { _ - _ }
 scala> (3.some |@| none[Int]) map { _ - _ }

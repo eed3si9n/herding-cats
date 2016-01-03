@@ -11,7 +11,7 @@ LYAHFGG:
 Let's look at using `List` as Applicatives again:
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.syntax.apply._
+scala> import cats._, cats.std.all._, cats.syntax.monoidal._
 scala> (List(1, 2, 3) |@| List(10, 100, 100)) map { _ * _ }
 ```
 

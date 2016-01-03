@@ -122,7 +122,7 @@ case class Fix[F[_]](f: F[Fix[F]])
 object Fix {
   def fix(toy: CharToy[Fix[CharToy]]) = Fix[CharToy](toy)
 }
-scala> { import Fix._, CharToy._       
+scala> { import Fix._, CharToy._
          fix(output('A', fix(done)))
        }
 scala> { import Fix._, CharToy._
@@ -216,7 +216,8 @@ The datatype in Cats is called [Free][FreeSource]:
  * using the heap instead of the stack, allowing tail-call
  * elimination.
  */
-sealed abstract class Free[S[_], A] extends Serializable {
+sealed abstract class Free[S[_], A] extends Product with Serializable {
+
   final def map[B](f: A => B): Free[S, B] =
     flatMap(a => Pure(f(a)))
 
@@ -224,10 +225,8 @@ sealed abstract class Free[S[_], A] extends Serializable {
    * Bind the given continuation to the result of this computation.
    * All left-associated binds are reassociated to the right.
    */
-  final def flatMap[B](f: A => Free[S, B]): Free[S, B] = this match {
-    case a: Gosub[S, A] => gosub(a.a)(x => gosub(() => a.f(x))(f))
-    case a => gosub(() => a)(f)
-  }
+  final def flatMap[B](f: A => Free[S, B]): Free[S, B] =
+    Gosub(this, f)
 
   ....
 }
@@ -236,56 +235,43 @@ object Free {
   /**
    * Return from the computation with the given value.
    */
-  case class Pure[S[_], A](a: A) extends Free[S, A]
+  private final case class Pure[S[_], A](a: A) extends Free[S, A]
 
   /** Suspend the computation with the given suspension. */
-  case class Suspend[S[_], A](a: S[Free[S, A]]) extends Free[S, A]
+  private final case class Suspend[S[_], A](a: S[A]) extends Free[S, A]
 
   /** Call a subroutine and continue with the given function. */
-  sealed abstract class Gosub[S[_], B] extends Free[S, B] {
-    type C
-    val a: () => Free[S, C]
-    val f: C => Free[S, B]
+  private final case class Gosub[S[_], B, C](c: Free[S, C], f: C => Free[S, B]) extends Free[S, B]
+
+  /**
+   * Suspend a value within a functor lifting it to a Free.
+   */
+  def liftF[F[_], A](value: F[A]): Free[F, A] = Suspend(value)
+
+  /** Suspend the Free with the Applicative */
+  def suspend[F[_], A](value: => Free[F, A])(implicit F: Applicative[F]): Free[F, A] =
+    liftF(F.pure(())).flatMap(_ => value)
+
+  /** Lift a pure value into Free */
+  def pure[S[_], A](a: A): Free[S, A] = Pure(a)
+
+  final class FreeInjectPartiallyApplied[F[_], G[_]] private[free] {
+    def apply[A](fa: F[A])(implicit I : Inject[F, G]): Free[G, A] =
+      Free.liftF(I.inj(fa))
   }
+
+  def inject[F[_], G[_]]: FreeInjectPartiallyApplied[F, G] = new FreeInjectPartiallyApplied
 
   ....
 }
 ```
 
-In Cats' version, the `Free` constructor is called `Free.Suspend`,
-and `Pure` is called `Free.Pure`. We can re-implement the `CharToy` commands based on `Free`:
-
-```console
-scala> import cats.free.Free
-scala> :paste
-sealed trait CharToy[+Next]
-object CharToy {
-  case class CharOutput[Next](a: Char, next: Next) extends CharToy[Next]
-  case class CharBell[Next](next: Next) extends CharToy[Next]
-  case class CharDone() extends CharToy[Nothing]
-
-  implicit val charToyFunctor: Functor[CharToy] = new Functor[CharToy] {
-    def map[A, B](fa: CharToy[A])(f: A => B): CharToy[B] = fa match {
-        case o: CharOutput[A] => CharOutput(o.a, f(o.next))
-        case b: CharBell[A]   => CharBell(f(b.next))
-        case CharDone()       => CharDone()
-      }
-    }
-
-  def output(a: Char): Free[CharToy, Unit] =
-    Free.Suspend[CharToy, Unit](CharOutput(a, Free.Pure[CharToy, Unit](())))
-  def bell: Free[CharToy, Unit] =
-    Free.Suspend[CharToy, Unit](CharBell(Free.Pure[CharToy, Unit](())))
-  def done: Free[CharToy, Unit] = Free.Suspend[CharToy, Unit](CharDone())
-}
-```
-
-> I'll be damned if that's not a common pattern we can abstract.
-
-Fortunately Cats ships with `liftF` that we can use.
+To use these datatypes in Cats, use `Free.liftF`:
 
 ```console
 scala> :paste
+import cats.free.Free
+
 sealed trait CharToy[+Next]
 object CharToy {
   case class CharOutput[Next](a: Char, next: Next) extends CharToy[Next]
@@ -303,7 +289,7 @@ object CharToy {
     Free.liftF[CharToy, Unit](CharOutput(a, ()))
   def bell: Free[CharToy, Unit] = Free.liftF[CharToy, Unit](CharBell(()))
   def done: Free[CharToy, Unit] = Free.liftF[CharToy, Unit](CharDone())
-  def pure[A](a: A): Free[CharToy, A] = Free.Pure[CharToy, A](a)
+  def pure[A](a: A): Free[CharToy, A] = Free.pure[CharToy, A](a)
 }
 ```
 

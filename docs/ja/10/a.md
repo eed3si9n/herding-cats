@@ -61,11 +61,11 @@ trait Config {
 
 ```console
 scala> import cats._, cats.std.all._
-scala> import cats.data.Kleisli, Kleisli.function
+scala> import cats.data.Kleisli
 scala> :paste
 type ReaderTOption[A, B] = Kleisli[Option, A, B]
 object ReaderTOption {
-  def ro[A, B](f: A => Option[B]): ReaderTOption[A, B] = function(f)
+  def ro[A, B](f: A => Option[B]): ReaderTOption[A, B] = Kleisli(f)
 }
 ```
 

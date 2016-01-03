@@ -24,16 +24,20 @@ final case class Kleisli[F[_], A, B](run: A => F[B]) { self =>
 
 object Kleisli extends KleisliInstances with KleisliFunctions
 
-sealed trait KleisliFunctions {
-  /** creates a [[Kleisli]] from a function */
-  def function[F[_], A, B](f: A => F[B]): Kleisli[F, A, B] =
-    Kleisli(f)
+private[data] sealed trait KleisliFunctions {
 
-  ....
+  def pure[F[_], A, B](x: B)(implicit F: Applicative[F]): Kleisli[F, A, B] =
+    Kleisli(_ => F.pure(x))
+
+  def ask[F[_], A](implicit F: Applicative[F]): Kleisli[F, A, A] =
+    Kleisli(F.pure)
+
+  def local[M[_], A, R](f: R => R)(fa: Kleisli[M, R, A]): Kleisli[M, R, A] =
+    Kleisli(f andThen fa.run)
 }
 ```
 
-We can use `Kleisli.function` to construct a `Kliesli` value:
+We can use the `Kleisli()` constructor to construct a `Kliesli` value:
 
 ```console:new
 scala> :paste
@@ -45,9 +49,9 @@ object Catnip {
 }
 import Catnip._
 scala> import cats._, cats.std.all._
-scala> import cats.data.Kleisli.function
-scala> val f = function { (x: Int) => (x + 1).some }
-scala> val g = function { (x: Int) => (x * 100).some }
+scala> import cats.data.Kleisli
+scala> val f = Kleisli { (x: Int) => (x + 1).some }
+scala> val g = Kleisli { (x: Int) => (x * 100).some }
 ```
 
 We can then compose the functions using `compose`, which runs the right-hand side first:

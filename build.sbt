@@ -1,7 +1,7 @@
-val catsVersion = "0.1.3-SNAPSHOT"
+val catsVersion = "0.4.0-SNAPSHOT"
 val catsAll = "org.spire-math" %% "cats" % catsVersion
 val macroParaside = compilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full)
-val kindProjector = compilerPlugin("org.spire-math" %% "kind-projector" % "0.5.2")
+val kindProjector = compilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
 val resetAllAttrs = "org.scalamacros" %% "resetallattrs" % "1.0.0-M1"
 
 val specs2Version = "3.6" // use the version used by discipline
@@ -17,7 +17,7 @@ lazy val root = (project in file(".")).
   settings(
     organization := "com.eed3si9n",
     name := "herding-cats",
-    scalaVersion := "2.11.5",
+    scalaVersion := "2.11.7",
     libraryDependencies ++= Seq(
       catsAll,
       specs2Core % Test, specs2Scalacheck % Test, scalacheck % Test,

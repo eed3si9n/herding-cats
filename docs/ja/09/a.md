@@ -134,8 +134,8 @@ Cats には `foldM` が無いみたいだったので、自分で定義してみ
 scala> def binSmalls(acc: Int, x: Int): Option[Int] =
          if (x > 9) none[Int]
          else (acc + x).some
-scala> Foldable[List].foldM(List(2, 8, 3, 1), 0) {binSmalls}
-scala> Foldable[List].foldM(List(2, 11, 3, 1), 0) {binSmalls}
+scala> (Foldable[List].foldM(List(2, 8, 3, 1), Eval.later { 0 }) {binSmalls}).value
+scala> (Foldable[List].foldM(List(2, 11, 3, 1), Eval.later { 0 }) {binSmalls}).value
 ```
 
 上の例では `binSmals` が 9 より多きい数を見つけると `None` を返す。

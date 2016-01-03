@@ -137,10 +137,9 @@ Let's try using this.
 
 ```console
 scala> def binSmalls(acc: Int, x: Int): Option[Int] =
-         if (x > 9) none[Int]
-         else (acc + x).some
-scala> Foldable[List].foldM(List(2, 8, 3, 1), 0) {binSmalls}
-scala> Foldable[List].foldM(List(2, 11, 3, 1), 0) {binSmalls}
+         if (x > 9) none[Int] else (acc + x).some
+scala> (Foldable[List].foldM(List(2, 8, 3, 1), Eval.later { 0 }) {binSmalls}).value
+scala> (Foldable[List].foldM(List(2, 11, 3, 1), Eval.later { 0 }) {binSmalls}).value
 ```
 
 In the above, `binSmalls` returns `None` when it finds a number larger than 9.

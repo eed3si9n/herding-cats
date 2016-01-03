@@ -124,7 +124,7 @@ type Option[+A] = Free[Trivial, A]
 ```console
 scala> type FreeMonoid[A] = Free[(A, +?), Unit]
 scala> def cons[A](a: A): FreeMonoid[A] =
-         Free.Suspend[(A, +?), Unit]((a, Free.Pure[(A, +?), Unit](())))
+         Free.liftF[(A, +?), Unit]((a, ()))
 scala> val x = cons(1)
 scala> val xs = cons(1) flatMap {_ => cons(2)}
 ```

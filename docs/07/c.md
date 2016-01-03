@@ -43,7 +43,7 @@ but forms an applicative functor.
 Instead of chaining the result from first event to the next, `Validated` validates all events:
 
 ```console
-scala> import cats.syntax.apply._
+scala> import cats.syntax.monoidal._
 scala> val result = (valid[String, String]("event 1 ok") |@|
         invalid[String, String]("event 2 failed!") |@|
         invalid[String, String]("event 3 failed!")) map {_ + _ + _}

@@ -25,7 +25,7 @@ scala> (g map f)(8)
 > We've also seen that functions are applicative functors. They allow us to operate on the eventual results of functions as if we already had their results.
 
 ```console
-scala> import cats.syntax.apply._
+scala> import cats.syntax.monoidal._
 scala> val h = (f |@| g) map {_ + _}
 scala> h(3)
 ```

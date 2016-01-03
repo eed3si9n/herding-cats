@@ -42,7 +42,7 @@ scala> invalid[String, String]("event 1 failed!")
 最初のイベントの結果を次へと連鎖するのでは無く、`Validated` は全イベントを検証する:
 
 ```console
-scala> import cats.syntax.apply._
+scala> import cats.syntax.monoidal._
 scala> val result = (valid[String, String]("event 1 ok") |@|
         invalid[String, String]("event 2 failed!") |@|
         invalid[String, String]("event 3 failed!")) map {_ + _ + _}
