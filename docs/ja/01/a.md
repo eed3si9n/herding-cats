@@ -14,10 +14,10 @@ Cats のリリース版が公開された。
 その後、以下のような `build.sbt` で試してみることができる:
 
 ```scala
-val catsVersion = "0.1.2"
+val catsVersion = "0.3.0"
 val catsAll = "org.spire-math" %% "cats" % catsVersion
 val macroParaside = compilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full)
-val kindProjector = compilerPlugin("org.spire-math" %% "kind-projector" % "0.5.2")
+val kindProjector = compilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
 val resetAllAttrs = "org.scalamacros" %% "resetallattrs" % "1.0.0-M1"
 
 val specs2Version = "3.6" // use the version used by discipline
