@@ -2,17 +2,17 @@
 out: Id.html
 ---
 
-### Id datatype
+### Id データ型
 
-We saw `Id` in passing while reading EIP, but it's an interesting tool, so we should revisit it.
-This is also called Identity, Identity functor, or Identity monad, depending on the context.
-The definition of the datatype is quite simple:
+EIP を読んでる途中でちらっと `Id` というものが出てきたけど、面白い道具なので、ちょっとみてみよう。
+別名 Identiy、恒等射 (Identity functor)、恒等モナド (Identity monad) など文脈によって色んな名前で出てくる。
+このデータ型の定義は非常にシンプルなものだ:
 
 ```scala
   type Id[A] = A
 ```
 
-Here's with the documentation and the typeclass instances:
+scaladoc と型クラスのインスタンスと一緒だとこうなっている:
 
 ```scala
 /**
@@ -51,37 +51,37 @@ Here's with the documentation and the typeclass instances:
   }
 ```
 
-Here's how to create a value of `Id`:
+`Id` の値はこのように作成する:
 
 ```console:new
 scala> import cats._
 scala> val one: Id[Int] = 1
 ```
 
-#### Id as Functor
+#### Functor としての Id
 
-The functor instance for `Id` is same as function application:
+`Id` の `Functor` インスタンスは関数の適用と同じだ:
 
 ```console
 scala> Functor[Id].map(one) { _ + 1 }
 ```
 
-#### Id as Apply
+#### Apply としての Id
 
-The apply's `ap` method, which takes `Id[A => B]`, but in reality just `A => B` is also implemented as function application:
+`Apply` の `ap` メソッドは `Id[A => B]` を受け取るが、実際にはただの `A => B` なので、これも関数適用として実装されている:
 
 ```console
 scala> Apply[Id].ap(one) { _ + 1 }
 ```
 
-#### Id as FlatMap
+#### FlatMap としての Id
 
-The FlatMap's `flatMap` method, which takes `A => Id[B]` is the same story. It's implemented function application:
+`FlatMap` の `flatMap` メソッドは `A => Id[B]` も同様。これも関数適用として実装されている:
 
 ```console
 scala> FlatMap[Id].ap(one) { _ + 1 }
 ```
 
-#### What's the point of Id?
+#### Id ってなんで嬉しいの?
 
-At a glance, `Id` datatype is not very useful. The hint is in the Scaladoc of the definition: a convenient alias to make identity instances well-kinded. In other words, there are situations where we need to lift some type `A` into `F[A]`, and `Id` can be used to just that without introducing any effects. We'll see an example of that later.
+一見 `Id` はあんまり便利そうじゃない。ヒントは定義の上にあった Scaladoc にある「恒等インスタンスのカインドを整えるための便利エイリアス」。つまり、なんらかの型 `A` を `F[A]` に持ち上げる必要があって、そのときに `Id` は作用を一切導入せずに使うことができる。あとでその例もみてみる。

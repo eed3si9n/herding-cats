@@ -2,18 +2,22 @@
 out: abstract-future.html
 ---
 
+  [afja]: http://eed3si9n.com/ja/the-abstract-future
   [af]: http://logji.blogspot.com/2014/02/the-abstract-future.html
+  [truepower]: http://d.hatena.ne.jp/xuwei/20150329/1427599055
 
-### The Abstract Future
+### 抽象的な Future
 
-One blog post that I occasionally see being mentioned as a poweful application of monad, especially in the context of building large application is [The Abstract Future][af]. It was originally posted to the precog.com engineering blog on November 27, 2012 by Kris Nuttycombe ([@nuttycom](https://twitter.com/nuttycom)).
+特に大規模なアプリケーションを構築するという文脈でモナドの強力な応用例として、たまに[言及されている][truepower]ブログ記事として[抽象的な Future][afja]
+([The Abstract Future][af]) がある。これはもともと Precog 社の開発チームからのブログに 2012年11月27日に
+Kris Nuttycombe ([@nuttycom](https://twitter.com/nuttycom)) さんが投稿したものだ。
 
->  At Precog, we use Futures extensively, both in a direct fashion and to allow us a composable way to interact with subsystems that are implemented atop Akka’s actor framework. Futures are arguably one of the best tools we have for reining in the complexity of asynchronous programming, and so our many of our early versions of APIs in our codebase exposed Futures directly.
+> Precog 社ではこの Future を多用しており、直接使ったり、Akka のアクターフレームワーク上に実装されたサブシステムと合成可能な方法で会話するための方法として使ったりしている。おそらく Future は今あるツールの中で非同期プログラミングにおける複雑さを抑えこむのに最も有用なものだと言えるだろう。そのため、僕らのコードベースの早期のバージョンの API は Future を直接露出させたものが多かった。
 > ....
 >
-> What this means is that from the perspective of the consumer of the DatasetModule interface, the only aspect of Future that we’re relying upon is the ability to order operations in a statically checked fashion; the sequencing, rather than any particular semantics related to Future’s asynchrony, is the relevant piece of information provided by the type. So, the following generalization becomes natural.
+> これが何を意味するかというと、DatasetModule インターフェイスを使っているコンシューマの視点から見ると、Future の側面のうち依存しているのは、静的に型検査された方法で複数の演算を順序付けるという能力だけだ。つまり Future の非同期に関連したさまざまな意味論ではなく、この順序付けが型によって提供される情報のうち実際に使われているものだと言える。そのため、自然と以下の一般化を行うことができる。
 
-Here I'll use similar example as the Yoshida-san's.
+ここでは吉田さんと似た例を用いることにする。
 
 ```console:new
 scala> import cats._, cats.std.all._
@@ -35,9 +39,9 @@ trait UserRepos[F[_]] {
 }
 ```
 
-#### UserRepos with Future
+#### Future を使った UserRepos
 
-Let's start implementing the `UserRepos` module using `Future`.
+`UserRepos` をまず `Future` を使って実装してみる。
 
 ```console
 scala> :paste
@@ -53,23 +57,23 @@ class UserRepos0(implicit ec: ExecutionContext) extends UserRepos[Future] {
 }
 ```
 
-Here's how to use it:
+このようにして使う:
 
 ```console
 scala> val service = new UserRepos0()(ExecutionContext.global)
 scala> val xs = service.userRepo.followers(1L)
 ```
 
-Now we have an asynchronous result. Let's say during testing we would like it to be synchronous.
+これで非同期な計算結果が得られた。テストのときは同期な値がほしいとする。
 
-#### UserRepos with Id
+#### Id を使った UserRepos
 
-> In a test, we probably don’t want to worry about the fact that the computation is being performed asynchronously; all that we care about is that we obtain a correct result.
+> テスト時には僕たちの計算が非同期で実行されるという事実はおそらく心配したくない。最終的に正しい結果が取得できさえすればいいからだ。
 > ....
 >
-> For most cases, we’ll use the identity monad for testing. Suppose that we’re testing the piece of functionality described earlier, which has computed a result from the combination of a load, a sort, take and reduce. The test framework need never consider the monad that it’s operating in.
+> ほとんどの場合は、僕たちはテストには恒等モナドを使う。例えば、先程出てきた読み込み、ソート、take、reduce を組み合わせた機能をテストしたいとする。テストフレームワークはどのモナドを使っているかを一切考えずに済む。
 
-This is where Id datatype can be used.
+ここが `Id` データ型の出番だ。
 
 ```console
 scala> :paste
@@ -87,17 +91,16 @@ class TestUserRepos extends UserRepos[Id] {
 }
 ```
 
-Here's how to use it:
-
+このようにして使う:
 
 ```console
 scala> val testRepo = new TestUserRepos {}
 scala> val ys = testRepo.userRepo.followers(1L)
 ```
 
-#### Coding in abstract
+#### 抽象におけるコード
 
-Now that we were able to abtract the type constructor of the followers, let's try implementing `isFriends` from day 10 that checks if two users follow each other.
+フォロワーの型コンストラクタを抽象化できたところで、10日目にも書いた相互フォローしているかどうかをチェックする `isFriends` を書いてみよう。
 
 ```console
 scala> :paste
@@ -114,14 +117,15 @@ trait UserServices[F[_]] { this: UserRepos[F] =>
 }
 ```
 
-Here's how to use it:
+このようにして使う:
 
 ```console
 scala> val testService = new TestUserRepos with UserServices[Id] {}
 scala> testService.userService.isFriends(0L, 1L)
 ```
 
-The above demonstrates that `isFriends` can be written without knowing anything about `F[]` apart from the fact that it forms a `Monad`. It would be nice if I could use infix `flatMap` and `map` method while keeping `F` abstract. I tried creating `FlatMapOps(fa)` manually, but that resulted in abstract method error during runtime. The `actM` macro that we implemented on day 6 seems to work ok:
+これは `F[]` が `Monad` を形成するということ以外は一切何も知らずに `isFriends` が実装できることを示している。
+`F` を抽象的に保ったままで中置記法の `flatMap` と `map` を使えればさらに良かったと思う。 `FlatMapOps(fa)` を手動で作ってみたけども、これは実行時に abstract method error になった。6日目に実装した `actM` マクロはうまく使えるみたいだ:
 
 ```console
 scala> :paste
@@ -141,9 +145,9 @@ scala> val testService = new TestUserRepos with UserServices[Id] {}
 scala> testService.userService.isFriends(0L, 1L)
 ```
 
-#### UserRepos with XorT
+#### XorT を用いた UserRepos
 
-We can also use this with the `XorT` (aka `EitherT`) with `Future` to carry a custom error type.
+これは `XorT` (別名 `EitherT`) を使って `Future` にカスタムエラー型を乗せたものとも使うことができる。
 
 ```console
 scala> :paste
@@ -163,7 +167,7 @@ class UserRepos1(implicit ec: ExecutionContext) extends UserRepos[XorT[Future, E
 }
 ```
 
-Here's how to use it:
+このようにして使う:
 
 ```console
 scala> val service1 = {
@@ -180,6 +184,6 @@ scala> {
 }
 ```
 
-Note that for all three versions of services, I was able to reuse the `UserServices` trait without any changes.
+3つのバージョンのサービスとも `UserServices` trait は一切変更せずに再利用できたことに注目してほしい。
 
-That's it for today.
+今日はここまで。

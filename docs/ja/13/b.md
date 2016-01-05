@@ -2,9 +2,9 @@
 out: Eval.html
 ---
 
-### Eval datatype
+### Eval データ型
 
-Cats also comes with `Eval` datatype that contols evaluation.
+Cats には、`Eval` という評価を制御するデータ型がある。
 
 ```scala
 sealed abstract class Eval[A] extends Serializable { self =>
@@ -29,7 +29,7 @@ sealed abstract class Eval[A] extends Serializable { self =>
 }
 ```
 
-There are several ways to create an `Eval` value:
+`Eval` 値を作成するにはいくつかの方法がある:
 
 ```scala
 object Eval extends EvalInstances {
@@ -76,7 +76,7 @@ object Eval extends EvalInstances {
 
 #### Eval.later
 
-The most useful one is `Eval.later`, which captures a by-name parameter in a `lazy val`.
+最も便利なのは、`Eval.later` で、これは名前渡しのパラメータを `lazy val` で捕獲している。
 
 ```console:new
 scala> import cats._
@@ -90,11 +90,11 @@ scala> x.value
 scala> x.value
 ```
 
-The `value` is cached, so the second evaluation doesn't happen.
+`value` はキャッシュされているため、2回目の評価は走らない。
 
 #### Eval.now
 
-`Eval.now` evaluates eagerly, and then captures the result in a field, so the second evaluation doesn't happen.
+`Eval.now` は即座に評価され結果はフィールドにて捕獲されるため、これも 2回目の評価は走らない。
 
 ```console
 scala> val y = Eval.now {
@@ -107,7 +107,7 @@ scala> y.value
 
 #### Eval.always
 
-`Eval.always` doesn't cache.
+`Eval.always` はキャッシュしない。
 
 ```console
 scala> val z = Eval.always {
@@ -118,12 +118,11 @@ scala> z.value
 scala> z.value
 ```
 
-#### stack-safe lazy computation
+#### スタックセーフな遅延演算
 
-One useful feature of `Eval` is that it supports stack-safe lazy computation via `map` and `flatMap` methods,
-which use an internal trampoline to avoid stack overflow.
+`Eval` の便利な機能は内部でトランポリンを使った `map` と `flatMap` により、スタックセーフな遅延演算をサポートすることだ。つまりスタックオーバーフローを回避できる。
 
-You can also deter a computation which produces `Eval[A]` value using `Eval.defer`. Here's how `foldRight` is implemented for `List` for example:
+また、`Eval[A]` を返す計算を遅延させるために `Eval.defer` というものもある。例えば、`List` の `foldRight` はそれを使って実装されている:
 
 ```scala
 def foldRight[A, B](fa: List[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
@@ -136,7 +135,7 @@ def foldRight[A, B](fa: List[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[
 }
 ```
 
-Let's try blowing up the stack on purpose:
+まずはわざとスタックを溢れさせてみよう:
 
 ```scala
 scala> :paste
@@ -159,7 +158,7 @@ java.lang.StackOverflowError
   ....
 ```
 
-Here's my first attempt at making a safer version:
+僕が最初に書いてみた安全版はうまくいかなかった:
 
 ```scala
 scala> :paste
@@ -188,7 +187,7 @@ java.lang.StackOverflowError
   at cats.Eval\$Call.value(Eval.scala:226)
 ```
 
-Maybe I need to change the input parameter to be Eval?
+入力パラメータも `Eval` にする必要があるのだろうか?
 
 ```console
 scala> :paste
@@ -204,4 +203,4 @@ object OddEven2 {
 scala> OddEven2.even(Eval.now { 200000 }).value
 ```
 
-That seemed to work.
+これはうまくいったみたいだ。
