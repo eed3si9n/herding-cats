@@ -3,10 +3,10 @@ out: State.html
 ---
 
   [@ceedubs]: https://github.com/ceedubs
-  [302]: https://github.com/non/cats/pull/302
+  [302]: https://github.com/typelevel/cats/pull/302
   [@retronym]: https://twitter.com/retronym
   [SI-7139]: https://issues.scala-lang.org/browse/SI-7139
-  [322]: https://github.com/non/cats/pull/322
+  [322]: https://github.com/typelevel/cats/pull/322
   [fafmm]: http://learnyouahaskell.com/for-a-few-monads-more
 
 ### State datatype

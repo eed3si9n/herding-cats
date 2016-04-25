@@ -3,7 +3,7 @@ out: composing-monadic-functions.html
 ---
 
   [KleisliSource]: $catsBaseUrl$/core/src/main/scala/cats/data/Kleisli.scala
-  [354]: https://github.com/non/cats/pull/354
+  [354]: https://github.com/typelevel/cats/pull/354
 
 ### Composing monadic functions
 

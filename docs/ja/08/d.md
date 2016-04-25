@@ -6,7 +6,7 @@ out: stackless-scala-with-free-monads.html
   [dsdi]: http://functionaltalks.org/2013/06/17/runar-oli-bjarnason-dead-simple-dependency-injection/
   [ssfmvid]: http://skillsmatter.com/podcast/scala/stackless-scala-free-monads
   [ssfmpaper]: http://days2012.scala-lang.org/sites/days2012/files/bjarnason_trampolines.pdf
-  [322]: https://github.com/non/cats/pull/322
+  [322]: https://github.com/typelevel/cats/pull/322
 
 ### Stackless Scala with Free Monads
 
