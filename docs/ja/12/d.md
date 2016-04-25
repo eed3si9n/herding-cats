@@ -2,7 +2,7 @@
 out: applicative-wordcount.html
 ---
 
-  [388]: https://github.com/non/cats/pull/388
+  [388]: https://github.com/typelevel/cats/pull/388
 
 ### Applicative wordcount
 

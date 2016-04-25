@@ -4,7 +4,7 @@ out: making-our-own-typeclass-with-simulacrum.html
   
   [@stewoconnor]: https://twitter.com/stewoconnor
   [@stew]: https://github.com/stew
-  [294]: https://github.com/non/cats/pull/294
+  [294]: https://github.com/typelevel/cats/pull/294
   [simulacrum]: https://github.com/mpilquist/simulacrum
   [@mpilquist]: https://github.com/mpilquist
 
