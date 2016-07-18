@@ -3,7 +3,7 @@ out: monadic-functions.html
 ---
 
   [fafmm]: http://learnyouahaskell.com/for-a-few-monads-more
-
+  [925]: https://github.com/typelevel/cats/pull/925
 
 ### 便利なモナディック関数特集
 
@@ -113,29 +113,23 @@ LYAHFGG:
 
 > `foldl` のモナド版が `foldM` です。
 
-Cats には `foldM` が無いみたいだったので、自分で定義してみた:
+Cats には `foldM` が無いみたいだったので、自分で定義してみたけどもスタック・セーフじゃなかった。Tomas Mikula がそれを修正した実装を追加してくれて、それが [#925][925] でマージされた。
 
 ```scala
   /**
    * Left associative monadic folding on `F`.
    */
-  def foldM[G[_], A, B](fa: F[A], z: B)(f: (B, A) => G[B])
-    (implicit G: Monad[G]): G[B] =
-    partialFold[A, B => G[B]](fa)({a: A =>
-      Fold.Continue({ b =>
-        (w: B) => G.flatMap(f(w, a))(b)
-      })
-    }).complete(Lazy { b: B => G.pure(b) })(z)
+  def foldM[G[_], A, B](fa: F[A], z: B)(f: (B, A) => G[B])(implicit G: Monad[G]): G[B] =
+    foldLeft(fa, G.pure(z))((gb, a) => G.flatMap(gb)(f(_, a)))
 ```
 
 使ってみる。
 
 ```console
 scala> def binSmalls(acc: Int, x: Int): Option[Int] =
-         if (x > 9) none[Int]
-         else (acc + x).some
-scala> (Foldable[List].foldM(List(2, 8, 3, 1), Eval.later { 0 }) {binSmalls}).value
-scala> (Foldable[List].foldM(List(2, 11, 3, 1), Eval.later { 0 }) {binSmalls}).value
+         if (x > 9) none[Int] else (acc + x).some
+scala> (Foldable[List].foldM(List(2, 8, 3, 1), 0) {binSmalls})
+scala> (Foldable[List].foldM(List(2, 11, 3, 1), 0) {binSmalls})
 ```
 
 上の例では `binSmals` が 9 より多きい数を見つけると `None` を返す。

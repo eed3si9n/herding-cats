@@ -67,7 +67,7 @@ scala> foldingFunction(Nil, "wawa")
 scala> import cats._, cats.std.all._
 scala> def solveRPN(s: String): Option[Double] =
          for {
-           List(x) <- (Foldable[List].foldM(s.split(' ').toList, Eval.later { Nil: List[Double] }) {foldingFunction}).value
+           List(x) <- (Foldable[List].foldM(s.split(' ').toList, Nil: List[Double]) {foldingFunction})
          } yield x
 scala> solveRPN("1 2 * 4 +")
 scala> solveRPN("1 2 * 4")

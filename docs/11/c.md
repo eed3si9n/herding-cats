@@ -87,5 +87,5 @@ and when `A` form a `Monoid`, an `Applicative` is derived automatically.
 
 ```console
 scala> import cats.syntax.apply._
-scala> Const(1).retag[String] ap Const(2).retag[String => String]
+scala> Const(2).retag[String => String] ap Const(1).retag[String]
 ```
