@@ -84,7 +84,7 @@ Let's try the `fold`. `Monoid[A]` gives us `empty` and `combine`, so that's enou
 Let's try this out.
 
 ```console
-scala> Foldable[List].fold(List(1, 2, 3))(Monoid.additive[Int])
+scala> Foldable[List].fold(List(1, 2, 3))(Monoid[Int])
 ```
 
 There's a variant called `foldMap` that accepts a function.
@@ -105,7 +105,7 @@ we can now use this as an operator.
 
 ```console
 scala> import cats.syntax.foldable._
-scala> List(1, 2, 3).foldMap(identity)(Monoid.additive[Int])
+scala> List(1, 2, 3).foldMap(identity)(Monoid[Int])
 ```
 
 Another useful thing is that we can use this to convert

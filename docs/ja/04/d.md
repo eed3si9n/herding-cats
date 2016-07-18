@@ -83,7 +83,7 @@ scala> Foldable[List].foldLeft(List(1, 2, 3), 1) {_ * _}
 使ってみる。
 
 ```console
-scala> Foldable[List].fold(List(1, 2, 3))(Monoid.additive[Int])
+scala> Foldable[List].fold(List(1, 2, 3))(Monoid[Int])
 ```
 
 関数を受け取る変種として `foldMap` もある。
@@ -103,7 +103,7 @@ scala> Foldable[List].fold(List(1, 2, 3))(Monoid.additive[Int])
 
 ```console
 scala> import cats.syntax.foldable._
-scala> List(1, 2, 3).foldMap(identity)(Monoid.additive[Int])
+scala> List(1, 2, 3).foldMap(identity)(Monoid[Int])
 ```
 
 もう一つ便利なのは、これで値を newtype に変換することができることだ。

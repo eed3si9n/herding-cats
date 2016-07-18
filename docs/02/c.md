@@ -152,10 +152,10 @@ To catch this we need to supply an "arbitrary" `COption[A]` implicitly:
 package example
 
 import cats._
-import cats.laws.discipline.{ FunctorTests, ArbitraryK }
+import cats.laws.discipline.{ FunctorTests }
 import org.scalacheck.{ Arbitrary, Gen }
 
-class COptionSpec extends CatsSpec { 
+class COptionSpec extends CatsSpec {
   implicit def coptionArbiterary[A](implicit arbA: Arbitrary[A]): Arbitrary[COption[A]] =
     Arbitrary {
       val arbSome = for {
@@ -165,9 +165,7 @@ class COptionSpec extends CatsSpec {
       val arbNone = Gen.const(CNone: COption[Nothing])
       Gen.oneOf(arbSome, arbNone)
     }
-  implicit def coptionArbiteraryK: ArbitraryK[COption] =
-    new ArbitraryK[COption] { def synthesize[A: Arbitrary]: Arbitrary[COption[A]] = implicitly }
-  
+
   def is = s2"""
   COption[Int] forms a functor                             \$e1
   """

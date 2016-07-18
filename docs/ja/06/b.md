@@ -24,7 +24,7 @@ scala> (g map f)(8)
 > それから、関数はアプリカティブファンクターであることも見ましたね。これにより、関数が将来返すであろう値を、すでに持っているかのように演算できるようになりました。
 
 ```console
-scala> import cats.syntax.monoidal._
+scala> import cats.syntax.cartesian._
 scala> val h = (f |@| g) map {_ + _}
 scala> h(3)
 ```

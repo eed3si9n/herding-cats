@@ -63,27 +63,13 @@ scala> import cats._, cats.std.all._
 import cats._
 import cats.std.all._
 
-scala> import algebra.laws.GroupLaws
-import algebra.laws.GroupLaws
+scala> import cats.kernel.laws.GroupLaws
+import cats.kernel.laws.GroupLaws
 
-scala> val rs1 = GroupLaws[Int].monoid(Monoid.additive[Int])
-rs1: algebra.laws.GroupLaws[Int]#GroupProperties = algebra.laws.GroupLaws\$GroupProperties@17a695f0
+scala> val rs1 = GroupLaws[Int].monoid(Monoid[Int])
+rs1: cats.kernel.laws.GroupLaws[Int]#GroupProperties = cats.kernel.laws.GroupLaws\$GroupProperties@17a695f0
 
 scala> rs1.all.check
-+ monoid.associativity: OK, passed 100 tests.
-+ monoid.combineAll(Nil) == id: OK, passed 100 tests.
-+ monoid.combineN(a, 0) == id: OK, passed 100 tests.
-+ monoid.combineN(a, 1) == a: OK, passed 100 tests.
-+ monoid.combineN(a, 2) == a |+| a: OK, passed 100 tests.
-+ monoid.isEmpty: OK, passed 100 tests.
-+ monoid.leftIdentity: OK, passed 100 tests.
-+ monoid.rightIdentity: OK, passed 100 tests.
-+ monoid.serializable: OK, proved property.
-
-scala> val rs2 = GroupLaws[Int].monoid(Monoid.multiplicative[Int])
-rs2: algebra.laws.GroupLaws[Int]#GroupProperties = algebra.laws.GroupLaws\$GroupProperties@2427e008
-
-scala> rs2.all.check
 + monoid.associativity: OK, passed 100 tests.
 + monoid.combineAll(Nil) == id: OK, passed 100 tests.
 + monoid.combineN(a, 0) == id: OK, passed 100 tests.
@@ -106,13 +92,9 @@ import algebra.laws.GroupLaws
 class IntSpec extends CatsSpec { def is = s2"""
   (Int, +) should
      form a monoid                                         \$e1
-  
-  (Int, *) should
-     from a monoid                                         \$e2
   """
 
-  def e1 = checkAll("Int", GroupLaws[Int].monoid(Monoid.additive[Int]))
-  def e2 = checkAll("Int", GroupLaws[Int].monoid(Monoid.multiplicative[Int]))
+  def e1 = checkAll("Int", GroupLaws[Int].monoid(Monoid[Int]))
 }
 ```
 

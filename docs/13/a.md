@@ -71,7 +71,7 @@ scala> Functor[Id].map(one) { _ + 1 }
 The apply's `ap` method, which takes `Id[A => B]`, but in reality just `A => B` is also implemented as function application:
 
 ```console
-scala> Apply[Id].ap(one) { _ + 1 }
+scala> Apply[Id].ap({ _ + 1 }: Id[Int => Int])(one)
 ```
 
 #### Id as FlatMap
@@ -79,7 +79,7 @@ scala> Apply[Id].ap(one) { _ + 1 }
 The FlatMap's `flatMap` method, which takes `A => Id[B]` is the same story. It's implemented function application:
 
 ```console
-scala> FlatMap[Id].ap(one) { _ + 1 }
+scala> FlatMap[Id].flatMap(one) { _ + 1 }
 ```
 
 #### What's the point of Id?

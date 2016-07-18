@@ -1,8 +1,11 @@
+---
+out: Cartesian.html
+---
 
   [fafm]: http://learnyouahaskell.com/functors-applicative-functors-and-monoids
   [mootws]: making-our-own-typeclass-with-simulacrum.html
 
-### Apply
+### Cartesian
 
 [Functors, Applicative Functors and Monoids][fafm]:
 
@@ -21,33 +24,25 @@ LYAHFGG:
 >
 > `Control.Applicative` モジュールにある型クラス `Applicative` に会いに行きましょう！型クラス `Applicative` は、2つの関数 `pure` と `<*>` を定義しています。
 
-Cats はこれを `Apply` と `Applicative` に分けている。以下が `Apply` のコントラクト:
+Cats はこれを `Cartesian`、`Apply`、 `Applicative` に分けている。以下が `Cartesian` のコントラクト:
 
 ```scala
 /**
- * Weaker version of Applicative[F]; has ap but not pure.
+ * [[Cartesian]] captures the idea of composing independent effectful values.
+ * It is of particular interest when taken together with [[Functor]] - where [[Functor]]
+ * captures the idea of applying a unary pure function to an effectful value,
+ * calling `product` with `map` allows one to apply a function of arbitrary arity to multiple
+ * independent effectful values.
  *
- * Must obey the laws defined in cats.laws.ApplyLaws.
+ * That same idea is also manifested in the form of [[Apply]], and indeed [[Apply]] extends both
+ * [[Cartesian]] and [[Functor]] to illustrate this.
  */
-@typeclass(excludeParents=List("ApplyArityFunctions"))
-trait Apply[F[_]] extends Functor[F] with ApplyArityFunctions[F] { self =>
-
-  /**
-   * Given a value and a function in the Apply context, applies the
-   * function to the value.
-   */
-  def ap[A, B](fa: F[A])(f: F[A => B]): F[B]
-
-  ....
+@typeclass trait Cartesian[F[_]] {
+  def product[A, B](fa: F[A], fb: F[B]): F[(A, B)]
 }
 ```
 
-`Apply` は `Functor` を拡張することに注目してほしい。
-`<*>` 関数は、Cats の `Apply` では `ap` と呼ばれる。(これは最初は `apply` と呼ばれていたが、`ap` に直された。+1)
-
-LYAHFGG:
-
-> `<*>` は `fmap` の強化版なのです。`fmap` が普通の関数とファンクター値を引数に取って、関数をファンクター値の中の値に適用してくれるのに対し、`<*>` は関数の入っているファンクター値と値の入っているファンクター値を引数に取って、1つ目のファンクターの中身である関数を2つ目のファンクターの中身に適用するのです。
+Cartesian は `product` 関数を定義して、これは `F[A]` と `F[B]` から、効果 `F[_]` に包まれたペア `(A, B)` を作る。`product` のシンボリックなエイリアスは `|@|` で、これは applicative style とも呼ばれる。
 
 #### Catnip
 
@@ -71,33 +66,6 @@ scala> 9.some
 scala> none[Int]
 ```
 
-#### Apply としての Option
-
-これを `Apply[Option].ap` と一緒に使ってみる:
-
-```console
-scala> Apply[Option].ap(9.some) {{(_: Int) + 3}.some }
-scala> Apply[Option].ap(10.some) {{(_: Int) + 3}.some }
-scala> Apply[Option].ap(none[String]) {{(_: String) + "hahah"}.some }
-scala> Apply[Option].ap("woot".some) { none[String => String] }
-```
-
-どちらかが失敗すると、`None` が返ってくる。
-
-昨日の [simulacrum を用いた独自型クラスの定義][mootws]で見たとおり、
-simulacrum は型クラス・コントラクト内で定義された関数を演算子として (魔法の力で) 転写する。
-
-```console
-scala> import cats.syntax.apply._
-scala> 9.some ap ({(_: Int) + 3}.some)
-scala> 10.some ap ({(_: Int) + 3}.some)
-scala> none[String] ap ({(_: String) + "hahah"}.some)
-scala> "woot".some ap (none[String => String])
-```
-
-何が起こったのかは理解できるけど、どこかのコードでこれが出てきたら僕は混乱すると思う。
-<s>この `apply` は省略禁止。</s>
-
 #### Applicative Style
 
 LYAHFGG:
@@ -112,115 +80,42 @@ ghci> pure (-) <*> Just 3 <*> Just 5
 Just (-2)
 ```
 
-Cats には ApplyBuilder 構文というものがある。
+Cats には CartesianBuilder 構文というものがある。
 
 ```console
-scala> import cats.syntax.monoidal._
+scala> import cats.syntax.cartesian._
 scala> (3.some |@| 5.some) map { _ - _ }
 scala> (none[Int] |@| 5.some) map { _ - _ }
 scala> (3.some |@| none[Int]) map { _ - _ }
 ```
 
-#### Apply としての List
+これは `Option` から `Cartesian` が形成可能であることを示す。
+
+#### Cartesian としての List
 
 LYAHFGG:
 
 > リスト（正確に言えばリスト型のコンストラクタ `[]`）もアプリカティブファンクターです。意外ですか？
 
-ApplyBuilder 構文で書けるかためしてみよう:
+CartesianBuilder 構文で書けるかためしてみよう:
 
 ```console
 scala> (List("ha", "heh", "hmm") |@| List("?", "!", ".")) map {_ + _}
 ```
 
-#### Apply の便利な関数
-
-LYAHFGG:
-
-> `Control.Applicative` には `liftA2` という、以下のような型を持つ関数があります。
-
-```haskell
-liftA2 :: (Applicative f) => (a -> b -> c) -> f a -> f b -> f c .
-```
-
-Scala ではパラメータが逆順であることを覚えているだろうか。
-つまり、`F[B]` と `F[A]` を受け取った後、`(A, B) => C` という関数を受け取る関数だ。
-これは `Apply` では `map2` と呼ばれている。
-
-```scala
-@typeclass(excludeParents=List("ApplyArityFunctions"))
-trait Apply[F[_]] extends Functor[F] with ApplyArityFunctions[F] { self =>
-
-  /**
-   * Given a value and a function in the Apply context, applies the
-   * function to the value.
-   */
-  def ap[A, B](fa: F[A])(f: F[A => B]): F[B]
-
-  /**
-   * ap2 is a binary version of ap, defined in terms of ap.
-   */
-  def ap2[A, B, Z](fa: F[A], fb: F[B])(f: F[(A, B) => Z]): F[Z] =
-    ap(fb)(ap(fa)(map(f)(f => (a: A) => (b: B) => f(a, b))))
-
-  /**
-   * Applies the pure (binary) function f to the effectful values fa and fb.
-   *
-   * map2 can be seen as a binary version of [[cats.Functor]]#map.
-   */
-  def map2[A, B, Z](fa: F[A], fb: F[B])(f: (A, B) => Z): F[Z] =
-    ap(fb)(map(fa)(a => (b: B) => f(a, b)))
-
-  ....
-}
-```
-
-2項演算子に関しては、`map2` を使うことでアプリカティブ・スタイルを隠蔽することができる。
-同じものを 2通りの方法で書いて比較してみる:
-
-```console
-scala> (3.some |@| List(4).some) map { _ :: _ }
-scala> Apply[Option].map2(3.some, List(4).some) { _ :: _ }
-```
-
-同じ結果となった。
-
-`Apply[F].ap` の 2パラメータ版は `Apply[F].ap2` と呼ばれる:
-
-```console
-scala> Apply[Option].ap2(3.some, List(4).some) {{ (_: Int) :: (_: List[Int]) }.some }
-```
-
-`map2` の特殊形で `tuple2` というものもあって、このように使う:
-
-```console
-scala> Apply[Option].tuple2(1.some, 2.some)
-scala> Apply[Option].tuple2(1.some, none[Int])
-```
-
-2つ以上のパラメータを受け取る関数があったときはどうなるんだろうかと気になっている人は、
-`Apply[F[_]]` が `ApplyArityFunctions[F]` を拡張することに気付いただろうか。
-これは `ap3`、`map3`、`tuple3` ... から始まって
-`ap22`、`map22`、`tuple22` まで自動生成されたコードだ。
-
 #### *> と <* 演算子
 
-`Apply` は `<*` と `*>` という 2つの演算子を可能とし、
-これらも `Apply[F].map2` の特殊形だと考えることができる:
+`Cartesian` は `<*` と `*>` という 2つの演算子を可能とし、
+これらも `Apply[F].product` の特殊形だと考えることができる:
 
 ```scala
-abstract class ApplyOps[F[_], A] extends Apply.Ops[F, A] {
-  ....
+abstract class CartesianOps[F[_], A] extends Cartesian.Ops[F, A] {
+  def |@|[B](fb: F[B]): CartesianBuilder[F]#CartesianBuilder2[A, B] =
+    new CartesianBuilder[F] |@| self |@| fb
 
-  /**
-   * combine both contexts but only return the right value
-   */
-  def *>[B](fb: F[B]) = typeClassInstance.map2(self, fb)((a,b) => b)
+  def *>[B](fb: F[B])(implicit F: Functor[F]): F[B] = F.map(typeClassInstance.product(self, fb)) { case (a, b) => b }
 
-  /**
-   * combine both contexts but only return the left value
-   */
-  def <*[B](fb: F[B]) = typeClassInstance.map2(self, fb)((a,b) => a)
+  def <*[B](fb: F[B])(implicit F: Functor[F]): F[A] = F.map(typeClassInstance.product(self, fb)) { case (a, b) => a }
 }
 ```
 
@@ -235,17 +130,15 @@ scala> none[Int] *> 2.some
 
 どちらか一方が失敗すると、`None` が返ってくる。
 
-#### Apply則
+#### Cartesian 則
 
-Apply には合成則という法則のみが1つある:
+`Cartesian` には結合則という法則が1つのみある:
 
 ```scala
-trait ApplyLaws[F[_]] extends FunctorLaws[F] {
-  implicit override def F: Apply[F]
+trait CartesianLaws[F[_]] {
+  implicit def F: Cartesian[F]
 
-  def applyComposition[A, B, C](fa: F[A], fab: F[A => B], fbc: F[B => C]): IsEq[F[C]] = {
-    val compose: (B => C) => (A => B) => (A => C) = _.compose
-    fa.ap(fab).ap(fbc) <-> fa.ap(fab.ap(fbc.map(compose)))
-  }
+  def cartesianAssociativity[A, B, C](fa: F[A], fb: F[B], fc: F[C]): (F[(A, (B, C))], F[((A, B), C)]) =
+    (F.product(fa, F.product(fb, fc)), F.product(F.product(fa, fb), fc))
 }
 ```
