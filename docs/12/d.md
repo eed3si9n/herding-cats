@@ -84,7 +84,7 @@ scala> countLine traverse text
 scala> def isSpace(c: Char): Boolean = (c === ' ' || c === '\n' || c === '\t')
 scala> val countWord =
          appFuncU { (c: Char) =>
-           import cats.state.State.{ get, set }
+           import cats.data.State.{ get, set }
            for {
              x <- get[Boolean]
              y = !isSpace(c)
@@ -102,7 +102,7 @@ scala> val x = countWord traverse text
 We then need to run this state machine with an initial value `false` to get the result:
 
 ```console
-scala> x.runA(false).run
+scala> x.runA(false).value
 ```
 
 17 words.
@@ -116,7 +116,7 @@ scala> val allResults = countAll traverse text
 scala> val charCount = allResults.second
 scala> val lineCount = allResults.first.second
 scala> val wordCountState = allResults.first.first
-scala> val wordCount = wordCountState.runA(false).run
+scala> val wordCount = wordCountState.runA(false).value
 ```
 
 EIP:

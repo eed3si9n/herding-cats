@@ -1,76 +1,48 @@
-  [Apply]: Apply.html
+
   [fafm]: http://learnyouahaskell.com/functors-applicative-functors-and-monoids
+  [mootws]: making-our-own-typeclass-with-simulacrum.html
 
-### Applicative
-
-**Note**: If you jumped to this page because you're interested in applicative functors,
-you should definitely read [Apply][Apply] first.
+### Apply
 
 [Functors, Applicative Functors and Monoids][fafm]:
 
+LYAHFGG:
+
+> But what if we have a functor value of `Just (3 *)` and a functor value of `Just 5`, and we want to take out the function from `Just(3 *)` and map it over `Just 5`?
+>
 > Meet the `Applicative` typeclass. It lies in the `Control.Applicative` module and it defines two methods, `pure` and `<*>`.
 
-Let's see Cats' `Applicative`:
+Cats splits `Applicative` into `Cartesian`, `Apply`, and `Applicative`. Here's the contract for `Apply`:
 
 ```scala
-@typeclass trait Applicative[F[_]] extends Apply[F] { self =>
+/**
+ * Weaker version of Applicative[F]; has apply but not pure.
+ *
+ * Must obey the laws defined in cats.laws.ApplyLaws.
+ */
+@typeclass(excludeParents = List("ApplyArityFunctions"))
+trait Apply[F[_]] extends Functor[F] with Cartesian[F] with ApplyArityFunctions[F] { self =>
+
   /**
-   * `pure` lifts any value into the Applicative Functor
-   *
-   * Applicative[Option].pure(10) = Some(10)
+   * Given a value and a function in the Apply context, applies the
+   * function to the value.
    */
-  def pure[A](x: A): F[A]
+  def ap[A, B](ff: F[A => B])(fa: F[A]): F[B]
 
   ....
 }
 ```
 
-It's an extension of `Apply` with `pure`.
+Note that `Apply` extends `Functor`, `Cartesian`, and `ApplyArityFunctions`.
+The `<*>` function is called `ap` in Cats' `Apply`. (This was originally called `apply`, but was renamed to `ap`. +1)
 
 LYAHFGG:
 
-> `pure` should take a value of any type and return an applicative value with that value inside it. ... A better way of thinking about `pure` would be to say that it takes a value and puts it in some sort of default (or pure) context—a minimal context that still yields that value.
+> You can think of `<*>` as a sort of a beefed-up `fmap`. Whereas `fmap` takes a function and a functor and applies the function inside the functor value, `<*>` takes a functor that has a function in it and another functor and extracts that function from the first functor and then maps it over the second one.
 
-It seems like it's basically a constructor that takes value `A` and returns `F[A]`.
+#### Option as an Apply
 
-```console:new
-scala> import cats._, cats.std.all._
-scala> Applicative[List].pure(1)
-scala> Applicative[Option].pure(1)
-```
-
-This actually comes in handy using `Apply[F].ap` so we can avoid calling `{{...}.some}`.
-
-```console
-scala> val F = Applicative[Option]
-scala> F.ap(F.pure(9)) { F.pure((_: Int) + 3) }
-```
-
-We've abstracted `Option` away from the code.
-
-#### Useful functions for Applicative
-
-LYAHFGG:
-
-> Let's try implementing a function that takes a list of applicatives and returns an applicative that has a list as its result value. We'll call it `sequenceA`.
-
-```haskell
-sequenceA :: (Applicative f) => [f a] -> f [a]  
-sequenceA [] = pure []  
-sequenceA (x:xs) = (:) <\$> x <*> sequenceA xs  
-```
-
-Let's try implementing this with Cats!
-
-```console
-scala> import cats.syntax.monoidal._
-scala> def sequenceA[F[_]: Applicative, A](list: List[F[A]]): F[List[A]] = list match {
-         case Nil     => Applicative[F].pure(Nil: List[A])
-         case x :: xs => (x |@| sequenceA(xs)) map {_ :: _} 
-       }
-```
-
-Let's test it:
+Here's how we can use it with `Apply[Option].ap`:
 
 ```console
 scala> :paste
@@ -81,39 +53,113 @@ object Catnip {
   def none[A]: Option[A] = None
 }
 import Catnip._
-scala> sequenceA(List(1.some, 2.some))
-scala> sequenceA(List(3.some, none[Int], 1.some))
-scala> sequenceA(List(List(1, 2, 3), List(4, 5, 6)))
+scala> Apply[Option].ap({{(_: Int) + 3}.some })(9.some)
+scala> Apply[Option].ap({{(_: Int) + 3}.some })(10.some)
+scala> Apply[Option].ap({{(_: String) + "hahah"}.some })(none[String])
+scala> Apply[Option].ap({ none[String => String] })("woot".some)
 ```
 
-We got the right answers. What's interesting here is that we did end up needing
-`Applicative` after all, and `sequenceA` is generic in a typeclassy way.
+If either side fails, we get `None`.
 
-> Using `sequenceA` is useful when we have a list of functions and we want
-> to feed the same input to all of them and then view the list of results.
-
-For `Function1` with `Int` fixed example, we need some type annotation:
+If you remember [Making our own typeclass with simulacrum][mootws] from yesterday,
+simulacrum will automatically transpose the function defined on
+the typeclass contract into an operator, magically.
 
 ```console
-scala> val f = sequenceA[Function1[Int, ?], Int](List((_: Int) + 3, (_: Int) + 2, (_: Int) + 1))
-scala> f(3)
+scala> import cats.syntax.apply._
+scala> ({(_: Int) + 3}.some) ap 9.some
+scala> ({(_: Int) + 3}.some) ap 10.some
+scala> ({(_: String) + "hahah"}.some) ap none[String]
+scala> (none[String => String]) ap "woot".some
 ```
 
-#### Applicative Laws
+#### Useful functions for Apply
 
-Here are the laws for `Applicative`:
+LYAHFGG:
 
-- identity: `pure id <*> v = v`
-- homomorphism: `pure f <*> pure x = pure (f x)`
-- interchange: `u <*> pure y = pure (\$ y) <*> u`
+> `Control.Applicative` defines a function that's called `liftA2`, which has a type of
 
-Cats defines another law
+```haskell
+liftA2 :: (Applicative f) => (a -> b -> c) -> f a -> f b -> f c .
+```
+
+Remember parameters are flipped around in Scala.
+What we have is a function that takes `F[B]` and `F[A]`, then a function `(A, B) => C`.
+This is called `map2` on `Apply`.
+
 
 ```scala
-  def applicativeMap[A, B](fa: F[A], f: A => B): IsEq[F[B]] =
-    fa.map(f) <-> fa.ap(F.pure(f))
+@typeclass(excludeParents = List("ApplyArityFunctions"))
+trait Apply[F[_]] extends Functor[F] with Cartesian[F] with ApplyArityFunctions[F] { self =>
+
+  /**
+   * Given a value and a function in the Apply context, applies the
+   * function to the value.
+   */
+  def ap[A, B](ff: F[A => B])(fa: F[A]): F[B]
+
+  override def product[A, B](fa: F[A], fb: F[B]): F[(A, B)] =
+    ap(map(fa)(a => (b: B) => (a, b)))(fb)
+
+  /**
+   * ap2 is a binary version of ap, defined in terms of ap.
+   */
+  def ap2[A, B, Z](ff: F[(A, B) => Z])(fa: F[A], fb: F[B]): F[Z] =
+    map(product(fa, product(fb, ff))) { case (a, (b, f)) => f(a, b) }
+
+  /**
+   * Applies the pure (binary) function f to the effectful values fa and fb.
+   *
+   * map2 can be seen as a binary version of [[cats.Functor]]#map.
+   */
+  def map2[A, B, Z](fa: F[A], fb: F[B])(f: (A, B) => Z): F[Z] =
+    map(product(fa, fb)) { case (a, b) => f(a, b) }
+
+  ....
+}
 ```
 
-This seem to say that if you combine `F.ap` and `F.pure`, you should get the same effect as `F.map`.
+For binary operators, `map2` can be used to hide the applicative style.
+Here we can write the same thing in two different ways:
 
-It took us a while, but I am glad we got this far. We'll pick it up from here later.
+```console
+scala> import cats.syntax.cartesian._
+scala> (3.some |@| List(4).some) map { _ :: _ }
+scala> Apply[Option].map2(3.some, List(4).some) { _ :: _ }
+```
+
+The results match up.
+
+The 2-parameter version of `Apply[F].ap` is called `Apply[F].ap2`:
+
+```console
+scala> Apply[Option].ap2({{ (_: Int) :: (_: List[Int]) }.some })(3.some, List(4).some)
+```
+
+There's a special case of `map2` called `tuple2`, which works like this:
+
+
+```console
+scala> Apply[Option].tuple2(1.some, 2.some)
+scala> Apply[Option].tuple2(1.some, none[Int])
+```
+
+If you are wondering what happens when you have a function with more than two
+parameters, note that `Apply[F[_]]` extends `ApplyArityFunctions[F]`.
+This is auto-generated code that defines `ap3`, `map3`, `tuple3`, ... up to
+`ap22`, `map22`, `tuple22`.
+
+#### Apply law
+
+`Apply` has a single law called composition:
+
+```scala
+trait ApplyLaws[F[_]] extends FunctorLaws[F] {
+  implicit override def F: Apply[F]
+
+  def applyComposition[A, B, C](fa: F[A], fab: F[A => B], fbc: F[B => C]): IsEq[F[C]] = {
+    val compose: (B => C) => (A => B) => (A => C) = _.compose
+    fa.ap(fab).ap(fbc) <-> fa.ap(fab.ap(fbc.map(compose)))
+  }
+}
+```

@@ -77,22 +77,13 @@ scala> import cats._, cats.std.all._
 import cats._
 import cats.std.all._
 
-scala> import algebra.laws.GroupLaws
-import algebra.laws.GroupLaws
+scala> import cats.kernel.laws.GroupLaws
+import cats.kernel.laws.GroupLaws
 
-scala> val rs1 = GroupLaws[Int].semigroup(Semigroup.additive[Int])
-rs1: algebra.laws.GroupLaws[Int]#GroupProperties = algebra.laws.GroupLaws\$GroupProperties@3f8dc1c5
+scala> val rs1 = GroupLaws[Int].semigroup(Semigroup[Int])
+rs1: cats.kernel.laws.GroupLaws[Int]#GroupProperties = cats.kernel.laws.GroupLaws\$GroupProperties@5a077d1d
 
 scala> rs1.all.check
-+ semigroup.associativity: OK, passed 100 tests.
-+ semigroup.combineN(a, 1) == a: OK, passed 100 tests.
-+ semigroup.combineN(a, 2) == a |+| a: OK, passed 100 tests.
-+ semigroup.serializable: OK, proved property.
-
-scala> val rs2 = GroupLaws[Int].semigroup(Semigroup.multiplicative[Int])
-rs2: algebra.laws.GroupLaws[Int]#GroupProperties = algebra.laws.GroupLaws\$GroupProperties@699dd73d
-
-scala> rs2.all.check
 + semigroup.associativity: OK, passed 100 tests.
 + semigroup.combineN(a, 1) == a: OK, passed 100 tests.
 + semigroup.combineN(a, 2) == a |+| a: OK, passed 100 tests.
@@ -108,7 +99,7 @@ scala> List(1, 2, 3) |+| List(4, 5, 6)
 #### 積と和
 
 `Int` は、`+` と `*` の両方に関して semigroup を形成することができる。
-Tagged type の代わりに、non/algebra は加算と乗算の両方に対して
+Tagged type の代わりに、cats は加算に対してにのみ
 semigroup のインスタンスを提供するという方法をとっている。
 
 これを演算子構文で書くのはトリッキーだ。
@@ -116,13 +107,11 @@ semigroup のインスタンスを提供するという方法をとっている�
 ```console
 scala> def doSomething[A: Semigroup](a1: A, a2: A): A =
          a1 |+| a2
-scala> doSomething(3, 5)(Semigroup.additive[Int])
-scala> doSomething(3, 5)(Semigroup.multiplicative[Int])
+scala> doSomething(3, 5)(Semigroup[Int])
 ```
 
 これなら、関数構文で書いたほうが楽かもしれない:
 
 ```console
-scala> Semigroup.additive[Int].combine(3, 5)
-scala> Semigroup.multiplicative[Int].combine(3, 5)
+scala> Semigroup[Int].combine(3, 5)
 ```

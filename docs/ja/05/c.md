@@ -11,7 +11,7 @@ LYAHFGG:
 まずは Applicative としての `List` を復習する:
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.syntax.monoidal._
+scala> import cats._, cats.std.all._, cats.syntax.cartesian._
 scala> (List(1, 2, 3) |@| List(10, 100, 100)) map { _ * _ }
 ```
 

@@ -90,7 +90,7 @@ sealed trait ProdApply[F[_], G[_]] extends Apply[Lambda[X => Prod[F, G, X]]] wit
   def F: Apply[F]
   def G: Apply[G]
   def ap[A, B](fa: Prod[F, G, A])(f: Prod[F, G, A => B]): Prod[F, G, B] =
-    Prod(F.ap(fa.first)(f.first), G.ap(fa.second)(f.second))
+    Prod(F.ap(f.first)(fa.first), G.ap(f.second)(fa.second))
   def product[A, B](fa: Prod[F, G, A], fb: Prod[F, G, B]): Prod[F, G, (A, B)] =
     Prod(F.product(fa.first, fb.first), G.product(fa.second, fb.second))
 }
@@ -101,7 +101,7 @@ sealed trait ProdApply[F[_], G[_]] extends Apply[Lambda[X => Prod[F, G, X]]] wit
 ```console
 scala> val x = Prod(List(1), (Some(1): Option[Int]))
 scala> val f = Prod(List((_: Int) + 1), (Some((_: Int) * 3): Option[Int => Int]))
-scala> Apply[Lambda[X => Prod[List, Option, X]]].ap(x)(f)
+scala> Apply[Lambda[X => Prod[List, Option, X]]].ap(f)(x)
 ```
 
 `Apply` の積は左右で別の関数を渡している。

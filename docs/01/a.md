@@ -14,9 +14,9 @@ A released version of Cats is now available.
 After that, you can test it using `build.sbt` this:
 
 ```scala
-val catsVersion = "0.3.0"
-val catsAll = "org.spire-math" %% "cats" % catsVersion
-val macroParadise = compilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full)
+val catsVersion = "0.6.1"
+val catsAll = "org.typelevel" %% "cats" % catsVersion
+val macroParaside = compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 val kindProjector = compilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
 val resetAllAttrs = "org.scalamacros" %% "resetallattrs" % "1.0.0-M1"
 
@@ -44,7 +44,7 @@ lazy val root = (project in file(".")).
   )
 ```
 
-You can then open the REPL using sbt 0.13.8:
+You can then open the REPL using sbt 0.13.12:
 
 ```scala
 \$ sbt

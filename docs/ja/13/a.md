@@ -71,7 +71,7 @@ scala> Functor[Id].map(one) { _ + 1 }
 `Apply` の `ap` メソッドは `Id[A => B]` を受け取るが、実際にはただの `A => B` なので、これも関数適用として実装されている:
 
 ```console
-scala> Apply[Id].ap(one) { _ + 1 }
+scala> Apply[Id].ap({ _ + 1 }: Id[Int => Int])(one)
 ```
 
 #### FlatMap としての Id
@@ -79,7 +79,7 @@ scala> Apply[Id].ap(one) { _ + 1 }
 `FlatMap` の `flatMap` メソッドは `A => Id[B]` も同様。これも関数適用として実装されている:
 
 ```console
-scala> FlatMap[Id].ap(one) { _ + 1 }
+scala> FlatMap[Id].flatMap(one) { _ + 1 }
 ```
 
 #### Id ってなんで嬉しいの?

@@ -134,7 +134,7 @@ trait FunctorSyntax extends Functor.ToFunctorOps with FunctorSyntax1
 Let's try using `*>` operator from `Apply`:
 
 ```console
-scala> import cats.syntax.monoidal._
+scala> import cats.syntax.cartesian._
 scala> (Right(1): Either[String, Int]) *> Right(2)
 ```
 

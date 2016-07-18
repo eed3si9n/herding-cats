@@ -1,8 +1,11 @@
+---
+out: Cartesian.html
+---
 
   [fafm]: http://learnyouahaskell.com/functors-applicative-functors-and-monoids
   [mootws]: making-our-own-typeclass-with-simulacrum.html
 
-### Apply
+### Cartesian
 
 [Functors, Applicative Functors and Monoids][fafm]:
 
@@ -20,33 +23,25 @@ LYAHFGG:
 >
 > Meet the `Applicative` typeclass. It lies in the `Control.Applicative` module and it defines two methods, `pure` and `<*>`.
 
-Cats splits this into `Apply` and `Applicative`. Here's the contract for `Apply`:
+Cats splits this into `Cartesian`, `Apply`, and `Applicative`. Here's the contract for `Cartesian`:
 
 ```scala
 /**
- * Weaker version of Applicative[F]; has ap but not pure.
+ * [[Cartesian]] captures the idea of composing independent effectful values.
+ * It is of particular interest when taken together with [[Functor]] - where [[Functor]]
+ * captures the idea of applying a unary pure function to an effectful value,
+ * calling `product` with `map` allows one to apply a function of arbitrary arity to multiple
+ * independent effectful values.
  *
- * Must obey the laws defined in cats.laws.ApplyLaws.
+ * That same idea is also manifested in the form of [[Apply]], and indeed [[Apply]] extends both
+ * [[Cartesian]] and [[Functor]] to illustrate this.
  */
-@typeclass(excludeParents=List("ApplyArityFunctions"))
-trait Apply[F[_]] extends Functor[F] with ApplyArityFunctions[F] { self =>
-
-  /**
-   * Given a value and a function in the Apply context, applies the
-   * function to the value.
-   */
-  def ap[A, B](fa: F[A])(f: F[A => B]): F[B]
-
-  ....
+@typeclass trait Cartesian[F[_]] {
+  def product[A, B](fa: F[A], fb: F[B]): F[(A, B)]
 }
 ```
 
-Note that `Apply` extends `Functor`.
-The `<*>` function is called `ap` in Cats' `Apply`. (This was originally called `apply`, but was renamed to `ap`. +1)
-
-LYAHFGG:
-
-> You can think of `<*>` as a sort of a beefed-up `fmap`. Whereas `fmap` takes a function and a functor and applies the function inside the functor value, `<*>` takes a functor that has a function in it and another functor and extracts that function from the first functor and then maps it over the second one. 
+Cartesian defines `product` function, which produces a pair of `(A, B)` wrapped in effect `F[_]` out of `F[A]` and `F[B]`. The symbolic alias for `product` is `|@|` also known as the applicative style.
 
 #### Catnip
 
@@ -70,34 +65,6 @@ scala> 9.some
 scala> none[Int]
 ```
 
-#### Option as an Apply
-
-Here's how we can use it with `Apply[Option].ap`:
-
-```console
-scala> Apply[Option].ap(9.some) {{(_: Int) + 3}.some }
-scala> Apply[Option].ap(10.some) {{(_: Int) + 3}.some }
-scala> Apply[Option].ap(none[String]) {{(_: String) + "hahah"}.some }
-scala> Apply[Option].ap("woot".some) { none[String => String] }
-```
-
-If either side fails, we get `None`.
-
-If you remember [Making our own typeclass with simulacrum][mootws] from yesterday,
-simulacrum will automatically transpose the function defined on 
-the typeclass contract into an operator, magically.
-
-```console
-scala> import cats.syntax.apply._
-scala> 9.some ap ({(_: Int) + 3}.some)
-scala> 10.some ap ({(_: Int) + 3}.some)
-scala> none[String] ap ({(_: String) + "hahah"}.some)
-scala> "woot".some ap (none[String => String])
-```
-
-I see what it did, but I would be confused if I saw this in some code.
-<s>Abbreviating `apply` here by eliding the function name would be a bad idea.</s>
-
 #### The Applicative Style
 
 LYAHFGG:
@@ -113,117 +80,41 @@ ghci> pure (-) <*> Just 3 <*> Just 5
 Just (-2)
 ```
 
-Cats comes with the `ApplyBuilder` syntax.
+Cats comes with the `CartesianBuilder` syntax.
 
 ```console
-scala> import cats.syntax.monoidal._
+scala> import cats.syntax.cartesian._
 scala> (3.some |@| 5.some) map { _ - _ }
 scala> (none[Int] |@| 5.some) map { _ - _ }
 scala> (3.some |@| none[Int]) map { _ - _ }
 ```
 
-#### List as an Apply
+This shows that `Option` forms `Cartesian`.
+
+#### List as a Cartesian
 
 LYAHFGG:
 
 > Lists (actually the list type constructor, `[]`) are applicative functors. What a surprise!
 
-Let's see if we can use the `ApplyBuilder` sytax:
+Let's see if we can use the `CartesianBuilder` sytax:
 
 ```console
 scala> (List("ha", "heh", "hmm") |@| List("?", "!", ".")) map {_ + _}
 ```
 
-#### Useful functions for Apply
-
-LYAHFGG:
-
-> `Control.Applicative` defines a function that's called `liftA2`, which has a type of
-
-```haskell
-liftA2 :: (Applicative f) => (a -> b -> c) -> f a -> f b -> f c .
-```
-
-Remember parameters are flipped around in Scala.
-What we have is a function that takes `F[B]` and `F[A]`, then a function `(A, B) => C`.
-This is called `map2` on `Apply`.
-
-
-```scala
-@typeclass(excludeParents=List("ApplyArityFunctions"))
-trait Apply[F[_]] extends Functor[F] with ApplyArityFunctions[F] { self =>
-
-  /**
-   * Given a value and a function in the Apply context, applies the
-   * function to the value.
-   */
-  def ap[A, B](fa: F[A])(f: F[A => B]): F[B]
-
-  /**
-   * ap2 is a binary version of ap, defined in terms of ap.
-   */
-  def ap2[A, B, Z](fa: F[A], fb: F[B])(f: F[(A, B) => Z]): F[Z] =
-    ap(fb)(ap(fa)(map(f)(f => (a: A) => (b: B) => f(a, b))))
-
-  /**
-   * Applies the pure (binary) function f to the effectful values fa and fb.
-   *
-   * map2 can be seen as a binary version of [[cats.Functor]]#map.
-   */
-  def map2[A, B, Z](fa: F[A], fb: F[B])(f: (A, B) => Z): F[Z] =
-    ap(fb)(map(fa)(a => (b: B) => f(a, b)))
-
-  ....
-}
-```
-
-For binary operators, `map2` can be used to hide the applicative style.
-Here we can write the same thing in two different ways:
-
-```console
-scala> (3.some |@| List(4).some) map { _ :: _ }
-scala> Apply[Option].map2(3.some, List(4).some) { _ :: _ }
-```
-
-The results match up.
-
-The 2-parameter version of `Apply[F].ap` is called `Apply[F].ap2`:
-
-```console
-scala> Apply[Option].ap2(3.some, List(4).some) {{ (_: Int) :: (_: List[Int]) }.some }
-```
-
-There's a special case of `map2` called `tuple2`, which works like this:
-
-
-```console
-scala> Apply[Option].tuple2(1.some, 2.some)
-scala> Apply[Option].tuple2(1.some, none[Int])
-```
-
-If you are wondering what happens when you have a function with more than two
-parameters, note that `Apply[F[_]]` extends `ApplyArityFunctions[F]`.
-This is auto-generated code that defines `ap3`, `map3`, `tuple3`, ... up to
-`ap22`, `map22`, `tuple22`.
-
 #### *> and <* operators
 
-`Apply` enables two operators, `<*` and `*>`, which are special cases of `Apply[F].map2`:
-
+`Cartesian` enables two operators, `<*` and `*>`, which are special cases of `Apply[F].product`:
 
 ```scala
-abstract class ApplyOps[F[_], A] extends Apply.Ops[F, A] {
-  ....
+abstract class CartesianOps[F[_], A] extends Cartesian.Ops[F, A] {
+  def |@|[B](fb: F[B]): CartesianBuilder[F]#CartesianBuilder2[A, B] =
+    new CartesianBuilder[F] |@| self |@| fb
 
-  /**
-   * combine both contexts but only return the right value
-   */
-  def *>[B](fb: F[B]) = typeClassInstance.map2(self, fb)((a,b) => b)
+  def *>[B](fb: F[B])(implicit F: Functor[F]): F[B] = F.map(typeClassInstance.product(self, fb)) { case (a, b) => b }
 
-  /**
-   * combine both contexts but only return the left value
-   */
-  def <*[B](fb: F[B]) = typeClassInstance.map2(self, fb)((a,b) => a)
+  def <*[B](fb: F[B])(implicit F: Functor[F]): F[A] = F.map(typeClassInstance.product(self, fb)) { case (a, b) => a }
 }
 ```
 
@@ -238,17 +129,15 @@ scala> none[Int] *> 2.some
 
 If either side fails, we get `None`.
 
-#### Apply law
+#### Cartesian law
 
-`Apply` has a single law called composition:
+`Cartesian` has a single law called associativity:
 
 ```scala
-trait ApplyLaws[F[_]] extends FunctorLaws[F] {
-  implicit override def F: Apply[F]
+trait CartesianLaws[F[_]] {
+  implicit def F: Cartesian[F]
 
-  def applyComposition[A, B, C](fa: F[A], fab: F[A => B], fbc: F[B => C]): IsEq[F[C]] = {
-    val compose: (B => C) => (A => B) => (A => C) = _.compose
-    fa.ap(fab).ap(fbc) <-> fa.ap(fab.ap(fbc.map(compose)))
-  }
+  def cartesianAssociativity[A, B, C](fa: F[A], fb: F[B], fc: F[C]): (F[(A, (B, C))], F[((A, B), C)]) =
+    (F.product(fa, F.product(fb, fc)), F.product(F.product(fa, fb), fc))
 }
 ```

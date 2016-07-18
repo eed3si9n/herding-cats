@@ -149,7 +149,7 @@ RWH:
 状態遷移を表す `StateT` を `ReaderTOption` の上に積んでみる。
 
 ```console
-scala> import cats.state._
+scala> import cats.data.StateT
 scala> :paste
 type StateTReaderTOption[C, S, A] = StateT[({type l[X] = ReaderTOption[C, X]})#l, S, A]
 object StateTReaderTOption {
