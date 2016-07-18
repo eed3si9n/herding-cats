@@ -2,12 +2,14 @@
 out: Eval.html
 ---
 
+  [769]: https://github.com/typelevel/cats/pull/769
+
 ### Eval datatype
 
 Cats also comes with `Eval` datatype that contols evaluation.
 
 ```scala
-sealed abstract class Eval[A] extends Serializable { self =>
+sealed abstract class Eval[+A] extends Serializable { self =>
 
   /**
    * Evaluate the computation and return an A value.
@@ -159,9 +161,9 @@ java.lang.StackOverflowError
   ....
 ```
 
-Here's my first attempt at making a safer version:
+Here's my attempt at making a safer version:
 
-```scala
+```console
 scala> :paste
 object OddEven1 {
   def odd(n: Int): Eval[String] = Eval.defer {even(n - 1)}
@@ -171,37 +173,7 @@ object OddEven1 {
       case _    => Eval.defer { odd(n - 1) }
     }
 }
-
-// Exiting paste mode, now interpreting.
-
-defined object OddEven1
-
 scala> OddEven1.even(200000).value
-java.lang.StackOverflowError
-  at cats.Eval\$Compute.loop\$1(Eval.scala:261)
-  at cats.Eval\$Compute.value(Eval.scala:269)
-  at cats.Eval\$Call.value(Eval.scala:226)
-  at cats.Eval\$Call.value(Eval.scala:226)
-  at cats.Eval\$Compute.loop\$1(Eval.scala:266)
-  at cats.Eval\$Compute.value(Eval.scala:269)
-  at cats.Eval\$Call.value(Eval.scala:226)
-  at cats.Eval\$Call.value(Eval.scala:226)
 ```
 
-Maybe I need to change the input parameter to be Eval?
-
-```console
-scala> :paste
-object OddEven2 {
-  def odd(n: Eval[Int]): Eval[String] =
-    n flatMap { x => even(Eval.now { x - 1 }) }
-  def even(n: Eval[Int]): Eval[String] =
-    n flatMap { x =>
-      if (x <= 0) Eval.now {"done"}
-      else odd(Eval.now { x - 1 })
-    }
-}
-scala> OddEven2.even(Eval.now { 200000 }).value
-```
-
-That seemed to work.
+In the earlier versions of Cats the above caused stackoverflow, but as BryanM let me know in the comment, David Gregory fixed it in [#769][769], so it works now.
