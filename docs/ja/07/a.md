@@ -125,7 +125,7 @@ REPL から `State` を使ってみると、最初の state は成功するけ�
 
 ```console:new
 scala> type Stack = List[Int]
-scala> import cats._, cats.data.state._, cats.std.all._
+scala> import cats._, cats.data.State, cats.std.all._
 scala> val pop = State[Stack, Int] {
          case x :: xs => (xs, x)
          case Nil     => sys.error("stack is empty")
