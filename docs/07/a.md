@@ -70,13 +70,15 @@ Cats [#302][302], which was merged recently. (Thanks, Erik)
 As it happens, `State` is just a type alias:
 
 ```scala
-package object state {
-  type State[S, A] = StateT[Trampoline, S, A]
+package object data {
+  ....
+  type State[S, A] = StateT[Eval, S, A]
+  object State extends StateFunctions
 }
 ```
 
 `StateT` is a monad transformer, a type constructor for other datatypes.
-`State` partially applies `StateT` with `Trampoline`,
+`State` partially applies `StateT` with `Eval`,
 which emulates a call stack with heap memory to prevent overflow.
 Here's the definition of `StateT`:
 
@@ -107,9 +109,9 @@ object StateT extends StateTInstances {
 To construct a `State` value, you pass the state transition function to `State.apply`.
 
 ```scala
-object State {
+private[data] abstract class StateFunctions {
   def apply[S, A](f: S => (S, A)): State[S, A] =
-    StateT.applyF(Trampoline.done((s: S) => Trampoline.done(f(s))))
+    StateT.applyF(Now((s: S) => Now(f(s))))
   
   ....
 }
@@ -124,7 +126,7 @@ Let's consider how to implement stack with `State`:
 
 ```console:new
 scala> type Stack = List[Int]
-scala> import cats._, cats.state._, cats.std.all._
+scala> import cats._, cats.data.State, cats.std.all._
 scala> val pop = State[Stack, Int] {
          case x :: xs => (xs, x)
          case Nil     => sys.error("stack is empty")
@@ -143,10 +145,10 @@ scala> def stackManip: State[Stack, Int] = for {
          a <- pop
          b <- pop
        } yield(b)
-scala> stackManip.run(List(5, 8, 2, 1)).run
+scala> stackManip.run(List(5, 8, 2, 1)).value
 ```
 
-The first `run` is for `StateT`, and the second is to `run` until the end `Trampoline`.
+The first `run` is for `StateT`, and the second is to `run` until the end `Eval`.
 
 Both `push` and `pop` are still purely functional, and we 
 were able to eliminate explicitly passing the state object (`s0`, `s1`, ...).
@@ -160,9 +162,15 @@ LYAHFGG:
 The `State` object defines a few helper functions:
 
 ```scala
-object State {
+private[data] abstract class StateFunctions {
+
   def apply[S, A](f: S => (S, A)): State[S, A] =
-    StateT.applyF(Trampoline.done((s: S) => Trampoline.done(f(s))))
+    StateT.applyF(Now((s: S) => Now(f(s))))
+
+  /**
+   * Return `a` and maintain the input state.
+   */
+  def pure[S, A](a: A): State[S, A] = State(s => (s, a))
 
   /**
    * Modify the input state and return Unit.
@@ -170,14 +178,14 @@ object State {
   def modify[S](f: S => S): State[S, Unit] = State(s => (f(s), ()))
 
   /**
-   * Extract a value from the input state, without modifying the state.
+   * Inspect a value from the input state, without modifying the state.
    */
-  def extract[S, T](f: S => T): State[S, T] = State(s => (s, f(s)))
+  def inspect[S, T](f: S => T): State[S, T] = State(s => (s, f(s)))
 
   /**
    * Return the input state without modifying it.
    */
-  def get[S]: State[S, S] = extract(identity)
+  def get[S]: State[S, S] = inspect(identity)
 
   /**
    * Set the state to `s` and return Unit.
@@ -201,7 +209,7 @@ scala> def stackyStack: State[Stack, Unit] = for {
          r <- if (stackNow === List(1, 2, 3)) State.set[Stack](List(8, 3, 1))
               else State.set[Stack](List(9, 2, 1))
        } yield r
-scala> stackyStack.run(List(1, 2, 3)).run
+scala> stackyStack.run(List(1, 2, 3)).value
 ```
 
 We can also implement both `pop` and `push` in terms of `get` and `put`:

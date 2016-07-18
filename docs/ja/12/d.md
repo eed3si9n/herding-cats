@@ -84,7 +84,7 @@ scala> countLine traverse text
 scala> def isSpace(c: Char): Boolean = (c === ' ' || c === '\n' || c === '\t')
 scala> val countWord =
          appFuncU { (c: Char) =>
-           import cats.state.State.{ get, set }
+           import cats.data.State.{ get, set }
            for {
              x <- get[Boolean]
              y = !isSpace(c)

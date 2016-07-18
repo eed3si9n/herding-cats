@@ -68,14 +68,16 @@ Cody Allen ([@ceedubs][@ceedubs]) さんが Cats に
 `State` はただの型エイリアスとなっている:
 
 ```scala
-package object state {
-  type State[S, A] = StateT[Trampoline, S, A]
+package object data {
+  ....
+  type State[S, A] = StateT[Eval, S, A]
+  object State extends StateFunctions
 }
 ```
 
 `StateT` はモナド変換子で、これは他のデータ型を受け取る型コンストラクタだ。
 `State` はこれに `Trampoline` 部分適用している。
-`Trampoline` は in-memory でコール・スタックをエミュレートしてスタックオーバーフローを回避するための機構だ。
+`Eval` は in-memory でコール・スタックをエミュレートしてスタックオーバーフローを回避するための機構だ。
 以下が `StateT` の定義:
 
 ```scala
@@ -105,9 +107,9 @@ object StateT extends StateTInstances {
 `State` 値を構築するには、状態遷移関数を `State.apply` に渡す:
 
 ```scala
-object State {
+private[data] abstract class StateFunctions {
   def apply[S, A](f: S => (S, A)): State[S, A] =
-    StateT.applyF(Trampoline.done((s: S) => Trampoline.done(f(s))))
+    StateT.applyF(Now((s: S) => Now(f(s))))
   
   ....
 }
@@ -123,7 +125,7 @@ REPL から `State` を使ってみると、最初の state は成功するけ�
 
 ```console:new
 scala> type Stack = List[Int]
-scala> import cats._, cats.state._, cats.std.all._
+scala> import cats._, cats.data.state._, cats.std.all._
 scala> val pop = State[Stack, Int] {
          case x :: xs => (xs, x)
          case Nil     => sys.error("stack is empty")
@@ -142,10 +144,10 @@ scala> def stackManip: State[Stack, Int] = for {
          a <- pop
          b <- pop
        } yield(b)
-scala> stackManip.run(List(5, 8, 2, 1)).run
+scala> stackManip.run(List(5, 8, 2, 1)).value
 ```
 
-最初の `run` は `SateT` のためで、2つ目の `run` は `Trampoline` を最後まで実行する。
+最初の `run` は `SateT` のためで、2つ目の `run` は `Eval` を最後まで実行する。
 
 `push` も `pop` も純粋関数型だけども、状態オブジェクト (`s0`, `s1`, ...)
 の引き回しをしなくても済むようになった。
@@ -159,9 +161,15 @@ LYAHFGG:
 `State` object は、いくつかのヘルパー関数を定義する:
 
 ```scala
-object State {
+private[data] abstract class StateFunctions {
+
   def apply[S, A](f: S => (S, A)): State[S, A] =
-    StateT.applyF(Trampoline.done((s: S) => Trampoline.done(f(s))))
+    StateT.applyF(Now((s: S) => Now(f(s))))
+
+  /**
+   * Return `a` and maintain the input state.
+   */
+  def pure[S, A](a: A): State[S, A] = State(s => (s, a))
 
   /**
    * Modify the input state and return Unit.
@@ -169,14 +177,14 @@ object State {
   def modify[S](f: S => S): State[S, Unit] = State(s => (f(s), ()))
 
   /**
-   * Extract a value from the input state, without modifying the state.
+   * Inspect a value from the input state, without modifying the state.
    */
-  def extract[S, T](f: S => T): State[S, T] = State(s => (s, f(s)))
+  def inspect[S, T](f: S => T): State[S, T] = State(s => (s, f(s)))
 
   /**
    * Return the input state without modifying it.
    */
-  def get[S]: State[S, S] = extract(identity)
+  def get[S]: State[S, S] = inspect(identity)
 
   /**
    * Set the state to `s` and return Unit.
@@ -199,7 +207,7 @@ scala> def stackyStack: State[Stack, Unit] = for {
          r <- if (stackNow === List(1, 2, 3)) State.set[Stack](List(8, 3, 1))
               else State.set[Stack](List(9, 2, 1))
        } yield r
-scala> stackyStack.run(List(1, 2, 3)).run
+scala> stackyStack.run(List(1, 2, 3)).value
 ```
 
 `pop` と `push` も `get` と `put` を使って実装できる:

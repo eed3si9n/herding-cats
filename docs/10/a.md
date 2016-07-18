@@ -141,7 +141,7 @@ RWH:
 We can stack `StateT` on top of `ReaderTOption` to represent state transfer.
 
 ```console
-scala> import cats.state._
+scala> import cats.data.StateT
 scala> :paste
 type StateTReaderTOption[C, S, A] = StateT[({type l[X] = ReaderTOption[C, X]})#l, S, A]
 object StateTReaderTOption {
