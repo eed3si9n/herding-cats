@@ -2,7 +2,6 @@
 ### PartialOrder
 
 `Order` の他に、Cats は `PartialOrder` も定義する。
-これは `algebra.PartialOrder` の型エイリアスだ。
 
 ```console:new
 scala> import cats._, cats.std.all._, cats.syntax.partialOrder._

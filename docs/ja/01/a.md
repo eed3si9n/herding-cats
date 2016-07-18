@@ -2,7 +2,7 @@
 out: sbt.html
 ---
 
-  [catsdocs]: http://non.github.io/cats/api/
+  [catsdocs]: http://typelevel.org/cats/api/#package
 
 ### sbt
 

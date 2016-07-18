@@ -6,7 +6,6 @@ LYAHFGG:
 > `Ord` は、何らかの順序を付けられる型のための型クラスです。`Ord` はすべての標準的な大小比較関数、`>`、`<`、`>=`、 `<=` をサポートします。
 
 Cats で `Ord` に対応する型クラスは `Order` だ。
-`Eq` 同様、`cats.Order` は実際には `algebra.Order` の型エイリアスだ。
 
 ```console:new,error
 scala> import cats._, cats.std.all._, cats.syntax.order._
