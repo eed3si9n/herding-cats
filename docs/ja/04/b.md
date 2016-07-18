@@ -131,8 +131,8 @@ object Disjunction {
   @inline def apply(b: Boolean): Disjunction = new Disjunction(b)
   implicit val disjunctionMonoid: Monoid[Disjunction] = new Monoid[Disjunction] {
     def combine(a1: Disjunction, a2: Disjunction): Disjunction =
-      Disjunction(a1.unwrap && a2.unwrap)
-    def empty: Disjunction = Disjunction(true)
+      Disjunction(a1.unwrap || a2.unwrap)
+    def empty: Disjunction = Disjunction(false)
   }
   implicit val disjunctionEq: Eq[Disjunction] = new Eq[Disjunction] {
     def eqv(a1: Disjunction, a2: Disjunction): Boolean =
@@ -154,8 +154,8 @@ object Conjunction {
   @inline def apply(b: Boolean): Conjunction = new Conjunction(b)
   implicit val conjunctionMonoid: Monoid[Conjunction] = new Monoid[Conjunction] {
     def combine(a1: Conjunction, a2: Conjunction): Conjunction =
-      Conjunction(a1.unwrap || a2.unwrap)
-    def empty: Conjunction = Conjunction(false)    
+      Conjunction(a1.unwrap && a2.unwrap)
+    def empty: Conjunction = Conjunction(true)    
   }
   implicit val conjunctionEq: Eq[Conjunction] = new Eq[Conjunction] {
     def eqv(a1: Conjunction, a2: Conjunction): Boolean =

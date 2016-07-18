@@ -110,23 +110,23 @@ scala> List(1, 2, 3).foldMap(identity)(Monoid[Int])
 
 ```console
 scala> :paste
-class Disjunction(val unwrap: Boolean) extends AnyVal
-object Disjunction {
-  @inline def apply(b: Boolean): Disjunction = new Disjunction(b)
-  implicit val disjunctionMonoid: Monoid[Disjunction] = new Monoid[Disjunction] {
-    def combine(a1: Disjunction, a2: Disjunction): Disjunction =
-      Disjunction(a1.unwrap && a2.unwrap)
-    def empty: Disjunction = Disjunction(true)
+class Conjunction(val unwrap: Boolean) extends AnyVal
+object Conjunction {
+  @inline def apply(b: Boolean): Conjunction = new Conjunction(b)
+  implicit val conjunctionMonoid: Monoid[Conjunction] = new Monoid[Conjunction] {
+    def combine(a1: Conjunction, a2: Conjunction): Conjunction =
+      Conjunction(a1.unwrap && a2.unwrap)
+    def empty: Conjunction = Conjunction(true)
   }
-  implicit val disjunctionEq: Eq[Disjunction] = new Eq[Disjunction] {
-    def eqv(a1: Disjunction, a2: Disjunction): Boolean =
+  implicit val conjunctionEq: Eq[Conjunction] = new Eq[Conjunction] {
+    def eqv(a1: Conjunction, a2: Conjunction): Boolean =
       a1.unwrap == a2.unwrap
   }
 }
-scala> val x = List(true, false, true) foldMap {Disjunction(_)}
+scala> val x = List(true, false, true) foldMap {Conjunction(_)}
 scala> x.unwrap
 ```
 
-`Disjunction(true)` と一つ一つ書きだして `|+|` でつなぐよりずっと楽だ。
+`Conjunction(true)` と一つ一つ書きだして `|+|` でつなぐよりずっと楽だ。
 
 続きはまた後で。
