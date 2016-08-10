@@ -1,6 +1,6 @@
 val catsVersion = "0.6.1"
 val catsAll = "org.typelevel" %% "cats" % catsVersion
-val macroParaside = compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+val macroParadise = compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 val kindProjector = compilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
 val resetAllAttrs = "org.scalamacros" %% "resetallattrs" % "1.0.0-M1"
 
@@ -21,7 +21,7 @@ lazy val root = (project in file(".")).
     libraryDependencies ++= Seq(
       catsAll,
       specs2Core % Test, specs2Scalacheck % Test, scalacheck % Test,
-      macroParaside, kindProjector, resetAllAttrs
+      macroParadise, kindProjector, resetAllAttrs
     ),
     scalacOptions ++= Seq(
       "-deprecation",

@@ -16,7 +16,7 @@ After that, you can test it using `build.sbt` this:
 ```scala
 val catsVersion = "0.6.1"
 val catsAll = "org.typelevel" %% "cats" % catsVersion
-val macroParaside = compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+val macroParadise = compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 val kindProjector = compilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
 val resetAllAttrs = "org.scalamacros" %% "resetallattrs" % "1.0.0-M1"
 
