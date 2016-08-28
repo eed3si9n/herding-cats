@@ -60,7 +60,7 @@ trait Config {
 の上に積み上げることができる:
 
 ```console
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> import cats.data.Kleisli
 scala> :paste
 type ReaderTOption[A, B] = Kleisli[Option, A, B]

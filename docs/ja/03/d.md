@@ -34,7 +34,7 @@ LYAHFGG:
 `A` の値を受け取り `F[A]` を返すコンストラクタみたいだ。
 
 ```console:new
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> Applicative[List].pure(1)
 scala> Applicative[Option].pure(1)
 ```

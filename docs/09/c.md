@@ -48,7 +48,7 @@ object Catnip {
   def none[A]: Option[A] = None
 }
 import Catnip._
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> import cats.data.Kleisli
 scala> val f = Kleisli { (x: Int) => (x + 1).some }
 scala> val g = Kleisli { (x: Int) => (x * 100).some }

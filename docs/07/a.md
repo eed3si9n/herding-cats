@@ -126,7 +126,7 @@ Let's consider how to implement stack with `State`:
 
 ```console:new
 scala> type Stack = List[Int]
-scala> import cats._, cats.data.State, cats.std.all._
+scala> import cats._, cats.data.State, cats.instances.all._
 scala> val pop = State[Stack, Int] {
          case x :: xs => (xs, x)
          case Nil     => sys.error("stack is empty")

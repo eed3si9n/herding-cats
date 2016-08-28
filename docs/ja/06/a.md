@@ -90,7 +90,7 @@ Async と Effectful のコードをコピペすることで単純な式と `val`
 `actM` を使ってみよう:
 
 ```console
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> :paste
 object Catnip {
   implicit class IdOp[A](val a: A) extends AnyVal {

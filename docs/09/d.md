@@ -13,7 +13,7 @@ LYAHFGG:
 Since Scala doesn't have a built-in rational, let's just use `Double`. Here's the case class:
 
 ```console:new
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> :paste
 case class Prob[A](list: List[(A, Double)])
 

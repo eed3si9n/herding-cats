@@ -14,7 +14,7 @@ Not sure if it matters, but it's probably a good idea that it's being reused</s>
 `Eq` was moved from [non/algebra][algebra] into cats-kernel subproject, and became part of Cats:
 
 ```console:error
-scala> import cats._, cats.std.all._, cats.syntax.eq._
+scala> import cats._, cats.instances.all._, cats.syntax.eq._
 scala> 1 === 1
 scala> 1 === "foo"
 scala> 1 == "foo"

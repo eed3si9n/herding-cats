@@ -57,7 +57,7 @@ I think it's easier to demonstrate this using an example.
 
 
 ```console:new
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> def foo[F[_]: Applicative](fa: F[Int]): F[Int] = fa
 ```
 

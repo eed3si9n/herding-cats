@@ -16,7 +16,7 @@ One blog post that I occasionally see being mentioned as a poweful application o
 Here I'll use similar example as the Yoshida-san's.
 
 ```console:new
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> :paste
 case class User(id: Long, name: String)
 

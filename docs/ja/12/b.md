@@ -57,7 +57,7 @@ trait Unapply[TC[_[_]], MA] {
 具体例を用いて説明した方が早いと思う。
 
 ```console:new
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> def foo[F[_]: Applicative](fa: F[Int]): F[Int] = fa
 ```
 

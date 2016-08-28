@@ -8,7 +8,7 @@ LYAHFGG:
 Cats で `Ord` に対応する型クラスは `Order` だ。
 
 ```console:new,error
-scala> import cats._, cats.std.all._, cats.syntax.order._
+scala> import cats._, cats.instances.all._, cats.syntax.order._
 scala> 1 > 2.0
 scala> 1 compare 2.0
 scala> 1.0 compare 2.0

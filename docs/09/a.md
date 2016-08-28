@@ -52,7 +52,7 @@ Since `Option[A]` already implements `flatten` we need to
 make an abtract function to turn it into an abtract type.
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.syntax.flatMap._
+scala> import cats._, cats.instances.all._, cats.syntax.flatMap._
 scala> :paste
 object Catnip {
   implicit class IdOp[A](val a: A) extends AnyVal {

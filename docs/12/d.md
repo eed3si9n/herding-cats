@@ -23,7 +23,7 @@ which is only available on my personal branch. (PR [#388][388] is pending)
 #### Modular iterations, applicatively
 
 ```console:new
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> import cats.data.{ Func, AppFunc, Const }
 scala> import Func.{ appFunc, appFuncU }
 ```

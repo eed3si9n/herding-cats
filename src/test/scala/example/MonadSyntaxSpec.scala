@@ -1,7 +1,7 @@
 package example
 
 import specs2._
-// import cats._, cats.std.all._
+// import cats._, cats.instances.all._
 import MonadSyntax._
 
 class MonadSyntaxSpec extends CatsSpec { def is = s2"""

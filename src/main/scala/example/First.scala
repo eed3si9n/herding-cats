@@ -1,7 +1,7 @@
 package example
 
 import cats._
-import cats.std.all._
+import cats.instances.all._
 
 case class First[A: Eq](val unwrap: Option[A])
 object First {

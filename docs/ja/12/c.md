@@ -14,7 +14,7 @@ EIP:
 Cats を用いて実装するとこうなる:
 
 ```console:new
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> import cats.data.Const
 scala> def contents[F[_], A](fa: F[A])(implicit FF: Traverse[F]): Const[List[A], F[Unit]] =
          {

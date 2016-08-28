@@ -64,7 +64,7 @@ scala> foldingFunction(Nil, "wawa")
 以下が `foldM` を用いて書いた `solveRPN` だ:
 
 ```console
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> def solveRPN(s: String): Option[Double] =
          for {
            List(x) <- (Foldable[List].foldM(s.split(' ').toList, Nil: List[Double]) {foldingFunction})

@@ -8,7 +8,7 @@ LYAHFGG:
 Cats' equivalent for the `Show` typeclass is `Show`:
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.syntax.show._
+scala> import cats._, cats.instances.all._, cats.syntax.show._
 scala> 3.show
 scala> "hello".show
 ```

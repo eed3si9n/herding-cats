@@ -18,7 +18,7 @@ data TrafficLight = Red | Yellow | Green
 これを Scala で書くと:
 
 ```console:new
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> :paste
 sealed trait TrafficLight
 object TrafficLight {

@@ -51,7 +51,7 @@ object Ior extends IorInstances with IorFunctions {
 これらの値は `Ior` の `left`、`right`、`both` メソッドを使って定義する:
 
 ```console:new
-scala> import cats._, cats.data.{ Ior, NonEmptyList => NEL }, cats.std.all._
+scala> import cats._, cats.data.{ Ior, NonEmptyList => NEL }, cats.instances.all._
 scala> Ior.right[NEL[String], Int](1)
 scala> Ior.left[NEL[String], Int](NEL("error"))
 scala> Ior.both[NEL[String], Int](NEL("warning"), 1)

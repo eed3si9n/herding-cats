@@ -59,9 +59,9 @@ Semigroup則に加えて、Monoid則はもう 2つの法則がある:
 REPL から Monoid則を検査してみよう:
 
 ```scala
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 import cats._
-import cats.std.all._
+import cats.instances.all._
 
 scala> import cats.kernel.laws.GroupLaws
 import cats.kernel.laws.GroupLaws
@@ -124,7 +124,7 @@ LYAHFGG:
 Cats はこれを提供しないけども、自分で実装してみる。
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.syntax.semigroup._
+scala> import cats._, cats.instances.all._, cats.syntax.semigroup._
 scala> :paste
 class Disjunction(val unwrap: Boolean) extends AnyVal
 object Disjunction {

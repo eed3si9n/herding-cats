@@ -23,7 +23,7 @@ EIP:
 #### アプリカティブなモジュラー反復
 
 ```console:new
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> import cats.data.{ Func, AppFunc, Const }
 scala> import Func.{ appFunc, appFuncU }
 ```

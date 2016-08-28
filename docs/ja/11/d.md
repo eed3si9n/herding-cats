@@ -60,7 +60,7 @@ sealed trait ProdFunctor[F[_], G[_]] extends Functor[Lambda[X => Prod[F, G, X]]]
 使ってみる:
 
 ```console:new
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> import cats.data.Prod
 scala> val x = Prod(List(1), (Some(1): Option[Int]))
 scala> Functor[Lambda[X => Prod[List, Option, X]]].map(x) { _ + 1 }

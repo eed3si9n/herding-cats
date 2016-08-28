@@ -15,7 +15,7 @@ out: Reader.html
 > 第11章では、関数を作る型、`(->) r` も、`Functor` のインスタンスであることを見ました。
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.syntax.functor._
+scala> import cats._, cats.instances.all._, cats.syntax.functor._
 scala> val f = (_: Int) * 2
 scala> val g = (_: Int) + 10
 scala> (g map f)(8)

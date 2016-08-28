@@ -31,9 +31,9 @@ This is based on a library called [Discipline][Discipline], which is a wrapper a
 We can run these tests from the REPL with ScalaCheck.
 
 ```scala
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 import cats._
-import cats.std.all._
+import cats.instances.all._
 
 scala> import cats.laws.discipline.FunctorTests
 import cats.laws.discipline.FunctorTests
@@ -60,7 +60,7 @@ package example
 
 import org.specs2.Specification
 import org.typelevel.discipline.specs2.Discipline
-import cats.std.AllInstances
+import cats.instances.AllInstances
 import cats.syntax.AllSyntax
 
 trait CatsSpec extends Specification with Discipline with AllInstances with AllSyntax

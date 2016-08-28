@@ -13,7 +13,7 @@ LYAHFGG:
 Scala に有理数が標準で入っていないので、`Double` を使う。以下が case class:
 
 ```console:new
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> :paste
 case class Prob[A](list: List[(A, Double)])
 

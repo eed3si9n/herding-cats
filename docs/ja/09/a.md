@@ -49,7 +49,7 @@ simulacrum のお陰で `flatten` はメソッドとしても導入されてい�
 これを抽象型にするために抽象関数を書く必要がある。
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.syntax.flatMap._
+scala> import cats._, cats.instances.all._, cats.syntax.flatMap._
 scala> :paste
 object Catnip {
   implicit class IdOp[A](val a: A) extends AnyVal {

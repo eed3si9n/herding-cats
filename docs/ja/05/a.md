@@ -37,7 +37,7 @@ class FlatMapOps[F[_], A](fa: F[A])(implicit F: FlatMap[F]) {
 これは `flatMap` 演算子とシンボルを使ったエイリアスである `>>=` を導入する。他の演算子に関しては後回しにしよう。とりあえず標準ライブラリで `flatMap` は慣れている:
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.syntax.flatMap._
+scala> import cats._, cats.instances.all._, cats.syntax.flatMap._
 scala> (Right(3): Either[String, Int]) flatMap { x => Right(x + 1) }
 ```
 

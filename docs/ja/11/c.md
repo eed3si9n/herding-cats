@@ -76,7 +76,7 @@ final case class Const[A, B](getConst: A) {
 `B` は `Functor` の型合わせのみに使われる phantom 型だ。
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.data.Const
+scala> import cats._, cats.instances.all._, cats.data.Const
 scala> import cats.syntax.functor._
 scala> Const(1) map { (_: String) + "!" }
 ```

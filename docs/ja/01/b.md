@@ -14,7 +14,7 @@ Cats で `Eq` 型クラスと同じものも `Eq` と呼ばれている。
 `Eq` は [non/algebra][algebra] から cats-kernel というサブプロジェクトに移行して、Cats の一部になった:
 
 ```console:error
-scala> import cats._, cats.std.all._, cats.syntax.eq._
+scala> import cats._, cats.instances.all._, cats.syntax.eq._
 scala> 1 === 1
 scala> 1 === "foo"
 scala> 1 == "foo"

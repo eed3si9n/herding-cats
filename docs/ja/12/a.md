@@ -69,7 +69,7 @@ Cats に恒等アプリカティブ・ファンクターは以下のように定
 `Id` を使って、`List(1, 2, 3)` を走査 (traverse) してみる。
 
 ```console:new
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> import cats.syntax.traverse._
 scala> List(1, 2, 3) traverse[Id, Int] { (x: Int) => x + 1 }
 ```

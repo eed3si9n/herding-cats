@@ -32,7 +32,7 @@ object Validated extends ValidatedInstances with ValidatedFunctions{
 値はこのように作る:
 
 ```console:new
-scala> import cats._, cats.data.Validated, cats.std.all._
+scala> import cats._, cats.data.Validated, cats.instances.all._
 scala> import Validated.{ valid, invalid }
 scala> valid[String, String]("event 1 ok")
 scala> invalid[String, String]("event 1 failed!")
