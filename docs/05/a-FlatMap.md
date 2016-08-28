@@ -19,6 +19,8 @@ Here's the typeclass [contract for FlatMap][FlatMapSource]:
 @typeclass trait FlatMap[F[_]] extends Apply[F] {
   def flatMap[A, B](fa: F[A])(f: A => F[B]): F[B]
 
+  def tailRecM[A, B](a: A)(f: A => F[Either[A, B]]): F[B]
+
   ....
 }
 ```

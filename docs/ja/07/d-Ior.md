@@ -103,3 +103,5 @@ scala> for {
 
 `Ior.left` は `Xor[A, B]` や `Either[A, B]` の失敗値のようにショート回路になるが、
 `Ior.both` は `Validated[A, B]` のように失敗値を累積させる。
+
+今日はここまで! 続きはまた今度。

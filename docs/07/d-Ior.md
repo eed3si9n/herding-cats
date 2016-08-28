@@ -102,3 +102,5 @@ scala> for {
 
 So `Ior.left` short curcuits like the failure values in `Xor[A, B]` and `Either[A, B]`,
 but `Ior.both` accumulates the failure values like `Validated[A, B]`.
+
+That's it for today! We'll pick it up from here later.

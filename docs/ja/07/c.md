@@ -92,5 +92,3 @@ scala> val errs: NEL[String] = result.fold(
          { r => sys.error("invalid is expected") }
        )
 ```
-
-今日はここまで! 続きはまた今度。

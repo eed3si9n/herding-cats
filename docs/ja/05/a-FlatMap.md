@@ -19,6 +19,8 @@ Cats は Monad 型クラスを `FlatMap` と `Monad` という 2つの型クラ�
 @typeclass trait FlatMap[F[_]] extends Apply[F] {
   def flatMap[A, B](fa: F[A])(f: A => F[B]): F[B]
 
+  def tailRecM[A, B](a: A)(f: A => F[Either[A, B]]): F[B]
+
   ....
 }
 ```
