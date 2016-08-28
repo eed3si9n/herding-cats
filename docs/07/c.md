@@ -64,7 +64,7 @@ For now, think of it as a list that's guaranteed to have at least one element.
 
 ```console
 scala> import cats.data.{ NonEmptyList => NEL }
-scala> NEL(1)
+scala> NEL.of(1)
 ```
 
 A semigroup should be formed for `NEL[A]` under `++` operation,
@@ -80,8 +80,8 @@ We can now use `NEL[A]` on the invalid side to accumulate the errors:
 scala> val result = {
          implicit val nelSemigroup: Semigroup[NEL[String]] = SemigroupK[NEL].algebra[String]
          (valid[NEL[String], String]("event 1 ok") |@|
-           invalid[NEL[String], String](NEL("event 2 failed!")) |@|
-           invalid[NEL[String], String](NEL("event 3 failed!"))) map {_ + _ + _}
+           invalid[NEL[String], String](NEL.of("event 2 failed!")) |@|
+           invalid[NEL[String], String](NEL.of("event 3 failed!"))) map {_ + _ + _}
        }
 ```
 

@@ -61,7 +61,7 @@ scala> val result = (valid[String, String]("event 1 ok") |@|
 
 ```console
 scala> import cats.data.{ NonEmptyList => NEL }
-scala> NEL(1)
+scala> NEL.of(1)
 ```
 
 `++` 演算に関して `NEL[A]` の semigroup が形成されていて欲しいところだけども、
@@ -77,8 +77,8 @@ scala> SemigroupK[NEL].algebra[String]
 scala> val result = {
          implicit val nelSemigroup: Semigroup[NEL[String]] = SemigroupK[NEL].algebra[String]
          (valid[NEL[String], String]("event 1 ok") |@|
-           invalid[NEL[String], String](NEL("event 2 failed!")) |@|
-           invalid[NEL[String], String](NEL("event 3 failed!"))) map {_ + _ + _}
+           invalid[NEL[String], String](NEL.of("event 2 failed!")) |@|
+           invalid[NEL[String], String](NEL.of("event 3 failed!"))) map {_ + _ + _}
        }
 ```
 

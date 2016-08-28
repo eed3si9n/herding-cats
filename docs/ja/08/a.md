@@ -53,8 +53,8 @@ object Ior extends IorInstances with IorFunctions {
 ```console:new
 scala> import cats._, cats.data.{ Ior, NonEmptyList => NEL }, cats.instances.all._
 scala> Ior.right[NEL[String], Int](1)
-scala> Ior.left[NEL[String], Int](NEL("error"))
-scala> Ior.both[NEL[String], Int](NEL("warning"), 1)
+scala> Ior.left[NEL[String], Int](NEL.of("error"))
+scala> Ior.both[NEL[String], Int](NEL.of("warning"), 1)
 ```
 
 scaladoc コメントに書いてある通り、`Ior` の `flatMap` は
@@ -72,22 +72,22 @@ scala> import cats.syntax.flatMap._
 scala> implicit val nelSemigroup: Semigroup[NEL[String]] = SemigroupK[NEL].algebra[String]
 scala> Ior.right[NEL[String], Int](1) >>=
          { x => Ior.right[NEL[String], Int](x + 1) }
-scala> Ior.left[NEL[String], Int](NEL("error 1")) >>=
+scala> Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
          { x => Ior.right[NEL[String], Int](x + 1) }
-scala> Ior.both[NEL[String], Int](NEL("warning 1"), 1) >>=
+scala> Ior.both[NEL[String], Int](NEL.of("warning 1"), 1) >>=
          { x => Ior.right[NEL[String], Int](x + 1) }
 scala> Ior.right[NEL[String], Int](1) >>=
-         { x => Ior.left[NEL[String], Int](NEL("error 2")) }
-scala> Ior.left[NEL[String], Int](NEL("error 1")) >>=
-         { x => Ior.left[NEL[String], Int](NEL("error 2")) }
-scala> Ior.both[NEL[String], Int](NEL("warning 1"), 1) >>=
-         { x => Ior.left[NEL[String], Int](NEL("error 2")) }
+         { x => Ior.left[NEL[String], Int](NEL.of("error 2")) }
+scala> Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
+         { x => Ior.left[NEL[String], Int](NEL.of("error 2")) }
+scala> Ior.both[NEL[String], Int](NEL.of("warning 1"), 1) >>=
+         { x => Ior.left[NEL[String], Int](NEL.of("error 2")) }
 scala> Ior.right[NEL[String], Int](1) >>=
-         { x => Ior.both[NEL[String], Int](NEL("warning 2"), x + 1) }
-scala> Ior.left[NEL[String], Int](NEL("error 1")) >>=
-         { x => Ior.both[NEL[String], Int](NEL("warning 2"), x + 1) }
-scala> Ior.both[NEL[String], Int](NEL("warning 1"), 1) >>=
-         { x => Ior.both[NEL[String], Int](NEL("warning 2"), x + 1) }
+         { x => Ior.both[NEL[String], Int](NEL.of("warning 2"), x + 1) }
+scala> Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
+         { x => Ior.both[NEL[String], Int](NEL.of("warning 2"), x + 1) }
+scala> Ior.both[NEL[String], Int](NEL.of("warning 1"), 1) >>=
+         { x => Ior.both[NEL[String], Int](NEL.of("warning 2"), x + 1) }
 ```
 
 `for` 内包表記からも使える:
@@ -96,8 +96,8 @@ scala> Ior.both[NEL[String], Int](NEL("warning 1"), 1) >>=
 scala> import cats.syntax.semigroup._
 scala> for {
          e1 <- Ior.right[NEL[String], Int](1)
-         e2 <- Ior.both[NEL[String], Int](NEL("event 2 warning"), e1 + 1)
-         e3 <- Ior.both[NEL[String], Int](NEL("event 3 warning"), e2 + 1)
+         e2 <- Ior.both[NEL[String], Int](NEL.of("event 2 warning"), e1 + 1)
+         e3 <- Ior.both[NEL[String], Int](NEL.of("event 3 warning"), e2 + 1)
        } yield (e1 |+| e2 |+| e3)
 ```
 
