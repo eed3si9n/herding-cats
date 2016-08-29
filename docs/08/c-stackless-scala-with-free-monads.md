@@ -143,5 +143,3 @@ scala> def toList[A](list: FreeMonoid[A]): List[A] =
            { case (x: A @unchecked, xs: FreeMonoid[A]) => x :: toList(xs) })
 scala> toList(xs)
 ```
-
-That's it for today.

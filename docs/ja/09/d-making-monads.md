@@ -69,6 +69,7 @@ case object Prob extends ProbInstances
 
 ```console
 scala> :paste
+import scala.annotation.tailrec
 case class Prob[A](list: List[(A, Double)])
 
 trait ProbInstances { self =>
@@ -80,9 +81,26 @@ trait ProbInstances { self =>
 
   implicit val probInstance: Monad[Prob] = new Monad[Prob] {
     def pure[A](a: A): Prob[A] = Prob((a, 1.0) :: Nil)
-    def flatMap[A, B](fa: Prob[A])(f: A => Prob[B]): Prob[B] = self.flatten(map(fa)(f)) 
+    def flatMap[A, B](fa: Prob[A])(f: A => Prob[B]): Prob[B] = self.flatten(map(fa)(f))
     override def map[A, B](fa: Prob[A])(f: A => B): Prob[B] =
       Prob(fa.list map { case (x, p) => (f(x), p) })
+    def tailRecM[A, B](a: A)(f: A => Prob[Either[A, B]]): Prob[B] = {
+      val buf = List.newBuilder[(B, Double)]
+      @tailrec def go(lists: List[List[(Either[A, B], Double)]]): Unit =
+        lists match {
+          case (ab :: abs) :: tail => ab match {
+            case (Right(b), p) =>
+              buf += ((b, p))
+              go(abs :: tail)
+            case (Left(a), p) =>
+              go(f(a).list :: abs :: tail)
+          }
+          case Nil :: tail => go(tail)
+          case Nil => ()
+        }
+      go(f(a).list :: Nil)
+      Prob(buf.result)
+    }
   }
   implicit def probShow[A]: Show[Prob[A]] = Show.fromToString
 }
