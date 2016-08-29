@@ -1,116 +1,80 @@
 
-  [MonadFilterSource]: $catsBaseUrl$/core/src/main/scala/cats/MonadFilter.scala
+  [FunctorFilterSource]: $catsBaseUrl$/core/src/main/scala/cats/FunctorFilter.scala
 
-### MonadFilter
+### FunctorFilter
 
 Scala's `for` comprehension allows filtering:
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.syntax.show._
+scala> import cats._, cats.instances.all._, cats.syntax.show._
 scala> for {
          x <- (1 to 50).toList if x.show contains '7'
        } yield x
 ```
 
-LYAHFGG:
-
-> The `MonadPlus` type class is for monads that can also act as monoids.
-
-Here's [the typeclass contract for `MonadFilter`][MonadFilterSource]:
+Here's [the typeclass contract for `FunctorFilter`][FunctorFilterSource]:
 
 ```scala
-/**
- * a Monad equipped with an additional method which allows us to
- * create an "Empty" value for the Monad (for whatever "empty" makes
- * sense for that particular monad). This is of particular interest to
- * us since it allows us to add a `filter` method to a Monad, which is
- * used when pattern matching or using guards in for comprehensions.
- */
-@typeclass trait MonadFilter[F[_]] extends Monad[F] {
-
-  def empty[A]: F[A]
-
-  ....
-}
-```
-
-This enables the derivative functions/operators `filter` and `filterM`:
-
-```scala
-@typeclass trait MonadFilter[F[_]] extends Monad[F] {
-
-  def empty[A]: F[A]
-
-  def filter[A](fa: F[A])(f: A => Boolean): F[A] =
-    flatMap(fa)(a => if (f(a)) pure(a) else empty[A])
-
-  def filterM[A](fa: F[A])(f: A => F[Boolean]): F[A] =
-    flatMap(fa)(a => flatMap(f(a))(b => if (b) pure(a) else empty[A]))
+@typeclass trait FunctorFilter[F[_]] extends Functor[F] {
+  /**
+   * A combined [[map]] and [[filter]]. Filtering is handled via `Option`
+   * instead of `Boolean` such that the output type `B` can be different than
+   * the input type `A`.
+   * ....
+   *
+   **/
+  def mapFilter[A, B](fa: F[A])(f: A => Option[B]): F[B]
 }
 ```
 
 We can use this like this:
 
 ```console
-scala> import cats.syntax.monadFilter._
-scala> def filterSeven[F[_]: MonadFilter](f: F[Int]): F[Int] =
+scala> import cats.syntax.functorFilter._
+scala> val english = Map(1 -> "one", 3 -> "three", 10 -> "ten")
+scala> (1 to 50).toList mapFilter { english.get(_) }
+```
+
+This enables the derivative functions/operators `collect`, `flattenOption`, and `filter`:
+
+```scala
+@typeclass trait FunctorFilter[F[_]] extends Functor[F] {
+
+  def mapFilter[A, B](fa: F[A])(f: A => Option[B]): F[B]
+
+  /**
+   * Similar to [[mapFilter]] but uses a partial function instead of a function
+   * that returns an `Option`.
+   */
+  def collect[A, B](fa: F[A])(f: PartialFunction[A, B]): F[B] =
+    mapFilter(fa)(f.lift)
+
+  /**
+   * "Flatten" out a structure by collapsing `Option`s.
+   */
+  def flattenOption[A](fa: F[Option[A]]): F[A] = mapFilter(fa)(identity)
+
+  /**
+   * Apply a filter to a structure such that the output structure contains all
+   * `A` elements in the input structure that satisfy the predicate `f` but none
+   * that don't.
+   */
+  def filter[A](fa: F[A])(f: A => Boolean): F[A] =
+    mapFilter(fa)(a => if (f(a)) Some(a) else None)
+}
+```
+
+We can use this like this:
+
+```console
+scala> def collectEnglish[F[_]: FunctorFilter](f: F[Int]): F[String] =
+         f collect {
+           case 1  => "one"
+           case 3  => "three"
+           case 10 => "ten"
+         }
+scala> collectEnglish((1 to 50).toList)
+scala> def filterSeven[F[_]: FunctorFilter](f: F[Int]): F[Int] =
          f filter { _.show contains '7' }
 scala> filterSeven((1 to 50).toList)
 ```
-
-#### A knight's quest
-
-LYAHFGG:
-
-> Here's a problem that really lends itself to being solved with non-determinism. Say you have a chess board and only one knight piece on it. We want to find out if the knight can reach a certain position in three moves.
-
-Instead of type aliasing a pair, let's make this into a case class again:
-
-```console
-scala> case class KnightPos(c: Int, r: Int)
-```
-
-Here's the function to calculate all of the knight's next positions:
-
-```console
-scala> case class KnightPos(c: Int, r: Int) {
-         def move: List[KnightPos] =
-           for {
-             KnightPos(c2, r2) <- List(KnightPos(c + 2, r - 1), KnightPos(c + 2, r + 1),
-               KnightPos(c - 2, r - 1), KnightPos(c - 2, r + 1),
-               KnightPos(c + 1, r - 2), KnightPos(c + 1, r + 2),
-               KnightPos(c - 1, r - 2), KnightPos(c - 1, r + 2)) if (
-               ((1 to 8).toList contains c2) && ((1 to 8).toList contains r2))
-           } yield KnightPos(c2, r2)
-       }
-scala> KnightPos(6, 2).move
-scala> KnightPos(8, 1).move
-```
-
-The answers look good. Now we implement chaining this three times:
-
-```console
-scala> case class KnightPos(c: Int, r: Int) {
-         def move: List[KnightPos] =
-           for {
-             KnightPos(c2, r2) <- List(KnightPos(c + 2, r - 1), KnightPos(c + 2, r + 1),
-             KnightPos(c - 2, r - 1), KnightPos(c - 2, r + 1),
-             KnightPos(c + 1, r - 2), KnightPos(c + 1, r + 2),
-             KnightPos(c - 1, r - 2), KnightPos(c - 1, r + 2)) if (
-             ((1 to 8).toList contains c2) && ((1 to 8).toList contains r2))
-           } yield KnightPos(c2, r2)
-         def in3: List[KnightPos] =
-           for {
-             first <- move
-             second <- first.move
-             third <- second.move
-           } yield third
-         def canReachIn3(end: KnightPos): Boolean = in3 contains end
-       }
-scala> KnightPos(6, 2) canReachIn3 KnightPos(6, 1)
-scala> KnightPos(6, 2) canReachIn3 KnightPos(7, 3)
-```
-
-As it turns out, from `(6, 2)` you can reach `(6, 1)` in three moves, but not `(7, 3)`. As with Pierre's bird example, one of key aspect of the monadic calculation is that the effect of one move can be passed on to the next.
-
-We'll pick up from here.

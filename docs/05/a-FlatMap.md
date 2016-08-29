@@ -19,6 +19,8 @@ Here's the typeclass [contract for FlatMap][FlatMapSource]:
 @typeclass trait FlatMap[F[_]] extends Apply[F] {
   def flatMap[A, B](fa: F[A])(f: A => F[B]): F[B]
 
+  def tailRecM[A, B](a: A)(f: A => F[Either[A, B]]): F[B]
+
   ....
 }
 ```
@@ -37,7 +39,7 @@ class FlatMapOps[F[_], A](fa: F[A])(implicit F: FlatMap[F]) {
 It introduces the `flatMap` operator and its symbolic alias `>>=`. We'll worry about the other operators later. We are used to `flapMap` from the standard library:
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.syntax.flatMap._
+scala> import cats._, cats.instances.all._, cats.syntax.flatMap._
 scala> (Right(3): Either[String, Int]) flatMap { x => Right(x + 1) }
 ```
 

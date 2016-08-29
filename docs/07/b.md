@@ -55,7 +55,7 @@ object Xor extends XorInstances with XorFunctions {
 These values are created using the `right` and `left` methods on `Xor`:
 
 ```console:new
-scala> import cats._, cats.data.Xor, cats.std.all._
+scala> import cats._, cats.data.Xor, cats.instances.all._
 scala> Xor.right[String, Int](1)
 scala> Xor.left[String, Int]("error")
 ```

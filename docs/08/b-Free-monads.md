@@ -137,7 +137,7 @@ Again, `fix` is provided so that the type inference works.
 We are also going to try to implement `FixE`, which adds an exception to this. Since `throw` and `catch` are reserved, I am renaming them to `throwy` and `catchy`:
 
 ```console
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> :paste
 sealed trait FixE[F[_], E]
 object FixE {
@@ -269,9 +269,8 @@ object Free {
 To use these datatypes in Cats, use `Free.liftF`:
 
 ```console
+scala> import cats.free.Free
 scala> :paste
-import cats.free.Free
-
 sealed trait CharToy[+Next]
 object CharToy {
   case class CharOutput[Next](a: Char, next: Next) extends CharToy[Next]

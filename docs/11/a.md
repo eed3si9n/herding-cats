@@ -165,7 +165,7 @@ The next goal is to abstract `foldB` and `foldLeft`.
 For example, `fold` apparently could be expressed as
 
 ```console
-scala> import cats._, cats.functor._, cats.std.all._
+scala> import cats._, cats.functor._, cats.instances.all._
 scala> :paste
 trait Fix[F[_,_], A]
 def cata[S[_,_]: Bifunctor, A, B](t: Fix[S, A])(f: S[A, B] => B): B = ???

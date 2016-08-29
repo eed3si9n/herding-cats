@@ -63,7 +63,7 @@ The equivalent in Cats is also called `Foldable`. Here's the [typeclass contract
 We can use this as follows:
 
 ```console:new
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> Foldable[List].foldLeft(List(1, 2, 3), 1) {_ * _}
 ```
 

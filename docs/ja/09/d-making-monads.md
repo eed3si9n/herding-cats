@@ -2,18 +2,18 @@
 out: making-monads.html
 ---
 
-### Making monads
+### モナドを作る
 
 LYAHFGG:
 
-> In this section, we're going to look at an example of how a type gets made, identified as a monad and then given the appropriate `Monad` instance. 
+> この節では、型が生まれてモナドであると確認され、適切な `Monad` インスタンスが与えられるまでの過程を、例題を通して学ぼうと思います。
 > ...
-> What if we wanted to model a non-deterministic value like `[3,5,9]`, but we wanted to express that `3` has a 50% chance of happening and `5` and `9` both have a 25% chance of happening? 
+> `[3,5,9]` のような非決定的値を表現したいのだけど、さらに `3` である確率は 50パーセント、`5` と `9` である確率はそれぞれ 25パーセントである、ということを表したくなったらどうしましょう？
 
-Since Scala doesn't have a built-in rational, let's just use `Double`. Here's the case class:
+Scala に有理数が標準で入っていないので、`Double` を使う。以下が case class:
 
 ```console:new
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> :paste
 case class Prob[A](list: List[(A, Double)])
 
@@ -24,7 +24,7 @@ trait ProbInstances {
 case object Prob extends ProbInstances
 ```
 
-> Is this a functor? Well, the list is a functor, so this should probably be a functor as well, because we just added some stuff to the list.
+> これってファンクターでしょうか？ええ、リストはファンクターですから、リストに何かを足したものである `Prob` もたぶんファンクターでしょう。
 
 ```console
 scala> :paste
@@ -42,7 +42,7 @@ scala> import cats.syntax.functor._
 scala> Prob((3, 0.5) :: (5, 0.25) :: (9, 0.25) :: Nil) map {-_} 
 ```
 
-Just like the book, we are going to implement `flatten` first.
+本と同様に `flatten` をまず実装する。
 
 ```console
 scala> :paste
@@ -65,10 +65,11 @@ trait ProbInstances {
 case object Prob extends ProbInstances
 ```
 
-This should be enough prep work for monad:
+これでモナドのための準備は整ったはずだ:
 
 ```console
 scala> :paste
+import scala.annotation.tailrec
 case class Prob[A](list: List[(A, Double)])
 
 trait ProbInstances { self =>
@@ -80,9 +81,26 @@ trait ProbInstances { self =>
 
   implicit val probInstance: Monad[Prob] = new Monad[Prob] {
     def pure[A](a: A): Prob[A] = Prob((a, 1.0) :: Nil)
-    def flatMap[A, B](fa: Prob[A])(f: A => Prob[B]): Prob[B] = self.flatten(map(fa)(f)) 
+    def flatMap[A, B](fa: Prob[A])(f: A => Prob[B]): Prob[B] = self.flatten(map(fa)(f))
     override def map[A, B](fa: Prob[A])(f: A => B): Prob[B] =
       Prob(fa.list map { case (x, p) => (f(x), p) })
+    def tailRecM[A, B](a: A)(f: A => Prob[Either[A, B]]): Prob[B] = {
+      val buf = List.newBuilder[(B, Double)]
+      @tailrec def go(lists: List[List[(Either[A, B], Double)]]): Unit =
+        lists match {
+          case (ab :: abs) :: tail => ab match {
+            case (Right(b), p) =>
+              buf += ((b, p))
+              go(abs :: tail)
+            case (Left(a), p) =>
+              go(f(a).list :: abs :: tail)
+          }
+          case Nil :: tail => go(tail)
+          case Nil => ()
+        }
+      go(f(a).list :: Nil)
+      Prob(buf.result)
+    }
   }
   implicit def probShow[A]: Show[Prob[A]] = Show.fromToString
 }
@@ -90,7 +108,7 @@ trait ProbInstances { self =>
 case object Prob extends ProbInstances
 ```
 
-The book says it satisfies the monad laws. Let's implement the `Coin` example:
+本によるとモナド則は満たしているらしい。`Coin` の例題も実装してみよう:
 
 ```console
 scala> :paste
@@ -109,7 +127,7 @@ def coin: Prob[Coin] = Prob(heads -> 0.5 :: tails -> 0.5 :: Nil)
 def loadedCoin: Prob[Coin] = Prob(heads -> 0.1 :: tails -> 0.9 :: Nil)
 ```
 
-Here's how we can implement `flipThree`:
+`flipThree` の実装はこうなる:
 
 ```console
 scala> import cats.syntax.flatMap._
@@ -122,4 +140,4 @@ scala> def flipThree: Prob[Boolean] = for {
 scala> flipThree
 ```
 
-So the probability of having all three coins on `Tails` even with a loaded coin is pretty low.
+イカサマのコインを 1つ使っても 3回とも裏が出る確率はかなり低いことが分かった。

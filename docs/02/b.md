@@ -29,7 +29,7 @@ Like the book let's look [how it's implemented][FunctorSource]:
 Here's how we can use this:
 
 ```console:new
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> Functor[List].map(List(1, 2, 3)) { _ + 1 }
 ```
 

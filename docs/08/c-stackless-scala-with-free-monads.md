@@ -76,7 +76,7 @@ object Trampoline {
 Let's try implementing `even` and `odd` from the talk:
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.free.{ Free, Trampoline }
+scala> import cats._, cats.instances.all._, cats.free.{ Free, Trampoline }
 scala> import Trampoline._
 scala> :paste
 def even[A](ns: List[A]): Trampoline[Boolean] =
@@ -143,5 +143,3 @@ scala> def toList[A](list: FreeMonoid[A]): List[A] =
            { case (x: A @unchecked, xs: FreeMonoid[A]) => x :: toList(xs) })
 scala> toList(xs)
 ```
-
-That's it for today.

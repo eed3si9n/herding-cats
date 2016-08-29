@@ -88,7 +88,7 @@ I'll omit the details, but the key function is this:
 Here's how we can use `actM`:
 
 ```console
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> :paste
 object Catnip {
   implicit class IdOp[A](val a: A) extends AnyVal {

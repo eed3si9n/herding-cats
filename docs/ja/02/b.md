@@ -28,7 +28,7 @@ LYAHFGG:
 このように使うことができる:
 
 ```console:new
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> Functor[List].map(List(1, 2, 3)) { _ + 1 }
 ```
 

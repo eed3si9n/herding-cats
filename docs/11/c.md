@@ -74,7 +74,7 @@ In the above, the type parameter `A` represents the value,
 but `B` is a phantom type used to make `Functor` happy.
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.data.Const
+scala> import cats._, cats.instances.all._, cats.data.Const
 scala> import cats.syntax.functor._
 scala> Const(1) map { (_: String) + "!" }
 ```

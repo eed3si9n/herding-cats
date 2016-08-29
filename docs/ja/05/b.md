@@ -26,7 +26,7 @@ LYAHFGG:
 本の `Pole` の例題を実装してみよう。
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.syntax.flatMap._
+scala> import cats._, cats.instances.all._, cats.syntax.flatMap._
 scala> :paste
 object Catnip {
   implicit class IdOp[A](val a: A) extends AnyVal {
@@ -317,9 +317,9 @@ Haskell スタイルの関数型プログラミングはコンテナや実行モ
 Discipline を使った Monad則の検査はこうなる:
 
 ```scala
-scala> import cats._, cats.std.all._, cats.laws.discipline.MonadTests
+scala> import cats._, cats.instances.all._, cats.laws.discipline.MonadTests
 import cats._
-import cats.std.all._
+import cats.instances.all._
 import cats.laws.discipline.MonadTests
 
 scala> val rs = MonadTests[Option].monad[Int, Int, Int]

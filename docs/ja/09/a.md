@@ -4,6 +4,7 @@ out: monadic-functions.html
 
   [fafmm]: http://learnyouahaskell.com/for-a-few-monads-more
   [925]: https://github.com/typelevel/cats/pull/925
+  [TraverseFilter]: TraverseFilter.html
 
 ### 便利なモナディック関数特集
 
@@ -49,7 +50,7 @@ simulacrum のお陰で `flatten` はメソッドとしても導入されてい�
 これを抽象型にするために抽象関数を書く必要がある。
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.syntax.flatMap._
+scala> import cats._, cats.instances.all._, cats.syntax.flatMap._
 scala> :paste
 object Catnip {
   implicit class IdOp[A](val a: A) extends AnyVal {
@@ -85,27 +86,7 @@ LYAHFGG:
 > ...
 > 述語は `Bool` を結果とするモナド値を返しています。
 
-Cats では `filterM` は `MonadFilter` によって実装されている。
-
-```scala
-@typeclass trait MonadFilter[F[_]] extends Monad[F] {
-
-  def empty[A]: F[A]
-
-  def filterM[A](fa: F[A])(f: A => F[Boolean]): F[A] =
-    flatMap(fa)(a => flatMap(f(a))(b => if (b) pure(a) else empty[A]))
-
-  ....
-}
-```
-
-このように使うことができる:
-
-```console
-scala> import cats.syntax.monadFilter._
-scala> List(1, 2, 3) filterM { x => List(true, false) }
-scala> Vector(1, 2, 3) filterM { x => Vector(true, false) }
-```
+Cats では `filterM` を提供しないが、[TraverseFilter][TraverseFilter] に `filterA` がある。
 
 #### foldM 関数
 

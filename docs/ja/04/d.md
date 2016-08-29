@@ -63,7 +63,7 @@ Cats でこれに対応するものも `Foldable` と呼ばれている。[型�
 このように使う:
 
 ```console:new
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> Foldable[List].foldLeft(List(1, 2, 3), 1) {_ * _}
 ```
 

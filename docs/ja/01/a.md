@@ -6,17 +6,16 @@ out: sbt.html
 
 ### sbt
 
-<s>Cat は現在実験段階にある。どれぐらい実験段階なのかと言うと、
-まだ公開されている JAR が出ていないので、自分で publishLocal する必要がある。</s>
+> Cats は現在開発段階にある新しいプロジェクトだ。改善のためのフィードバックやコントリビューションを歓迎する。このプロジェクトは速いペースで変化している途中なので、1.0 リリースが出てくるまでは互換性の保証はしない。(現在の予想だと 2016 Q3 あたり)
 
 Cats のリリース版が公開された。
 
 その後、以下のような `build.sbt` で試してみることができる:
 
 ```scala
-val catsVersion = "0.3.0"
-val catsAll = "org.spire-math" %% "cats" % catsVersion
-val macroParadise = compilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full)
+val catsVersion = "0.7.0"
+val catsAll = "org.typelevel" %% "cats" % catsVersion
+val macroParadise = compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 val kindProjector = compilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
 val resetAllAttrs = "org.scalamacros" %% "resetallattrs" % "1.0.0-M1"
 
@@ -44,7 +43,7 @@ lazy val root = (project in file(".")).
   )
 ```
 
-sbt 0.13.8 を用いて REPL を開く:
+sbt 0.13.12 を用いて REPL を開く:
 
 ```scala
 \$ sbt

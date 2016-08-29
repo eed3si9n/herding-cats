@@ -4,6 +4,7 @@ out: monadic-functions.html
 
   [fafmm]: http://learnyouahaskell.com/for-a-few-monads-more
   [925]: https://github.com/typelevel/cats/pull/925
+  [TraverseFilter]: TraverseFilter.html
 
 ### Some useful monadic functions
 
@@ -52,7 +53,7 @@ Since `Option[A]` already implements `flatten` we need to
 make an abtract function to turn it into an abtract type.
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.syntax.flatMap._
+scala> import cats._, cats.instances.all._, cats.syntax.flatMap._
 scala> :paste
 object Catnip {
   implicit class IdOp[A](val a: A) extends AnyVal {
@@ -90,27 +91,7 @@ LYAHFGG:
 > ...
 > The predicate returns a monadic value whose result is a `Bool`.
 
-In Cats, `filterM` is implemented in `MonadFilter`.
-
-```scala
-@typeclass trait MonadFilter[F[_]] extends Monad[F] {
-
-  def empty[A]: F[A]
-
-  def filterM[A](fa: F[A])(f: A => F[Boolean]): F[A] =
-    flatMap(fa)(a => flatMap(f(a))(b => if (b) pure(a) else empty[A]))
-
-  ....
-}
-```
-
-Here's how we can use this:
-
-```console
-scala> import cats.syntax.monadFilter._
-scala> List(1, 2, 3) filterM { x => List(true, false) }
-scala> Vector(1, 2, 3) filterM { x => Vector(true, false) }
-```
+Cats does not have `filterM`, but there's `filterA` on [TraverseFilter][TraverseFilter].
 
 #### foldM function
 

@@ -55,7 +55,7 @@ Suppose we want to also encode the notion of failure using `Option`.
 We can use the `Kleisli` datatype we saw yesterday as `ReaderT`, a monad transformer version of the `Reader` datatype, and stack it on top of `Option` like this:
 
 ```console
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> import cats.data.Kleisli
 scala> :paste
 type ReaderTOption[A, B] = Kleisli[Option, A, B]

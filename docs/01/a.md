@@ -6,15 +6,14 @@ out: sbt.html
 
 ### sbt
 
-<s>Cats is currently experimental. How experimental?
-There's no published JAR for it yet, so you have to publish it locally.</s>
+> Cats is a new project under active development. Feedback and contributions are welcomed as we look to improve it. This project is evolving quickly and we are making no guarantees about stability until a 1.0 release is made (current est. around Q3 2016).
 
 A released version of Cats is now available.
 
 After that, you can test it using `build.sbt` this:
 
 ```scala
-val catsVersion = "0.6.1"
+val catsVersion = "0.7.0"
 val catsAll = "org.typelevel" %% "cats" % catsVersion
 val macroParadise = compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 val kindProjector = compilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")

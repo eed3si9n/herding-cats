@@ -68,7 +68,7 @@ Here's how we can traverse over `List(1, 2, 3)` using `Id`.
 
 
 ```console:new
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> import cats.syntax.traverse._
 scala> List(1, 2, 3) traverse[Id, Int] { (x: Int) => x + 1 }
 ```

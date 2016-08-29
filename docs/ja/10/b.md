@@ -148,7 +148,7 @@ case class XorT[F[_], A, B](value: F[A Xor B]) {
 
 ```console
 scala> :paste
-import cats._, cats.std.all._
+import cats._, cats.instances.all._
 import cats.data.XorT
 object UserRepo {
   def followers(userId: Long)

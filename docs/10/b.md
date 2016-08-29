@@ -136,7 +136,7 @@ Here's `UserRepo.followers` with a dummy implementation:
 
 ```console
 scala> :paste
-import cats._, cats.std.all._
+import cats._, cats.instances.all._
 import cats.data.XorT
 object UserRepo {
   def followers(userId: Long)

@@ -16,7 +16,7 @@ out: Reader.html
 > In the chapter about applicatives, we saw that the function type, `(->) r` is an instance of `Functor`.
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.syntax.functor._
+scala> import cats._, cats.instances.all._, cats.syntax.functor._
 scala> val f = (_: Int) * 2
 scala> val g = (_: Int) + 10
 scala> (g map f)(8)

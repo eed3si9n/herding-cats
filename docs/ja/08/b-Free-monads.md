@@ -133,7 +133,7 @@ scala> { import Fix._, CharToy._
 これに例外処理を加えた `FixE` も実装してみる。`throw` と `catch` は予約語なので、`throwy`、`catchy` という名前に変える:
 
 ```console
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> :paste
 sealed trait FixE[F[_], E]
 object FixE {
@@ -265,9 +265,8 @@ object Free {
 これらのデータ型を使うには `Free.liftF` を使う:
 
 ```console
+scala> import cats.free.Free
 scala> :paste
-import cats.free.Free
-
 sealed trait CharToy[+Next]
 object CharToy {
   case class CharOutput[Next](a: Char, next: Next) extends CharToy[Next]

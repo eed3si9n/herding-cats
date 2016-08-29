@@ -26,7 +26,7 @@ LYAHFGG:
 Now let's try implementing the `Pole` example from the book.
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.syntax.flatMap._
+scala> import cats._, cats.instances.all._, cats.syntax.flatMap._
 scala> :paste
 object Catnip {
   implicit class IdOp[A](val a: A) extends AnyVal {
@@ -316,9 +316,9 @@ Instead of thinking "omg so many laws," know that there's an underlying structur
 Here's how to check Monad laws using Discipline:
 
 ```scala
-scala> import cats._, cats.std.all._, cats.laws.discipline.MonadTests
+scala> import cats._, cats.instances.all._, cats.laws.discipline.MonadTests
 import cats._
-import cats.std.all._
+import cats.instances.all._
 import cats.laws.discipline.MonadTests
 
 scala> val rs = MonadTests[Option].monad[Int, Int, Int]

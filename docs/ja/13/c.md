@@ -20,7 +20,7 @@ Kris Nuttycombe ([@nuttycom](https://twitter.com/nuttycom)) さんが投稿し�
 ここでは吉田さんと似た例を用いることにする。
 
 ```console:new
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 scala> :paste
 case class User(id: Long, name: String)
 

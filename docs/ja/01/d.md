@@ -4,7 +4,7 @@
 `Order` の他に、Cats は `PartialOrder` も定義する。
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.syntax.partialOrder._
+scala> import cats._, cats.instances.all._, cats.syntax.partialOrder._
 scala> 1 tryCompare 2
 scala> 1.0 tryCompare Double.NaN
 ```

@@ -59,9 +59,9 @@ In addition to the semigroup law, monoid must satify two more laws:
 Here's how we can check monoid laws from the REPL:
 
 ```scala
-scala> import cats._, cats.std.all._
+scala> import cats._, cats.instances.all._
 import cats._
-import cats.std.all._
+import cats.instances.all._
 
 scala> import cats.kernel.laws.GroupLaws
 import cats.kernel.laws.GroupLaws
@@ -122,7 +122,7 @@ LYAHFGG:
 Cats does not provide this, but we can implement it ourselves.
 
 ```console:new
-scala> import cats._, cats.std.all._, cats.syntax.semigroup._
+scala> import cats._, cats.instances.all._, cats.syntax.semigroup._
 scala> :paste
 class Disjunction(val unwrap: Boolean) extends AnyVal
 object Disjunction {

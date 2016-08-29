@@ -32,7 +32,7 @@ object Validated extends ValidatedInstances with ValidatedFunctions{
 Here's how to create the values:
 
 ```console:new
-scala> import cats._, cats.data.Validated, cats.std.all._
+scala> import cats._, cats.data.Validated, cats.instances.all._
 scala> import Validated.{ valid, invalid }
 scala> valid[String, String]("event 1 ok")
 scala> invalid[String, String]("event 1 failed!")
@@ -64,7 +64,7 @@ For now, think of it as a list that's guaranteed to have at least one element.
 
 ```console
 scala> import cats.data.{ NonEmptyList => NEL }
-scala> NEL(1)
+scala> NEL.of(1)
 ```
 
 A semigroup should be formed for `NEL[A]` under `++` operation,
@@ -80,8 +80,8 @@ We can now use `NEL[A]` on the invalid side to accumulate the errors:
 scala> val result = {
          implicit val nelSemigroup: Semigroup[NEL[String]] = SemigroupK[NEL].algebra[String]
          (valid[NEL[String], String]("event 1 ok") |@|
-           invalid[NEL[String], String](NEL("event 2 failed!")) |@|
-           invalid[NEL[String], String](NEL("event 3 failed!"))) map {_ + _ + _}
+           invalid[NEL[String], String](NEL.of("event 2 failed!")) |@|
+           invalid[NEL[String], String](NEL.of("event 3 failed!"))) map {_ + _ + _}
        }
 ```
 
@@ -95,5 +95,3 @@ scala> val errs: NEL[String] = result.fold(
          { r => sys.error("invalid is expected") }
        )
 ```
-
-That's it for today! We'll pick it up from here later.

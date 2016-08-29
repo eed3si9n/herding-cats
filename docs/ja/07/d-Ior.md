@@ -4,9 +4,10 @@ out: Ior.html
 
   [IorSource]: $catsBaseUrl$core/src/main/scala/cats/data/Ior.scala
 
-### Ior datatype
+### Ior データ型
 
-In Cats there is yet another datatype that represents an `A`-`B` pair called [Ior][IorSource].
+Cats には `A` と `B` のペアを表すデータ型がもう1つあって、
+[Ior][IorSource] と呼ばれている。
 
 ```scala
 /** Represents a right-biased disjunction that is either an `A`, or a `B`, or both an `A` and a `B`.
@@ -47,58 +48,60 @@ object Ior extends IorInstances with IorFunctions {
 }
 ```
 
-These values are created using the `left`, `right`, and `both` methods on `Ior`:
+これらの値は `Ior` の `left`、`right`、`both` メソッドを使って定義する:
 
 ```console:new
-scala> import cats._, cats.data.{ Ior, NonEmptyList => NEL }, cats.std.all._
+scala> import cats._, cats.data.{ Ior, NonEmptyList => NEL }, cats.instances.all._
 scala> Ior.right[NEL[String], Int](1)
-scala> Ior.left[NEL[String], Int](NEL("error"))
-scala> Ior.both[NEL[String], Int](NEL("warning"), 1)
+scala> Ior.left[NEL[String], Int](NEL.of("error"))
+scala> Ior.both[NEL[String], Int](NEL.of("warning"), 1)
 ```
 
-As noted in the scaladoc comment, `Ior`'s `flatMap` uses `Semigroup[A]` to accumulate
-failures when it sees an `Ior.both(...)` value.
-So we could probably use this as a hybrid of `Xor` and `Validated`.
+scaladoc コメントに書いてある通り、`Ior` の `flatMap` は
+`Ior.both(...)` 値をみると `Semigroup[A]` を用いて失敗値を累積 (accumulate) する。
+そのため、これは `Xor` と `Validated` のハイブリッドのような感覚で使えるかもしれない。
 
-One gotcha that I keep forgetting is that the `Semigroup` instance for
-`NonEmptyList` not available by default.
-I need to derive one from `SemigroupK` myself.
+忘れてて何回かハマってるのは、デフォルトでは `NonEmptyList` 
+の `Semigroup` のインスタンスが定義されていないことだ。
+自分で `SemigroupK` から導き出さなかればいけない。
 
-Here's how `flatMap` behaves for all nine combinations:
+`flatMap` の振る舞いを 9つ全ての組み合わせでみてみよう:
 
 ```console
 scala> import cats.syntax.flatMap._
 scala> implicit val nelSemigroup: Semigroup[NEL[String]] = SemigroupK[NEL].algebra[String]
 scala> Ior.right[NEL[String], Int](1) >>=
          { x => Ior.right[NEL[String], Int](x + 1) }
-scala> Ior.left[NEL[String], Int](NEL("error 1")) >>=
+scala> Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
          { x => Ior.right[NEL[String], Int](x + 1) }
-scala> Ior.both[NEL[String], Int](NEL("warning 1"), 1) >>=
+scala> Ior.both[NEL[String], Int](NEL.of("warning 1"), 1) >>=
          { x => Ior.right[NEL[String], Int](x + 1) }
 scala> Ior.right[NEL[String], Int](1) >>=
-         { x => Ior.left[NEL[String], Int](NEL("error 2")) }
-scala> Ior.left[NEL[String], Int](NEL("error 1")) >>=
-         { x => Ior.left[NEL[String], Int](NEL("error 2")) }
-scala> Ior.both[NEL[String], Int](NEL("warning 1"), 1) >>=
-         { x => Ior.left[NEL[String], Int](NEL("error 2")) }
+         { x => Ior.left[NEL[String], Int](NEL.of("error 2")) }
+scala> Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
+         { x => Ior.left[NEL[String], Int](NEL.of("error 2")) }
+scala> Ior.both[NEL[String], Int](NEL.of("warning 1"), 1) >>=
+         { x => Ior.left[NEL[String], Int](NEL.of("error 2")) }
 scala> Ior.right[NEL[String], Int](1) >>=
-         { x => Ior.both[NEL[String], Int](NEL("warning 2"), x + 1) }
-scala> Ior.left[NEL[String], Int](NEL("error 1")) >>=
-         { x => Ior.both[NEL[String], Int](NEL("warning 2"), x + 1) }
-scala> Ior.both[NEL[String], Int](NEL("warning 1"), 1) >>=
-         { x => Ior.both[NEL[String], Int](NEL("warning 2"), x + 1) }
+         { x => Ior.both[NEL[String], Int](NEL.of("warning 2"), x + 1) }
+scala> Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
+         { x => Ior.both[NEL[String], Int](NEL.of("warning 2"), x + 1) }
+scala> Ior.both[NEL[String], Int](NEL.of("warning 1"), 1) >>=
+         { x => Ior.both[NEL[String], Int](NEL.of("warning 2"), x + 1) }
 ```
 
-Let's try using it in `for` comprehension:
+`for` 内包表記からも使える:
 
 ```console
 scala> import cats.syntax.semigroup._
 scala> for {
          e1 <- Ior.right[NEL[String], Int](1)
-         e2 <- Ior.both[NEL[String], Int](NEL("event 2 warning"), e1 + 1)
-         e3 <- Ior.both[NEL[String], Int](NEL("event 3 warning"), e2 + 1)
+         e2 <- Ior.both[NEL[String], Int](NEL.of("event 2 warning"), e1 + 1)
+         e3 <- Ior.both[NEL[String], Int](NEL.of("event 3 warning"), e2 + 1)
        } yield (e1 |+| e2 |+| e3)
 ```
 
-So `Ior.left` short curcuits like the failure values in `Xor[A, B]` and `Either[A, B]`,
-but `Ior.both` accumulates the failure values like `Validated[A, B]`.
+`Ior.left` は `Xor[A, B]` や `Either[A, B]` の失敗値のようにショート回路になるが、
+`Ior.both` は `Validated[A, B]` のように失敗値を累積させる。
+
+今日はここまで! 続きはまた今度。
