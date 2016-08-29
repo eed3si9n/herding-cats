@@ -102,7 +102,7 @@ scala> val x = countWord traverse text
 We then need to run this state machine with an initial value `false` to get the result:
 
 ```console
-scala> x.runA(false).value
+scala> x.value.runA(false).value
 ```
 
 17 words.
@@ -116,7 +116,7 @@ scala> val allResults = countAll traverse text
 scala> val charCount = allResults.second
 scala> val lineCount = allResults.first.second
 scala> val wordCountState = allResults.first.first
-scala> val wordCount = wordCountState.runA(false).value
+scala> val wordCount = wordCountState.value.runA(false).value
 ```
 
 EIP:
