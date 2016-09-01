@@ -64,22 +64,13 @@ scala> import cats.data.{ NonEmptyList => NEL }
 scala> NEL.of(1)
 ```
 
-`++` 演算に関して `NEL[A]` の semigroup が形成されていて欲しいところだけども、
-デフォルトでは定義されていないため、`SemigroupK` から導き出す必要がある:
+`NEL[A]` を invalid 側に使って失敗値の蓄積を行うことができる:
 
 ```console
-scala> SemigroupK[NEL].algebra[String]
-```
-
-これで、`NEL[A]` を invalid 側に使って失敗値の蓄積を行うことができる:
-
-```console
-scala> val result = {
-         implicit val nelSemigroup: Semigroup[NEL[String]] = SemigroupK[NEL].algebra[String]
+scala> val result =
          (valid[NEL[String], String]("event 1 ok") |@|
            invalid[NEL[String], String](NEL.of("event 2 failed!")) |@|
            invalid[NEL[String], String](NEL.of("event 3 failed!"))) map {_ + _ + _}
-       }
 ```
 
 `Invalid` の中に全ての失敗メッセージが入っている。

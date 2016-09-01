@@ -60,15 +60,10 @@ As noted in the scaladoc comment, `Ior`'s `flatMap` uses `Semigroup[A]` to accum
 failures when it sees an `Ior.both(...)` value.
 So we could probably use this as a hybrid of `Xor` and `Validated`.
 
-One gotcha that I keep forgetting is that the `Semigroup` instance for
-`NonEmptyList` not available by default.
-I need to derive one from `SemigroupK` myself.
-
 Here's how `flatMap` behaves for all nine combinations:
 
 ```console
 scala> import cats.syntax.flatMap._
-scala> implicit val nelSemigroup: Semigroup[NEL[String]] = SemigroupK[NEL].algebra[String]
 scala> Ior.right[NEL[String], Int](1) >>=
          { x => Ior.right[NEL[String], Int](x + 1) }
 scala> Ior.left[NEL[String], Int](NEL.of("error 1")) >>=

@@ -67,22 +67,13 @@ scala> import cats.data.{ NonEmptyList => NEL }
 scala> NEL.of(1)
 ```
 
-A semigroup should be formed for `NEL[A]` under `++` operation,
-but it's not there by default, so we need to derive it off of `SemigroupK` as follows:
+We can use `NEL[A]` on the invalid side to accumulate the errors:
 
 ```console
-scala> SemigroupK[NEL].algebra[String]
-```
-
-We can now use `NEL[A]` on the invalid side to accumulate the errors:
-
-```console
-scala> val result = {
-         implicit val nelSemigroup: Semigroup[NEL[String]] = SemigroupK[NEL].algebra[String]
+scala> val result =
          (valid[NEL[String], String]("event 1 ok") |@|
            invalid[NEL[String], String](NEL.of("event 2 failed!")) |@|
            invalid[NEL[String], String](NEL.of("event 3 failed!"))) map {_ + _ + _}
-       }
 ```
 
 Inside `Invalid`, we were able to accumulate all failed messages.

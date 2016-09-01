@@ -61,15 +61,10 @@ scaladoc コメントに書いてある通り、`Ior` の `flatMap` は
 `Ior.both(...)` 値をみると `Semigroup[A]` を用いて失敗値を累積 (accumulate) する。
 そのため、これは `Xor` と `Validated` のハイブリッドのような感覚で使えるかもしれない。
 
-忘れてて何回かハマってるのは、デフォルトでは `NonEmptyList` 
-の `Semigroup` のインスタンスが定義されていないことだ。
-自分で `SemigroupK` から導き出さなかればいけない。
-
 `flatMap` の振る舞いを 9つ全ての組み合わせでみてみよう:
 
 ```console
 scala> import cats.syntax.flatMap._
-scala> implicit val nelSemigroup: Semigroup[NEL[String]] = SemigroupK[NEL].algebra[String]
 scala> Ior.right[NEL[String], Int](1) >>=
          { x => Ior.right[NEL[String], Int](x + 1) }
 scala> Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
