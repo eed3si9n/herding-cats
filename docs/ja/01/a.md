@@ -13,7 +13,7 @@ Cats のリリース版が公開された。
 その後、以下のような `build.sbt` で試してみることができる:
 
 ```scala
-val catsVersion = "0.7.0"
+val catsVersion = "0.7.2"
 val catsAll = "org.typelevel" %% "cats" % catsVersion
 val macroParadise = compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 val kindProjector = compilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
