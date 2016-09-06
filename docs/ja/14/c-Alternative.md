@@ -47,6 +47,9 @@ trait AlternativeLaws[F[_]] extends ApplicativeLaws[F] with MonoidKLaws[F] {
 
 Justin Le ([@mstk][@mstk]) さんが 2013年に書いた　[「オオカミ、ヤギ、キャベツ: List MonadPlus とロジックパズル」][wgc] を `Alternative` で実装してみよう。
 
+<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">Wolf, Goat, Cabbage: Solving simple logic problems in <a href="https://twitter.com/hashtag/haskell?src=hash">#haskell</a> using the List MonadPlus :) <a href="http://t.co/YkKi6EQdDy">http://t.co/YkKi6EQdDy</a></p>&mdash; Justin Le (@mstk) <a href="https://twitter.com/mstk/status/416294820982702080">December 26, 2013</a></blockquote>
+<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+
 > ある農家の人が持ち物のオオカミ、ヤギ、キャベツを連れて川を渡ろうとしている。ところが、ボートには自分以外もう一つのものしか運ぶことができない。オオカミとヤギを放ったらかしにすると、ヤギが食べられてしまう。ヤギとキャベツを放ったらかしにすると、キャベツが食べられてしまう。損害が無いように持ち物を川の向こうまで渡らせるにはどうすればいいだろうか?
 
 ```console:new

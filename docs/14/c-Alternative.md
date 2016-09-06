@@ -44,7 +44,12 @@ There's an [open question][altrightdist] by Yoshida-san on whether the last law 
 
 #### Wolf, Goat, Cabbage
 
-Here's Justin Le ([@mstk][@mstk])'s 2013 ['Wolf, Goat, Cabbage: The List MonadPlus & Logic Problems.'][wgc] We can try implementing this using `Alternative`.
+Here's Justin Le ([@mstk][@mstk])'s 2013 ['Wolf, Goat, Cabbage: The List MonadPlus & Logic Problems.'][wgc].
+
+<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">Wolf, Goat, Cabbage: Solving simple logic problems in <a href="https://twitter.com/hashtag/haskell?src=hash">#haskell</a> using the List MonadPlus :) <a href="http://t.co/YkKi6EQdDy">http://t.co/YkKi6EQdDy</a></p>&mdash; Justin Le (@mstk) <a href="https://twitter.com/mstk/status/416294820982702080">December 26, 2013</a></blockquote>
+<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+We can try implementing this using `Alternative`.
 
 > A farmer has a wolf, a goat, and a cabbage that he wishes to transport across a river. Unfortunately, his boat can carry only one thing at a time with him. He can’t leave the wolf alone with the goat, or the wolf will eat the goat. He can’t leave the goat alone with the cabbage, or the goat will eat the cabbage. How can he properly transport his belongings to the other side one at a time, without any disasters?
 
