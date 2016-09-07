@@ -210,12 +210,13 @@ scala> def stackyStack: State[Stack, Unit] = for {
 scala> stackyStack.run(List(1, 2, 3)).value
 ```
 
-`pop` と `push` も `get` と `put` を使って実装できる:
+`pop` と `push` も `get` と `set` を使って実装できる:
 
 ```console
 scala> val pop: State[Stack, Int] = for {
          s <- State.get[Stack]
          (x :: xs) = s
+         _ <- State.set[Stack](xs)
        } yield x
 scala> def push(x: Int): State[Stack, Unit] = for {
          xs <- State.get[Stack]
