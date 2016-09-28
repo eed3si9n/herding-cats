@@ -33,12 +33,13 @@ scala> def triangle4: Unit = {
 We can abstract out 4 into a parameter:
 
 ```console
-scala> def triangle(side: Int): Unit = {
-         (1 to side) foreach { row =>
-           (1 to row) foreach { col =>
-             println("*")
-           }
-         }
+scala> def triangle2(side: Int): Unit = {
+          (1 to side) foreach { row =>
+            (1 to row) foreach { col =>
+              print("*")
+            }
+            print("\n")
+          }
        }
 ```
 
