@@ -2,7 +2,7 @@
 out: Free-monads.html
 ---
 
-  [Free-monoids]: Free-monoids.htmls
+  [Free-monoids]: Free-monoids.html
   [@gabrielg439]: https://twitter.com/gabrielg439
   [wfmm]: http://www.haskellforall.com/2012/06/you-could-have-invented-free-monads.html
   [FreeSource]: $catsBaseUrl$free/src/main/scala/cats/free/Free.scala
