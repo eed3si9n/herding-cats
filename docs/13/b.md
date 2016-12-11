@@ -6,7 +6,7 @@ out: Eval.html
 
 ### Eval datatype
 
-Cats also comes with `Eval` datatype that contols evaluation.
+Cats also comes with `Eval` datatype that controls evaluation.
 
 ```scala
 sealed abstract class Eval[+A] extends Serializable { self =>
@@ -125,7 +125,7 @@ scala> z.value
 One useful feature of `Eval` is that it supports stack-safe lazy computation via `map` and `flatMap` methods,
 which use an internal trampoline to avoid stack overflow.
 
-You can also deter a computation which produces `Eval[A]` value using `Eval.defer`. Here's how `foldRight` is implemented for `List` for example:
+You can also defer a computation which produces `Eval[A]` value using `Eval.defer`. Here's how `foldRight` is implemented for `List` for example:
 
 ```scala
 def foldRight[A, B](fa: List[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
@@ -176,4 +176,4 @@ object OddEven1 {
 scala> OddEven1.even(200000).value
 ```
 
-In the earlier versions of Cats the above caused stackoverflow, but as BryanM let me know in the comment, David Gregory fixed it in [#769][769], so it works now.
+In the earlier versions of Cats the above caused stack overflow, but as BryanM let me know in the comment, David Gregory fixed it in [#769][769], so it works now.
