@@ -62,5 +62,5 @@ case class Car(model: String)
 scala> implicit val personShow = Show.show[Person](_.name)
 scala> Person("Alice").show
 scala> implicit val carShow = Show.fromToString[Car]
-scala> Car("CR-V")
+scala> Car("CR-V").show
 ```
