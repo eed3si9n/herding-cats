@@ -145,23 +145,23 @@ scala> val testService = new TestUserRepos with UserServices[Id] {}
 scala> testService.userService.isFriends(0L, 1L)
 ```
 
-#### XorT を用いた UserRepos
+#### EitherT を用いた UserRepos
 
-これは `XorT` (別名 `EitherT`) を使って `Future` にカスタムエラー型を乗せたものとも使うことができる。
+これは `EitherT` を使って `Future` にカスタムエラー型を乗せたものとも使うことができる。
 
 ```console
 scala> :paste
-import cats.data.XorT
-class UserRepos1(implicit ec: ExecutionContext) extends UserRepos[XorT[Future, Error, ?]] {
-  override val F = implicitly[Monad[XorT[Future, Error, ?]]]
+import cats.data.EitherT
+class UserRepos1(implicit ec: ExecutionContext) extends UserRepos[EitherT[Future, Error, ?]] {
+  override val F = implicitly[Monad[EitherT[Future, Error, ?]]]
   override val userRepo: UserRepo = new UserRepo1 {}
   trait UserRepo1 extends UserRepo {
-    def followers(userId: Long): XorT[Future, Error, List[User]] =
+    def followers(userId: Long): EitherT[Future, Error, List[User]] =
       userId match {
-        case 0L => XorT.right(Future { List(User(1, "Michael")) })
-        case 1L => XorT.right(Future { List(User(0, "Vito")) })
+        case 0L => EitherT.right(Future { List(User(1, "Michael")) })
+        case 1L => EitherT.right(Future { List(User(0, "Vito")) })
         case x =>
-          XorT.left(Future.successful { Error.UserNotFound(x) })
+          EitherT.left(Future.successful { Error.UserNotFound(x) })
       }
   }
 }
@@ -172,7 +172,7 @@ class UserRepos1(implicit ec: ExecutionContext) extends UserRepos[XorT[Future, E
 ```console
 scala> val service1 = {
   import ExecutionContext.Implicits._
-  new UserRepos1 with UserServices[XorT[Future, Error, ?]] {}
+  new UserRepos1 with UserServices[EitherT[Future, Error, ?]] {}
 }
 scala> {
   import scala.concurrent.duration._

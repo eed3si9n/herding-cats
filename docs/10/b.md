@@ -115,19 +115,19 @@ Regardless, both functions became convoluted compared to the original.
 And it's mostly a boilerplate to satisfy the types.
 I don't want to imagine doing this for *every* functions that uses `Future[Either[Error, A]]`.
 
-#### XorT datatype
+#### EitherT datatype
 
-Cats comes with `XorT` datatype, which is a monad transformer for `Xor` that we saw on [day 7][Xor].
+Cats comes with `EitherT` datatype, which is a monad transformer for `Either`.
 
 ```scala
 /**
- * Transformer for `Xor`, allowing the effect of an arbitrary type constructor `F` to be combined with the
- * fail-fast effect of `Xor`.
+ * Transformer for `Either`, allowing the effect of an arbitrary type constructor `F` to be combined with the
+ * fail-fast effect of `Either`.
  *
- * `XorT[F, A, B]` wraps a value of type `F[A Xor B]`. An `F[C]` can be lifted in to `XorT[F, A, C]` via `XorT.right`,
- * and lifted in to a `XorT[F, C, B]` via `XorT.left`.
+ * `EitherT[F, A, B]` wraps a value of type `F[Either[A, B]]`. An `F[C]` can be lifted in to `EitherT[F, A, C]` via `EitherT.right`,
+ * and lifted in to a `EitherT[F, C, B]` via `EitherT.left`.
  */
-case class XorT[F[_], A, B](value: F[A Xor B]) {
+case class EitherT[F[_], A, B](value: F[Either[A, B]]) {
   ....
 }
 ```
@@ -137,18 +137,18 @@ Here's `UserRepo.followers` with a dummy implementation:
 ```console
 scala> :paste
 import cats._, cats.instances.all._
-import cats.data.XorT
+import cats.data.EitherT
 object UserRepo {
   def followers(userId: Long)
-    (implicit ec: ExecutionContext): XorT[Future, Error, List[User]] =
+    (implicit ec: ExecutionContext): EitherT[Future, Error, List[User]] =
     userId match {
       case 0L =>
-        XorT.right(Future { List(User(1, "Michael")) })
+        EitherT.right(Future { List(User(1, "Michael")) })
       case 1L =>
-        XorT.right(Future { List(User(0, "Vito")) })
+        EitherT.right(Future { List(User(0, "Vito")) })
       case x =>
         println("not found")
-        XorT.left(Future.successful { Error.UserNotFound(x) })
+        EitherT.left(Future.successful { Error.UserNotFound(x) })
     }
 }
 import UserRepo.followers
@@ -158,7 +158,7 @@ Now let's try writing `isFriends0` function again.
 
 ```console
 scala> def isFriends3(user1: Long, user2: Long)
-         (implicit ec: ExecutionContext): XorT[Future, Error, Boolean] =
+         (implicit ec: ExecutionContext): EitherT[Future, Error, Boolean] =
          for{
            a <- followers(user1)
            b <- followers(user2)
@@ -177,7 +177,7 @@ scala> import scala.concurrent.duration._
 scala> Await.result(isFriends3(0, 1).value, 1 second)
 ```
 
-When the first user is not found, `XorT` will short circuit.
+When the first user is not found, `EitherT` will short circuit.
 
 ```scala
 scala> Await.result(isFriends3(2, 3).value, 1 second)
@@ -187,6 +187,6 @@ res34: cats.data.Xor[Error,Boolean] = Left(UserNotFound(2))
 
 Note that `"not found"` is printed only once.
 
-Unlike the `StateTReaderTOption` example, `XorT` seems usable in many situations.
+Unlike the `StateTReaderTOption` example, `EitherT` seems usable in many situations.
 
 That's it for today!

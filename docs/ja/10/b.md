@@ -127,19 +127,19 @@ scala> def isFriends2(user1: Long, user2: Long)
 しかも増えた部分のコードは紋切型 (ボイラープレート) な型合わせをしているのがほとんどだ。
 `Future[Either[Error, A]]` が出てくる**全て**の関数をこのように書き換えるのは想像したくない。
 
-#### XorT データ型
+#### EitherT データ型
 
-Cats には [7日目][Xor]にみた `Xor` のモナド変換子版である `XorT` データ型というものがある。
+`Either` のモナド変換子版である `XorT` データ型というものがある。
 
 ```scala
 /**
- * Transformer for `Xor`, allowing the effect of an arbitrary type constructor `F` to be combined with the
- * fail-fast effect of `Xor`.
+ * Transformer for `Either`, allowing the effect of an arbitrary type constructor `F` to be combined with the
+ * fail-fast effect of `Either`.
  *
- * `XorT[F, A, B]` wraps a value of type `F[A Xor B]`. An `F[C]` can be lifted in to `XorT[F, A, C]` via `XorT.right`,
- * and lifted in to a `XorT[F, C, B]` via `XorT.left`.
+ * `EitherT[F, A, B]` wraps a value of type `F[Either[A, B]]`. An `F[C]` can be lifted in to `EitherT[F, A, C]` via `EitherT.right`,
+ * and lifted in to a `EitherT[F, C, B]` via `EitherT.left`.
  */
-case class XorT[F[_], A, B](value: F[A Xor B]) {
+case class EitherT[F[_], A, B](value: F[Either[A, B]]) {
   ....
 }
 ```
@@ -149,18 +149,18 @@ case class XorT[F[_], A, B](value: F[A Xor B]) {
 ```console
 scala> :paste
 import cats._, cats.instances.all._
-import cats.data.XorT
+import cats.data.EitherT
 object UserRepo {
   def followers(userId: Long)
-    (implicit ec: ExecutionContext): XorT[Future, Error, List[User]] =
+    (implicit ec: ExecutionContext): EitherT[Future, Error, List[User]] =
     userId match {
       case 0L =>
-        XorT.right(Future { List(User(1, "Michael")) })
+        EitherT.right(Future { List(User(1, "Michael")) })
       case 1L =>
-        XorT.right(Future { List(User(0, "Vito")) })
+        EitherT.right(Future { List(User(0, "Vito")) })
       case x =>
         println("not found")
-        XorT.left(Future.successful { Error.UserNotFound(x) })
+        EitherT.left(Future.successful { Error.UserNotFound(x) })
     }
 }
 import UserRepo.followers
@@ -170,7 +170,7 @@ import UserRepo.followers
 
 ```console
 scala> def isFriends3(user1: Long, user2: Long)
-         (implicit ec: ExecutionContext): XorT[Future, Error, Boolean] =
+         (implicit ec: ExecutionContext): EitherT[Future, Error, Boolean] =
          for{
            a <- followers(user1)
            b <- followers(user2)
@@ -189,7 +189,7 @@ scala> import scala.concurrent.duration._
 scala> Await.result(isFriends3(0, 1).value, 1 second)
 ```
 
-最初のユーザが見つからない場合は、`XorT` はショートするようになっている。
+最初のユーザが見つからない場合は、`EitherT` はショートするようになっている。
 
 ```scala
 scala> Await.result(isFriends3(2, 3).value, 1 second)

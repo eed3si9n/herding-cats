@@ -6,6 +6,12 @@ out: Validated.html
 
 ### Validated データ型
 
+LYAHFGG:
+
+> `Either e a` 型も失敗の文脈を与えるモナドです。しかも、失敗に値を付加できるので、何が失敗したかを説明したり、そのほか失敗にまつわる有用な情報を提供できます。
+
+標準ライブラリの `Either[A, B]` は知ってるし、Cats が `Either` の右バイアスのファンクターを実装するという話も何回か出てきた。
+
 [Validated][ValidatedSource] という、`Either` の代わりに使えるデータ型がもう1つ Cats に定義されている:
 
 ```scala

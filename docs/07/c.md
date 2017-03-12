@@ -6,6 +6,13 @@ out: Validated.html
 
 ### Validated datatype
 
+LYAHFGG:
+
+> The `Either e a` type on the other hand, allows us to incorporate a context of possible failure to our values while also being able to attach values to the failure, so that they can describe what went wrong or provide some other useful info regarding the failure.
+
+We know `Either[A, B]` from the standard library, and we've covered that
+Cats implements a right-biased functor for it too.
+
 There's another datatype in Cats that we can use in place of `Either` called [Validated][ValidatedSource]:
 
 ```scala
