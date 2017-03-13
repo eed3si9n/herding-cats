@@ -43,5 +43,5 @@ lazy val root = (project in file(".")).
       Process(s"""tar zcf ${ packageSitePath.value.getAbsolutePath } ${ items.mkString(" ") }""", Some(siteDir)).!
       out
     },
-    packageSite := Def.sequential(clean, pfWrite, doPackageSite).value
+    packageSite := Def.sequential(/*clean,*/ pfWrite, doPackageSite).value
   )
