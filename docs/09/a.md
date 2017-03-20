@@ -13,8 +13,8 @@ out: monadic-functions.html
 > In this section, we're going to explore a few functions that either operate on monadic values or return monadic values as their results (or both!). Such functions are usually referred to as *monadic functions*.
 
 Unlike Haskell's standard `Monad`, Cats' `Monad`
-is more granularly designed with the hindsight of
-of weaker typeclasses. 
+is more granularly designed with the hindsight of 
+weaker typeclasses. 
 
 - `Monad`
 - extends `FlatMap` and `Applicative`
