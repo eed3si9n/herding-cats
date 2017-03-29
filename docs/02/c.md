@@ -31,9 +31,10 @@ This is based on a library called [Discipline][Discipline], which is a wrapper a
 We can run these tests from the REPL with ScalaCheck.
 
 ```scala
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 import cats._
-import cats.instances.all._
+import cats.data._
+import cats.implicits._
 
 scala> import cats.laws.discipline.FunctorTests
 import cats.laws.discipline.FunctorTests
@@ -140,7 +141,7 @@ object COption {
 Here's how we can use this:
 
 ```console:new
-scala> import cats._, cats.syntax.functor._
+scala> import cats._, cats.data._, cats.implicits._
 scala> import example._
 scala> (CSome(0, "ho"): COption[String]) map {identity}
 ```

@@ -68,8 +68,7 @@ java.lang.StackOverflowError
 次に、`pow` に [Writer][Writer] データ型を追加して、`LongProduct` モノイドを使って計算をさせてみたい。
 
 ```console
-scala> import cats._, cats.instances.all._, cats.data.Writer
-scala> import cats.syntax.flatMap._
+scala> import cats._, cats.data._, cats.implicits._
 scala> :paste
 case class LongProduct(value: Long)
 implicit val longProdMonoid: Monoid[LongProduct] = new Monoid[LongProduct] {

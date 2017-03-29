@@ -24,7 +24,7 @@ LYAHFGG:
 Let's check this:
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.eq._
+scala> import cats._, cats.data._, cats.implicits._
 scala> assert { (3 * 2) * (8 * 5) === 3 * (2 * (8 * 5)) }
 scala> assert { List("la") ++ (List("di") ++ List("da")) === (List("la") ++ List("di")) ++ List("da") }
 ```
@@ -53,7 +53,6 @@ trait Semigroup[@sp(Int, Long, Float, Double) A] extends Any with Serializable {
 This enables `combine` operator and its symbolic alias `|+|`. Let's try using this.
 
 ```console
-scala> import cats._, cats.instances.all._, cats.syntax.semigroup._
 scala> List(1, 2, 3) |+| List(4, 5, 6)
 scala> "one" |+| "two"
 ```
@@ -68,9 +67,10 @@ Here's how we can check the Semigroup laws from the REPL.
 Review [Checking laws with discipline][clwd] for the details:
 
 ```scala
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 import cats._
-import cats.instances.all._
+import cats.data._
+import cats.implicits._
 
 scala> import cats.kernel.laws.GroupLaws
 import cats.kernel.laws.GroupLaws

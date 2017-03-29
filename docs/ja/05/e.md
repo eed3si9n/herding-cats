@@ -17,7 +17,7 @@
 これを使ってデータ型の空の値を得ることができる:
 
 ```console:new
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> MonadFilter[List].empty[Int]
 ```
 

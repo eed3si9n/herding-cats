@@ -46,7 +46,7 @@ Cats 0.7.0 より TraverseFilter という新しい型クラスができた。
 以下のように使うことができる:
 
 ```console
-scala> import cats._, cats.instances.all._, cats.syntax.traverseFilter._
+scala> import cats._, cats.data._, cats.implicits._
 scala> List(1, 2, 3) filterA { x => List(true, false) }
 scala> Vector(1, 2, 3) filterA { x => Vector(true, false) }
 ```

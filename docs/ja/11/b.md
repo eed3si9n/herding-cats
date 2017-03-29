@@ -104,7 +104,7 @@ trait Bifunctor[F[_, _]] extends Serializable { self =>
 これが、`GenericList` の `Bifunctor` インスタンスだ。
 
 ```console
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> import cats.functor.Bifunctor
 scala> :paste
 implicit val listFBifunctor: Bifunctor[ListF] = new Bifunctor[ListF] {

@@ -76,8 +76,7 @@ final case class Const[A, B](getConst: A) {
 `B` は `Functor` の型合わせのみに使われる phantom 型だ。
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.data.Const
-scala> import cats.syntax.functor._
+scala> import cats._, cats.data._, cats.implicits._
 scala> Const(1) map { (_: String) + "!" }
 ```
 
@@ -88,6 +87,5 @@ scala> Const(1) map { (_: String) + "!" }
 > 整数と加算のモノイドの場合は、カウントや和となる...
 
 ```console
-scala> import cats.syntax.apply._
 scala> Const(2).retag[String => String] ap Const(1).retag[String]
 ```

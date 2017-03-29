@@ -22,7 +22,7 @@ foo = do
 
 Typically one would write `return (show x ++ y)`, but I wrote out `Just`, so it's clear that the last line is a monadic value. On the other hand, Scala would look as follows:
 
-```console
+```console:new
 scala> def foo = for {
          x <- Some(3)
          y <- Some("!")
@@ -88,15 +88,7 @@ I'll omit the details, but the key function is this:
 Here's how we can use `actM`:
 
 ```console
-scala> import cats._, cats.instances.all._
-scala> :paste
-object Catnip {
-  implicit class IdOp[A](val a: A) extends AnyVal {
-    def some: Option[A] = Some(a)
-  }
-  def none[A]: Option[A] = None
-}
-import Catnip._
+scala> import cats._, cats.data._, cats.implicits._
 scala> import example.MonadSyntax._
 scala> actM[Option, String] {
          val x = 3.some.next

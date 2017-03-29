@@ -28,7 +28,7 @@ LYAHFGG:
 このように使うことができる:
 
 ```console:new
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> Functor[List].map(List(1, 2, 3)) { _ + 1 }
 ```
 
@@ -57,7 +57,6 @@ object Functor {
 Cats は `Either[A, B]` の `Functor` インスタンスを定義する。
 
 ```console
-scala> import cats.syntax.functor._
 scala> (Right(1): Either[String, Int]) map { _ + 1 }
 scala> (Left("boom!"): Either[String, Int]) map { _ + 1 }
 ```
@@ -93,7 +92,7 @@ scala> h(3)
 ```haskell
 ghci> fmap (*3) (+100) 1
 303
-ghci> (*3) . (+100) \$ 1  
+ghci> (*3) . (+100) \$ 1
 303
 ```
 
@@ -207,7 +206,6 @@ LYAHFGG:
 
 ```console
 scala> val x: Either[String, Int] = Right(1)
-scala> import cats.syntax.eq._
 scala> assert { (x map identity) === x }
 ```
 

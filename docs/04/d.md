@@ -63,7 +63,7 @@ The equivalent in Cats is also called `Foldable`. Here's the [typeclass contract
 We can use this as follows:
 
 ```console:new
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> Foldable[List].foldLeft(List(1, 2, 3), 1) {_ * _}
 ```
 
@@ -104,7 +104,6 @@ Since the standard collection library doesn't implement `foldMap`,
 we can now use this as an operator.
 
 ```console
-scala> import cats.syntax.foldable._
 scala> List(1, 2, 3).foldMap(identity)(Monoid[Int])
 ```
 

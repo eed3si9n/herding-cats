@@ -17,7 +17,7 @@ Here's [the typeclass contract for `MonadFilter`][MonadFilterSource]:
 We can use this to get an empty value of a datatype that supports it.
 
 ```console:new
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> MonadFilter[List].empty[Int]
 ```
 

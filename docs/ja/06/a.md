@@ -24,7 +24,7 @@ foo = do
 
 通常は `return (show x ++ y)` と書くと思うけど、最後の行がモナディックな値であることを強調するために `Just` を書き出した。一方 Scala はこうだ:
 
-```console
+```console:new
 scala> def foo = for {
          x <- Some(3)
          y <- Some("!")
@@ -90,15 +90,7 @@ Async と Effectful のコードをコピペすることで単純な式と `val`
 `actM` を使ってみよう:
 
 ```console
-scala> import cats._, cats.instances.all._
-scala> :paste
-object Catnip {
-  implicit class IdOp[A](val a: A) extends AnyVal {
-    def some: Option[A] = Some(a)
-  }
-  def none[A]: Option[A] = None
-}
-import Catnip._
+scala> import cats._, cats.data._, cats.implicits._
 scala> import example.MonadSyntax._
 scala> actM[Option, String] {
          val x = 3.some.next

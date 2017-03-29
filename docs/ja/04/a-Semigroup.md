@@ -29,7 +29,7 @@ LYAHFGG:
 確かめてみる:
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.eq._
+scala> import cats._, cats.data._, cats.implicits._
 scala> assert { (3 * 2) * (8 * 5) === 3 * (2 * (8 * 5)) }
 scala> assert { List("la") ++ (List("di") ++ List("da")) === (List("la") ++ List("di")) ++ List("da") }
 ```
@@ -58,7 +58,6 @@ trait Semigroup[@sp(Int, Long, Float, Double) A] extends Any with Serializable {
 これは `combine` 演算子とそのシンボルを使ったエイリアスである `|+|` を可能とする。使ってみる。
 
 ```console
-scala> import cats._, cats.instances.all._, cats.syntax.semigroup._
 scala> List(1, 2, 3) |+| List(4, 5, 6)
 scala> "one" |+| "two"
 ```
@@ -73,9 +72,10 @@ scala> "one" |+| "two"
 詳細は[Discipline を用いた法則のチェック][clwd]を参照。
 
 ```scala
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 import cats._
-import cats.instances.all._
+import cats.data._
+import cats.implicits._
 
 scala> import cats.kernel.laws.GroupLaws
 import cats.kernel.laws.GroupLaws

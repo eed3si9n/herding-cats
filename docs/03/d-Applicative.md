@@ -35,7 +35,7 @@ LYAHFGG:
 It seems like it's basically a constructor that takes value `A` and returns `F[A]`.
 
 ```console:new
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> Applicative[List].pure(1)
 scala> Applicative[Option].pure(1)
 ```
@@ -74,14 +74,6 @@ scala> def sequenceA[F[_]: Applicative, A](list: List[F[A]]): F[List[A]] = list 
 Let's test it:
 
 ```console
-scala> :paste
-object Catnip {
-  implicit class IdOp[A](val a: A) extends AnyVal {
-    def some: Option[A] = Some(a)
-  }
-  def none[A]: Option[A] = None
-}
-import Catnip._
 scala> sequenceA(List(1.some, 2.some))
 scala> sequenceA(List(3.some, none[Int], 1.some))
 scala> sequenceA(List(List(1, 2, 3), List(4, 5, 6)))

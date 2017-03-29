@@ -50,7 +50,8 @@ object Ior extends IorInstances with IorFunctions {
 These values are created using the `left`, `right`, and `both` methods on `Ior`:
 
 ```console:new
-scala> import cats._, cats.data.{ Ior, NonEmptyList => NEL }, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
+scala> import cats.data.{ NonEmptyList => NEL }
 scala> Ior.right[NEL[String], Int](1)
 scala> Ior.left[NEL[String], Int](NEL.of("error"))
 scala> Ior.both[NEL[String], Int](NEL.of("warning"), 1)
@@ -63,7 +64,6 @@ So we could probably use this as a hybrid of `Xor` and `Validated`.
 Here's how `flatMap` behaves for all nine combinations:
 
 ```console
-scala> import cats.syntax.flatMap._
 scala> Ior.right[NEL[String], Int](1) >>=
          { x => Ior.right[NEL[String], Int](x + 1) }
 scala> Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
@@ -87,7 +87,6 @@ scala> Ior.both[NEL[String], Int](NEL.of("warning 1"), 1) >>=
 Let's try using it in `for` comprehension:
 
 ```console
-scala> import cats.syntax.semigroup._
 scala> for {
          e1 <- Ior.right[NEL[String], Int](1)
          e2 <- Ior.both[NEL[String], Int](NEL.of("event 2 warning"), e1 + 1)

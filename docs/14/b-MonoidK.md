@@ -32,7 +32,7 @@ The notion of emptiness here is defined in terms of the left and right identity 
 Given that `combine` and `combineK` behave differently, `Monoid[F[A]].empty` and `MonoidK[F].empty[A]` could also be different.
 
 ```console:new
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> Monoid[Option[Int]].empty
 scala> MonoidK[Option].empty[Int]
 ```

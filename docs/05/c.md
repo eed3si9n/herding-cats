@@ -11,14 +11,13 @@ LYAHFGG:
 Let's look at using `List` as Applicatives again:
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.cartesian._
+scala> import cats._, cats.data._, cats.implicits._
 scala> (List(1, 2, 3) |@| List(10, 100, 100)) map { _ * _ }
 ```
 
 > let's try feeding a non-deterministic value to a function:
 
 ```console
-scala> import cats.syntax.flatMap._
 scala> List(3, 4, 5) >>= { x => List(x, -x) }
 ```
 

@@ -18,7 +18,7 @@ data TrafficLight = Red | Yellow | Green
 In Scala this would be:
 
 ```console:new
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> :paste
 sealed trait TrafficLight
 object TrafficLight {
@@ -42,7 +42,6 @@ scala> implicit val trafficLightEq: Eq[TrafficLight] =
 Can I use the `Eq`?
 
 ```console:error
-scala> import cats.syntax.eq._
 scala> TrafficLight.Red === TrafficLight.Yellow
 ```
 

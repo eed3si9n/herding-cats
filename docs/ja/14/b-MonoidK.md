@@ -32,7 +32,7 @@ out: MonoidK.html
 `combine` と `combineK` の振る舞いが異なるため、`Monoid[F[A]].empty` と `MonoidK[F].empty[A]` も異なる値を取り得る。
 
 ```console:new
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> Monoid[Option[Int]].empty
 scala> MonoidK[Option].empty[Int]
 ```

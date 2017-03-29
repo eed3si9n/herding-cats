@@ -81,7 +81,7 @@ import simulacrum.typeclass
 This enables two operators `<<<` and `>>>`.
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.compose._
+scala> import cats._, cats.data._, cats.implicits._
 scala> val f = (_:Int) + 1
 scala> val g = (_:Int) * 100
 scala> (f >>> g)(2)
@@ -122,7 +122,6 @@ import simulacrum.typeclass
 This enables two methods `first[C]` and `second[C]`.
 
 ```console
-scala> import cats.syntax.strong._
 scala> val f_first = f.first[Int]
 scala> f_first((1, 1))
 scala> val f_second = f.second[Int]
@@ -156,6 +155,5 @@ import simulacrum.typeclass
 We can use it as `split` operator:
 
 ```console
-scala> import cats.syntax.split._
 scala> (f split g)((1, 1))
 ```

@@ -60,8 +60,7 @@ trait Config {
 の上に積み上げることができる:
 
 ```console
-scala> import cats._, cats.instances.all._
-scala> import cats.data.Kleisli
+scala> import cats._, cats.data._, cats.implicits._
 scala> :paste
 type ReaderTOption[A, B] = Kleisli[Option, A, B]
 object ReaderTOption {
@@ -109,7 +108,6 @@ trait Https {
 
 ```console
 scala> :paste
-import cats.syntax.eq._
 trait Program extends Users with Https {
   def userSearch(id: Long): ReaderTOption[Config, String] =
     for {
@@ -149,7 +147,6 @@ RWH:
 状態遷移を表す `StateT` を `ReaderTOption` の上に積んでみる。
 
 ```console
-scala> import cats.data.StateT
 scala> :paste
 type StateTReaderTOption[C, S, A] = StateT[({type l[X] = ReaderTOption[C, X]})#l, S, A]
 object StateTReaderTOption {

@@ -26,15 +26,7 @@ LYAHFGG:
 Now let's try implementing the `Pole` example from the book.
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.flatMap._
-scala> :paste
-object Catnip {
-  implicit class IdOp[A](val a: A) extends AnyVal {
-    def some: Option[A] = Some(a)
-  }
-  def none[A]: Option[A] = None
-}
-import Catnip._
+scala> import cats._, cats.data._, cats.implicits._
 scala> type Birds = Int
 scala> case class Pole(left: Birds, right: Birds)
 ```
@@ -177,7 +169,6 @@ LYAHFGG:
 First, let's write the nested lambda:
 
 ```console
-scala> import cats._, cats.syntax.show._
 scala> 3.some >>= { x => "!".some >>= { y => (x.show + y).some } }
 ```
 
@@ -278,7 +269,6 @@ LYAHFGG:
 > The first monad law states that if we take a value, put it in a default context with `return` and then feed it to a function by using `>>=`, it's the same as just taking the value and applying the function to it. 
 
 ```console
-scala> import cats.syntax.eq._
 scala> assert { (Monad[Option].pure(3) >>= { x => (x + 100000).some }) ===
          ({ (x: Int) => (x + 100000).some })(3) }
 ```
@@ -316,9 +306,10 @@ Instead of thinking "omg so many laws," know that there's an underlying structur
 Here's how to check Monad laws using Discipline:
 
 ```scala
-scala> import cats._, cats.instances.all._, cats.laws.discipline.MonadTests
+scala> import cats._, cats.data._, cats.implicits._, cats.laws.discipline.MonadTests
 import cats._
-import cats.instances.all._
+import cats.data._
+import cats.implicits._
 import cats.laws.discipline.MonadTests
 
 scala> val rs = MonadTests[Option].monad[Int, Int, Int]

@@ -54,7 +54,7 @@ Here's with the documentation and the typeclass instances:
 Here's how to create a value of `Id`:
 
 ```console:new
-scala> import cats._
+scala> import cats._, cats.data._, cats.implicits._
 scala> val one: Id[Int] = 1
 ```
 

@@ -25,7 +25,7 @@ trait Group[@sp(Int, Long, Float, Double) A] extends Any with Monoid[A] {
 This enables `inverse` method if the syntax is imported.
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.semigroup._, cats.syntax.group._, cats.syntax.eq._
+scala> import cats._, cats.data._, cats.implicits._
 scala> 1.inverse
 scala> assert((1 |+| 1.inverse) === Monoid[Int].empty)
 ```

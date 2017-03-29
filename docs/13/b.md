@@ -81,7 +81,7 @@ object Eval extends EvalInstances {
 The most useful one is `Eval.later`, which captures a by-name parameter in a `lazy val`.
 
 ```console:new
-scala> import cats._
+scala> import cats._, cats.data._, cats.implicits._
 scala> var g: Int = 0
 scala> val x = Eval.later {
   g = g + 1

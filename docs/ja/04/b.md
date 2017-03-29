@@ -59,9 +59,10 @@ Semigroup則に加えて、Monoid則はもう 2つの法則がある:
 REPL から Monoid則を検査してみよう:
 
 ```scala
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 import cats._
-import cats.instances.all._
+import cats.data._
+import cats.implicits._
 
 scala> import cats.kernel.laws.GroupLaws
 import cats.kernel.laws.GroupLaws
@@ -124,7 +125,7 @@ LYAHFGG:
 Cats はこれを提供しないけども、自分で実装してみる。
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.semigroup._
+scala> import cats._, cats.data._, cats.implicits._
 scala> :paste
 class Disjunction(val unwrap: Boolean) extends AnyVal
 object Disjunction {
@@ -155,7 +156,7 @@ object Conjunction {
   implicit val conjunctionMonoid: Monoid[Conjunction] = new Monoid[Conjunction] {
     def combine(a1: Conjunction, a2: Conjunction): Conjunction =
       Conjunction(a1.unwrap && a2.unwrap)
-    def empty: Conjunction = Conjunction(true)    
+    def empty: Conjunction = Conjunction(true)
   }
   implicit val conjunctionEq: Eq[Conjunction] = new Eq[Conjunction] {
     def eqv(a1: Conjunction, a2: Conjunction): Boolean =
@@ -251,14 +252,6 @@ Cats がこうなっているか確認しよう。
 使ってみよう。
 
 ```console
-scala> :paste
-object Catnip {
-  implicit class IdOp[A](val a: A) extends AnyVal {
-    def some: Option[A] = Some(a)
-  }
-  def none[A]: Option[A] = None
-}
-import Catnip._
 scala> none[String] |+| "andy".some
 scala> 1.some |+| none[Int]
 ```

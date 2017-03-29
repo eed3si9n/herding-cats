@@ -23,8 +23,7 @@ which is only available on my personal branch. (PR [#388][388] is pending)
 #### Modular iterations, applicatively
 
 ```console:new
-scala> import cats._, cats.instances.all._
-scala> import cats.data.{ Func, AppFunc, Const }
+scala> import cats._, cats.data._, cats.implicits._
 scala> import Func.{ appFunc, appFuncU }
 ```
 
@@ -64,7 +63,6 @@ This looks ok.
 > the difference is simply what number to use for each element, namely 1 for a newline and 0 for anything else.
 
 ```console
-scala> import cats.syntax.eq._
 scala> def testIf(b: Boolean): Int = if (b) 1 else 0
 scala> val countLine: AppFunc[Count, Char, Unit] =
          appFunc { (c: Char) => liftInt(testIf(c === '\n')) }

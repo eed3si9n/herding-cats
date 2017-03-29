@@ -42,14 +42,7 @@ scala> parseInt("foo")
 Here's the updated folding function:
 
 ```console
-scala> :paste
-object Catnip {
-  implicit class IdOp[A](val a: A) extends AnyVal {
-    def some: Option[A] = Some(a)
-  }
-  def none[A]: Option[A] = None
-}
-import Catnip._
+scala> import cats._, cats.data._, cats.implicits._
 scala> def foldingFunction(list: List[Double], next: String): Option[List[Double]] =
          (list, next) match {
            case (x :: y :: ys, "*") => ((y * x) :: ys).some
@@ -65,7 +58,6 @@ scala> foldingFunction(Nil, "wawa")
 Finally, here's the updated `solveRPN` using `foldM`:
 
 ```console
-scala> import cats._, cats.instances.all._
 scala> def solveRPN(s: String): Option[Double] =
          for {
            List(x) <- (Foldable[List].foldM(s.split(' ').toList, Nil: List[Double]) {foldingFunction})

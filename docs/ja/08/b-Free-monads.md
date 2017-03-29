@@ -133,7 +133,7 @@ scala> { import Fix._, CharToy._
 これに例外処理を加えた `FixE` も実装してみる。`throw` と `catch` は予約語なので、`throwy`、`catchy` という名前に変える:
 
 ```console
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> :paste
 sealed trait FixE[F[_], E]
 object FixE {

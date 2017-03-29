@@ -23,8 +23,7 @@ EIP:
 #### アプリカティブなモジュラー反復
 
 ```console:new
-scala> import cats._, cats.instances.all._
-scala> import cats.data.{ Func, AppFunc, Const }
+scala> import cats._, cats.data._, cats.implicits._
 scala> import Func.{ appFunc, appFuncU }
 ```
 
@@ -64,7 +63,6 @@ scala> countChar traverse text
 > 違いは使う数字が違うだけで、それぞれ改行文字ならば 1、それ以外は 0 を返すようにする。
 
 ```console
-scala> import cats.syntax.eq._
 scala> def testIf(b: Boolean): Int = if (b) 1 else 0
 scala> val countLine: AppFunc[Count, Char, Unit] =
          appFunc { (c: Char) => liftInt(testIf(c === '\n')) }

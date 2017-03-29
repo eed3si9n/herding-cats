@@ -6,7 +6,7 @@
 Scala の `for` 内包表記はフィルタリングができる:
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.show._
+scala> import cats._, cats.data._, cats.implicits._
 scala> for {
          x <- (1 to 50).toList if x.show contains '7'
        } yield x
@@ -31,7 +31,6 @@ scala> for {
 このように使うことができる:
 
 ```console
-scala> import cats.syntax.functorFilter._
 scala> val english = Map(1 -> "one", 3 -> "three", 10 -> "ten")
 scala> (1 to 50).toList mapFilter { english.get(_) }
 ```

@@ -26,15 +26,7 @@ LYAHFGG:
 本の `Pole` の例題を実装してみよう。
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.flatMap._
-scala> :paste
-object Catnip {
-  implicit class IdOp[A](val a: A) extends AnyVal {
-    def some: Option[A] = Some(a)
-  }
-  def none[A]: Option[A] = None
-}
-import Catnip._
+scala> import cats._, cats.data._, cats.implicits._
 scala> type Birds = Int
 scala> case class Pole(left: Birds, right: Birds)
 ```
@@ -176,7 +168,6 @@ LYAHFGG:
 まずは入れ子のラムダ式を書いてみよう:
 
 ```console
-scala> import cats._, cats.syntax.show._
 scala> 3.some >>= { x => "!".some >>= { y => (x.show + y).some } }
 ```
 
@@ -279,7 +270,6 @@ LYAHFGG:
 これを Scala で表現すると、
 
 ```console
-scala> import cats.syntax.eq._
 scala> assert { (Monad[Option].pure(3) >>= { x => (x + 100000).some }) ===
          ({ (x: Int) => (x + 100000).some })(3) }
 ```
@@ -317,9 +307,10 @@ Haskell スタイルの関数型プログラミングはコンテナや実行モ
 Discipline を使った Monad則の検査はこうなる:
 
 ```scala
-scala> import cats._, cats.instances.all._, cats.laws.discipline.MonadTests
+scala> import cats._, cats.data._, cats.implicits._, cats.laws.discipline.MonadTests
 import cats._
-import cats.instances.all._
+import cats.data._
+import cats.implicits._
 import cats.laws.discipline.MonadTests
 
 scala> val rs = MonadTests[Option].monad[Int, Int, Int]

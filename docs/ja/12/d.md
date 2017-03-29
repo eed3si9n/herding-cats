@@ -14,8 +14,7 @@ EIP:
 Cats を用いて実装するとこうなる:
 
 ```console:new
-scala> import cats._, cats.instances.all._
-scala> import cats.data.Const
+scala> import cats._, cats.data._, cats.implicits._
 scala> def contents[F[_], A](fa: F[A])(implicit FF: Traverse[F]): Const[List[A], F[Unit]] =
          {
            val contentsBody: A => Const[List[A], Unit] = { (a: A) => Const(List(a)) }
@@ -58,7 +57,6 @@ EIP:
 次に、EIP はアプリカティブ合成を説明するために `shape` と `contents` を以下のように組み合わせている:
 
 ```console
-scala> import cats.data.Prod
 scala> def decompose[F[_], A](fa: F[A])(implicit FF: Traverse[F]) =
          Prod[Const[List[A], ?], Id, F[Unit]](contents(fa), shape(fa))
 scala> val d = decompose(Vector(1, 2, 3))
@@ -74,7 +72,6 @@ scala> d.second
 これを `AppFunc` で書いてみよう。
 
 ```console
-scala> import cats.data.AppFunc
 scala> import cats.data.Func.appFunc
 scala> def contentsBody[A]: AppFunc[Const[List[A], ?], A, Unit] =
          appFunc[Const[List[A], ?], A, Unit] { (a: A) => Const(List(a)) }

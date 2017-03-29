@@ -39,7 +39,7 @@ class FlatMapOps[F[_], A](fa: F[A])(implicit F: FlatMap[F]) {
 It introduces the `flatMap` operator and its symbolic alias `>>=`. We'll worry about the other operators later. We are used to `flapMap` from the standard library:
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.flatMap._
+scala> import cats._, cats.data._, cats.implicits._
 scala> (Right(3): Either[String, Int]) flatMap { x => Right(x + 1) }
 ```
 
@@ -48,14 +48,6 @@ scala> (Right(3): Either[String, Int]) flatMap { x => Right(x + 1) }
 Following the book, let's explore `Option`. In this section I'll be less fussy about whether it's using Cats' typeclass or standard library's implementation. Here's `Option` as a functor:
 
 ```console
-scala> :paste
-object Catnip {
-  implicit class IdOp[A](val a: A) extends AnyVal {
-    def some: Option[A] = Some(a)
-  }
-  def none[A]: Option[A] = None
-}
-import Catnip._
 scala> "wisdom".some map { _ + "!" }
 scala> none[String] map { _ + "!" }
 ```
@@ -63,7 +55,6 @@ scala> none[String] map { _ + "!" }
 Here's `Option` as an `Apply`:
 
 ```console
-scala> import cats.syntax.apply._
 scala> ({(_: Int) + 3}.some) ap 3.some
 scala> none[String => String] ap "greed".some
 scala> ({(_: String).toInt}.some) ap none[String]

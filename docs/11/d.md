@@ -59,8 +59,7 @@ sealed trait ProdFunctor[F[_], G[_]] extends Functor[Lambda[X => Prod[F, G, X]]]
 Here's how to use it:
 
 ```console:new
-scala> import cats._, cats.instances.all._
-scala> import cats.data.Prod
+scala> import cats._, cats.data._, cats.implicits._
 scala> val x = Prod(List(1), (Some(1): Option[Int]))
 scala> Functor[Lambda[X => Prod[List, Option, X]]].map(x) { _ + 1 }
 ```
@@ -242,7 +241,6 @@ sealed abstract class AppFunc[F[_], A, B] extends Func[F, A, B] { self =>
 Here's how we can use it:
 
 ```console
-scala> import cats.data.Func
 scala> val f = Func.appFunc { x: Int => List(x.toString + "!") }
 scala> val g = Func.appFunc { x: Int => (Some(x.toString + "?"): Option[String]) }
 scala> val h = f product g

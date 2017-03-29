@@ -9,12 +9,10 @@ LYAHFGG:
 > `Eq` is used for types that support equality testing. The functions its members implement are `==` and `/=`.
 
 Cats' equivalent for the `Eq` typeclass is also called `Eq`.
-<s>Technically speaking, `cats.Eq` is actually a type alias of `algebra.Eq` from [non/algebra][algebra].
-Not sure if it matters, but it's probably a good idea that it's being reused</s>
 `Eq` was moved from [non/algebra][algebra] into cats-kernel subproject, and became part of Cats:
 
 ```console:error
-scala> import cats._, cats.instances.all._, cats.syntax.eq._
+scala> import cats._, cats.data._, cats.implicits._
 scala> 1 === 1
 scala> 1 === "foo"
 scala> 1 == "foo"

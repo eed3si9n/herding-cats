@@ -40,16 +40,7 @@ private[data] sealed trait KleisliFunctions {
 `Kleisli()` コンストラクタを使って `Kliesli` 値を構築する:
 
 ```console:new
-scala> :paste
-object Catnip {
-  implicit class IdOp[A](val a: A) extends AnyVal {
-    def some: Option[A] = Some(a)
-  }
-  def none[A]: Option[A] = None
-}
-import Catnip._
-scala> import cats._, cats.instances.all._
-scala> import cats.data.Kleisli
+scala> import cats._, cats.data._, cats.implicits._
 scala> val f = Kleisli { (x: Int) => (x + 1).some }
 scala> val g = Kleisli { (x: Int) => (x * 100).some }
 ```
@@ -57,7 +48,6 @@ scala> val g = Kleisli { (x: Int) => (x * 100).some }
 `compose` を使って関数を合成すると、右辺項が先に適用される。
 
 ```console
-scala> import cats.syntax.flatMap._
 scala> 4.some >>= (f compose g).run
 ```
 
@@ -83,8 +73,5 @@ Kleisli には、モナディック関数を別のアプリカティブ・ファ
 
 ```scala
 scala> val l = f.lift[List]
-l: cats.data.Kleisli[[α]List[Option[α]],Int,Int] = Kleisli(<function1>)
-
 scala> List(1, 2, 3) >>= l.run
-res0: List[Option[Int]] = List(Some(2), Some(3), Some(4))
 ```

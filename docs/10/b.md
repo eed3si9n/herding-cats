@@ -136,8 +136,7 @@ Here's `UserRepo.followers` with a dummy implementation:
 
 ```console
 scala> :paste
-import cats._, cats.instances.all._
-import cats.data.EitherT
+import cats._, cats.data._, cats.implicits._
 object UserRepo {
   def followers(userId: Long)
     (implicit ec: ExecutionContext): EitherT[Future, Error, List[User]] =

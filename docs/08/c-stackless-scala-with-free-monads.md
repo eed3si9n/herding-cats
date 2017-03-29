@@ -76,7 +76,7 @@ object Trampoline {
 Let's try implementing `even` and `odd` from the talk:
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.free.{ Free, Trampoline }
+scala> import cats._, cats.data._, cats.implicits._, cats.free.{ Free, Trampoline }
 scala> import Trampoline._
 scala> :paste
 def even[A](ns: List[A]): Trampoline[Boolean] =

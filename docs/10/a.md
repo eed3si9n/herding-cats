@@ -55,8 +55,7 @@ Suppose we want to also encode the notion of failure using `Option`.
 We can use the `Kleisli` datatype we saw yesterday as `ReaderT`, a monad transformer version of the `Reader` datatype, and stack it on top of `Option` like this:
 
 ```console
-scala> import cats._, cats.instances.all._
-scala> import cats.data.Kleisli
+scala> import cats._, cats.data._, cats.implicits._
 scala> :paste
 type ReaderTOption[A, B] = Kleisli[Option, A, B]
 object ReaderTOption {
@@ -104,7 +103,6 @@ We can compose these mini-programs into compound programs:
 
 ```console
 scala> :paste
-import cats.syntax.eq._
 trait Program extends Users with Https {
   def userSearch(id: Long): ReaderTOption[Config, String] =
     for {
@@ -141,7 +139,6 @@ RWH:
 We can stack `StateT` on top of `ReaderTOption` to represent state transfer.
 
 ```console
-scala> import cats.data.StateT
 scala> :paste
 type StateTReaderTOption[C, S, A] = StateT[({type l[X] = ReaderTOption[C, X]})#l, S, A]
 object StateTReaderTOption {

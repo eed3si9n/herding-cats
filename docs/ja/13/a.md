@@ -54,7 +54,7 @@ scaladoc と型クラスのインスタンスと一緒だとこうなってい�
 `Id` の値はこのように作成する:
 
 ```console:new
-scala> import cats._
+scala> import cats._, cats.data._, cats.implicits._
 scala> val one: Id[Int] = 1
 ```
 

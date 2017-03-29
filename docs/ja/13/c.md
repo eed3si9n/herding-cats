@@ -20,7 +20,7 @@ Kris Nuttycombe ([@nuttycom](https://twitter.com/nuttycom)) さんが投稿し�
 ここでは吉田さんと似た例を用いることにする。
 
 ```console:new
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> :paste
 case class User(id: Long, name: String)
 
@@ -151,7 +151,6 @@ scala> testService.userService.isFriends(0L, 1L)
 
 ```console
 scala> :paste
-import cats.data.EitherT
 class UserRepos1(implicit ec: ExecutionContext) extends UserRepos[EitherT[Future, Error, ?]] {
   override val F = implicitly[Monad[EitherT[Future, Error, ?]]]
   override val userRepo: UserRepo = new UserRepo1 {}

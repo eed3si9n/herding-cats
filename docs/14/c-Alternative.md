@@ -54,8 +54,7 @@ We can try implementing this using `Alternative`.
 > A farmer has a wolf, a goat, and a cabbage that he wishes to transport across a river. Unfortunately, his boat can carry only one thing at a time with him. He can’t leave the wolf alone with the goat, or the wolf will eat the goat. He can’t leave the goat alone with the cabbage, or the goat will eat the cabbage. How can he properly transport his belongings to the other side one at a time, without any disasters?
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.show._
-scala> import cats.syntax.cartesian._, cats.syntax.semigroupk._
+scala> import cats._, cats.data._, cats.implicits._
 scala> :paste
 sealed trait Character
 case object Farmer extends Character

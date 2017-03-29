@@ -40,16 +40,7 @@ private[data] sealed trait KleisliFunctions {
 We can use the `Kleisli()` constructor to construct a `Kliesli` value:
 
 ```console:new
-scala> :paste
-object Catnip {
-  implicit class IdOp[A](val a: A) extends AnyVal {
-    def some: Option[A] = Some(a)
-  }
-  def none[A]: Option[A] = None
-}
-import Catnip._
-scala> import cats._, cats.instances.all._
-scala> import cats.data.Kleisli
+scala> import cats._, cats.data._, cats.implicits._
 scala> val f = Kleisli { (x: Int) => (x + 1).some }
 scala> val g = Kleisli { (x: Int) => (x * 100).some }
 ```
@@ -57,7 +48,6 @@ scala> val g = Kleisli { (x: Int) => (x * 100).some }
 We can then compose the functions using `compose`, which runs the right-hand side first:
 
 ```console
-scala> import cats.syntax.flatMap._
 scala> 4.some >>= (f compose g).run
 ```
 
@@ -83,10 +73,7 @@ When I tried using it, I realized it's broken, so here's the fixed version [#354
 
 Here's how we can use it:
 
-```scala
+```console
 scala> val l = f.lift[List]
-l: cats.data.Kleisli[[α]List[Option[α]],Int,Int] = Kleisli(<function1>)
-
 scala> List(1, 2, 3) >>= l.run
-res0: List[Option[Int]] = List(Some(2), Some(3), Some(4))
 ```

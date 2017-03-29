@@ -63,7 +63,7 @@ Cats でこれに対応するものも `Foldable` と呼ばれている。[型�
 このように使う:
 
 ```console:new
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> Foldable[List].foldLeft(List(1, 2, 3), 1) {_ * _}
 ```
 
@@ -102,7 +102,6 @@ scala> Foldable[List].fold(List(1, 2, 3))(Monoid[Int])
 標準のコレクションライブラリが `foldMap` を実装しないため、演算子として使える。
 
 ```console
-scala> import cats.syntax.foldable._
 scala> List(1, 2, 3).foldMap(identity)(Monoid[Int])
 ```
 

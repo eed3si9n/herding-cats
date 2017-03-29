@@ -9,7 +9,7 @@ out: SemigroupK.html
 4日目に出てきた [Semigroup][Semigroup] は関数型プログラミングの定番で、色んな所に出てくる。
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.semigroup._
+scala> import cats._, cats.data._, cats.implicits._
 scala> List(1, 2, 3) |+| List(4, 5, 6)
 scala> "one" |+| "two"
 ```
@@ -38,7 +38,6 @@ scala> "one" |+| "two"
 これは `combineK` 演算子とシンボルを使ったエイリアスである `<+>` をを可能とする。使ってみる。
 
 ```console
-scala> import cats.syntax.semigroupk._
 scala> List(1, 2, 3) <+> List(4, 5, 6)
 ```
 
@@ -49,14 +48,6 @@ scala> List(1, 2, 3) <+> List(4, 5, 6)
 `Option[A]` は型パラメータ `A` が `Semigroup` である時に限って `Option[A]` も `Semigroup` を形成する。
 
 ```console
-scala> :paste
-object Catnip {
-  implicit class IdOp[A](val a: A) extends AnyVal {
-    def some: Option[A] = Some(a)
-  }
-  def none[A]: Option[A] = None
-}
-import Catnip._
 scala> case class Foo(x: String)
 ```
 

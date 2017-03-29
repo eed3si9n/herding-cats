@@ -31,7 +31,7 @@ scala> (3, "Smallish gang.") applyLog isBigGang
 メソッドの注入が implicit のユースケースとしては多いため、Scala 2.10 に implicit class という糖衣構文が登場して、クラスから強化クラスに昇進させるのが簡単になった。ログを `Semigroup` として一般化する:
 
 ```console
-scala> import cats._, cats.instances.all._, cats.syntax.semigroup._
+scala> import cats._, cats.data._, cats.implicits._
 scala> implicit class PairOps[A, B: Semigroup](pair: (A, B)) {
          def applyLog[C](f: A => (C, B)): (C, B) = {
            val (x, log) = pair
@@ -88,7 +88,6 @@ final case class WriterT[F[_], L, V](run: F[(L, V)]) {
 `Writer` の値はこのように作る:
 
 ```console
-scala> import cats.data.Writer
 scala> val w = Writer("Smallish gang.", 3)
 scala> val v = Writer.value[String, Int](3)
 scala> val l = Writer.tell[String]("Log something")
@@ -107,7 +106,6 @@ LYAHFGG:
 > こうして `Monad` インスタンスができたので、`Writer` を `do` 記法で自由に扱えます。
 
 ```console
-scala> import cats.syntax.show._
 scala> def logNumber(x: Int): Writer[List[String], Int] =
          Writer(List("Got number: " + x.show), 3)
 scala> def multWithLog: Writer[List[String], Int] =
@@ -123,7 +121,6 @@ scala> multWithLog.run
 以下が例題の `gcd` だ:
 
 ```console
-scala> import cats.syntax.flatMap._
 scala> :paste
 def gcd(a: Int, b: Int): Writer[List[String], Int] = {
   if (b == 0) for {

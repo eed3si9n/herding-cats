@@ -46,7 +46,7 @@ As noted in the comment, `filterA` is a more generalized (or weaker) version of 
 Here's how we can use this:
 
 ```console
-scala> import cats._, cats.instances.all._, cats.syntax.traverseFilter._
+scala> import cats._, cats.data._, cats.implicits._
 scala> List(1, 2, 3) filterA { x => List(true, false) }
 scala> Vector(1, 2, 3) filterA { x => Vector(true, false) }
 ```

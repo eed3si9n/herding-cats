@@ -32,9 +32,10 @@ trait FunctorLaws[F[_]] extends InvariantLaws[F] {
 ScalaCheck を使って REPL からテストを実行することができる。
 
 ```scala
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 import cats._
-import cats.instances.all._
+import cats.data._
+import cats.implicits._
 
 scala> import cats.laws.discipline.FunctorTests
 import cats.laws.discipline.FunctorTests
@@ -140,7 +141,7 @@ object COption {
 使ってみる:
 
 ```console:new
-scala> import cats._, cats.syntax.functor._
+scala> import cats._, cats.data._, cats.implicits._
 scala> import example._
 scala> (CSome(0, "ho"): COption[String]) map {identity}
 ```

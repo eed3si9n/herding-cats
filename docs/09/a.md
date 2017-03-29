@@ -13,8 +13,8 @@ out: monadic-functions.html
 > In this section, we're going to explore a few functions that either operate on monadic values or return monadic values as their results (or both!). Such functions are usually referred to as *monadic functions*.
 
 Unlike Haskell's standard `Monad`, Cats' `Monad`
-is more granularly designed with the hindsight of 
-weaker typeclasses. 
+is more granularly designed with the hindsight of
+weaker typeclasses.
 
 - `Monad`
 - extends `FlatMap` and `Applicative`
@@ -53,19 +53,11 @@ Since `Option[A]` already implements `flatten` we need to
 make an abtract function to turn it into an abtract type.
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.flatMap._
-scala> :paste
-object Catnip {
-  implicit class IdOp[A](val a: A) extends AnyVal {
-    def some: Option[A] = Some(a)
-  }
-  def none[A]: Option[A] = None
-}
-import Catnip._
+scala> import cats._, cats.data._, cats.implicits._
 scala> def join[F[_]: FlatMap, A](fa: F[F[A]]): F[A] =
          fa.flatten
 scala> join(1.some.some)
-``` 
+```
 
 If I'm going to make it into a function,
 I could've used the function syntax:
@@ -78,7 +70,6 @@ I tried using `flatten` method for an `Xor` of an `Xor` value,
 but it didn't seem to work:
 
 ```console:error
-scala> import cats.data.Xor
 scala> val xorOfXor = Xor.right[String, Xor[String, Int]](Xor.right[String, Int](1))
 scala> xorOfXor.flatten
 ```

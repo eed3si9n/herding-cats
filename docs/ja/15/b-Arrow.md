@@ -80,7 +80,7 @@ import simulacrum.typeclass
 これは `<<<` と `>>>` という2つの演算子を可能とする。
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.compose._
+scala> import cats._, cats.data._, cats.implicits._
 scala> val f = (_:Int) + 1
 scala> val g = (_:Int) * 100
 scala> (f >>> g)(2)
@@ -121,7 +121,6 @@ import simulacrum.typeclass
 これは `first[C]` と `second[C]` というメソッドを可能とする。
 
 ```console
-scala> import cats.syntax.strong._
 scala> val f_first = f.first[Int]
 scala> f_first((1, 1))
 scala> val f_second = f.second[Int]
@@ -155,6 +154,5 @@ import simulacrum.typeclass
 これは `split` 演算子として使うことができる:
 
 ```console
-scala> import cats.syntax.split._
 scala> (f split g)((1, 1))
 ```

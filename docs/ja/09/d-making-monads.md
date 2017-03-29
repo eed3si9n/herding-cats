@@ -13,7 +13,7 @@ LYAHFGG:
 Scala に有理数が標準で入っていないので、`Double` を使う。以下が case class:
 
 ```console:new
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> :paste
 case class Prob[A](list: List[(A, Double)])
 
@@ -38,8 +38,7 @@ trait ProbInstances {
   implicit def probShow[A]: Show[Prob[A]] = Show.fromToString
 }
 case object Prob extends ProbInstances
-scala> import cats.syntax.functor._
-scala> Prob((3, 0.5) :: (5, 0.25) :: (9, 0.25) :: Nil) map {-_} 
+scala> Prob((3, 0.5) :: (5, 0.25) :: (9, 0.25) :: Nil) map {-_}
 ```
 
 本と同様に `flatten` をまず実装する。
@@ -130,8 +129,6 @@ def loadedCoin: Prob[Coin] = Prob(heads -> 0.1 :: tails -> 0.9 :: Nil)
 `flipThree` の実装はこうなる:
 
 ```console
-scala> import cats.syntax.flatMap._
-scala> import cats.syntax.eq._
 scala> def flipThree: Prob[Boolean] = for {
   a <- coin
   b <- coin

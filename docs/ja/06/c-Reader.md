@@ -15,7 +15,7 @@ out: Reader.html
 > 第11章では、関数を作る型、`(->) r` も、`Functor` のインスタンスであることを見ました。
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.functor._
+scala> import cats._, cats.data._, cats.implicits._
 scala> val f = (_: Int) * 2
 scala> val g = (_: Int) + 10
 scala> (g map f)(8)
@@ -24,7 +24,6 @@ scala> (g map f)(8)
 > それから、関数はアプリカティブファンクターであることも見ましたね。これにより、関数が将来返すであろう値を、すでに持っているかのように演算できるようになりました。
 
 ```console
-scala> import cats.syntax.cartesian._
 scala> val h = (f |@| g) map {_ + _}
 scala> h(3)
 ```
@@ -34,7 +33,6 @@ scala> h(3)
 この例題も実装してみよう:
 
 ```console
-scala> import cats.syntax.flatMap._
 scala> val addStuff: Int => Int = for {
          a <- (_: Int) * 2
          b <- (_: Int) + 10
@@ -112,8 +110,6 @@ trait Program {
 
 ```console
 scala> :paste
-import cats.syntax.eq._
-
 val testUsers = List(User(0, 0, "Vito", "vito@example.com"),
   User(1, 0, "Michael", "michael@example.com"),
   User(2, 0, "Fredo", "fredo@example.com"))

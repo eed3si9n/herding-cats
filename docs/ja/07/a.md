@@ -125,7 +125,7 @@ REPL から `State` を使ってみると、最初の state は成功するけ�
 
 ```console:new
 scala> type Stack = List[Int]
-scala> import cats._, cats.data.State, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> val pop = State[Stack, Int] {
          case x :: xs => (xs, x)
          case Nil     => sys.error("stack is empty")
@@ -201,7 +201,6 @@ private[data] abstract class StateFunctions {
 本で出てくる `stackStack` 関数を実装して具体例でみてみよう。
 
 ```console
-scala> import cats.syntax.eq._
 scala> def stackyStack: State[Stack, Unit] = for {
          stackNow <- State.get[Stack]
          r <- if (stackNow === List(1, 2, 3)) State.set[Stack](List(8, 3, 1))

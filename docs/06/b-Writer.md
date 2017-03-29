@@ -34,7 +34,7 @@ Since method injection is a common use case for implicits, Scala 2.10 adds a syn
 Here's how we can generalize the log to a `Semigroup`:
 
 ```console
-scala> import cats._, cats.instances.all._, cats.syntax.semigroup._
+scala> import cats._, cats.data._, cats.implicits._
 scala> implicit class PairOps[A, B: Semigroup](pair: (A, B)) {
          def applyLog[C](f: A => (C, B)): (C, B) = {
            val (x, log) = pair
@@ -91,7 +91,6 @@ final case class WriterT[F[_], L, V](run: F[(L, V)]) {
 Here's how we can create `Writer` values:
 
 ```console
-scala> import cats.data.Writer
 scala> val w = Writer("Smallish gang.", 3)
 scala> val v = Writer.value[String, Int](3)
 scala> val l = Writer.tell[String]("Log something")
@@ -110,7 +109,6 @@ LYAHFGG:
 > Now that we have a `Monad` instance, we're free to use `do` notation for `Writer` values.
 
 ```console
-scala> import cats.syntax.show._
 scala> def logNumber(x: Int): Writer[List[String], Int] =
          Writer(List("Got number: " + x.show), 3)
 scala> def multWithLog: Writer[List[String], Int] =
@@ -126,7 +124,6 @@ scala> multWithLog.run
 Here's the `gcd` example:
 
 ```console
-scala> import cats.syntax.flatMap._
 scala> :paste
 def gcd(a: Int, b: Int): Writer[List[String], Int] = {
   if (b == 0) for {

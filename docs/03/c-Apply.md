@@ -44,15 +44,8 @@ LYAHFGG:
 
 Here's how we can use it with `Apply[Option].ap`:
 
-```console
-scala> :paste
-object Catnip {
-  implicit class IdOp[A](val a: A) extends AnyVal {
-    def some: Option[A] = Some(a)
-  }
-  def none[A]: Option[A] = None
-}
-import Catnip._
+```console:new
+scala> import cats._, cats.data._, cats.implicits._
 scala> Apply[Option].ap({{(_: Int) + 3}.some })(9.some)
 scala> Apply[Option].ap({{(_: Int) + 3}.some })(10.some)
 scala> Apply[Option].ap({{(_: String) + "hahah"}.some })(none[String])
@@ -66,7 +59,6 @@ simulacrum will automatically transpose the function defined on
 the typeclass contract into an operator, magically.
 
 ```console
-scala> import cats.syntax.apply._
 scala> ({(_: Int) + 3}.some) ap 9.some
 scala> ({(_: Int) + 3}.some) ap 10.some
 scala> ({(_: String) + "hahah"}.some) ap none[String]
@@ -123,7 +115,6 @@ For binary operators, `map2` can be used to hide the applicative style.
 Here we can write the same thing in two different ways:
 
 ```console
-scala> import cats.syntax.cartesian._
 scala> (3.some |@| List(4).some) map { _ :: _ }
 scala> Apply[Option].map2(3.some, List(4).some) { _ :: _ }
 ```

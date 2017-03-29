@@ -74,8 +74,7 @@ In the above, the type parameter `A` represents the value,
 but `B` is a phantom type used to make `Functor` happy.
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.data.Const
-scala> import cats.syntax.functor._
+scala> import cats._, cats.data._, cats.implicits._
 scala> Const(1) map { (_: String) + "!" }
 ```
 
@@ -86,6 +85,5 @@ and when `A` form a `Monoid`, an `Applicative` is derived automatically.
 > for the monoid of integers with addition, they count or sum...
 
 ```console
-scala> import cats.syntax.apply._
 scala> Const(2).retag[String => String] ap Const(1).retag[String]
 ```

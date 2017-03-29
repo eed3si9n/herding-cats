@@ -11,14 +11,13 @@ LYAHFGG:
 まずは Applicative としての `List` を復習する:
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.cartesian._
+scala> import cats._, cats.data._, cats.implicits._
 scala> (List(1, 2, 3) |@| List(10, 100, 100)) map { _ * _ }
 ```
 
 > それでは、非決定的値を関数に食わせてみましょう。
 
 ```console
-scala> import cats.syntax.flatMap._
 scala> List(3, 4, 5) >>= { x => List(x, -x) }
 ```
 

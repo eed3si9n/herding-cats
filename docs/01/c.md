@@ -8,7 +8,7 @@ LYAHFGG:
 Cats' equivalent for the `Ord` typeclass is `Order`.
 
 ```console:new,error
-scala> import cats._, cats.instances.all._, cats.syntax.order._
+scala> import cats._, cats.data._, cats.implicits._
 scala> 1 > 2.0
 scala> 1 compare 2.0
 scala> 1.0 compare 2.0

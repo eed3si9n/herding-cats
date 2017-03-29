@@ -29,7 +29,7 @@ Like the book let's look [how it's implemented][FunctorSource]:
 Here's how we can use this:
 
 ```console:new
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> Functor[List].map(List(1, 2, 3)) { _ + 1 }
 ```
 
@@ -58,7 +58,6 @@ except this `map` doesn't do the `CanBuildFrom` auto conversion.
 Cats defines a `Functor` instance for `Either[A, B]`.
 
 ```console
-scala> import cats.syntax.functor._
 scala> (Right(1): Either[String, Int]) map { _ + 1 }
 scala> (Left("boom!"): Either[String, Int]) map { _ + 1 }
 ```
@@ -92,7 +91,7 @@ Oh man, LYAHFGG came to the same conclusion as I did about the function composit
 ```haskell
 ghci> fmap (*3) (+100) 1
 303
-ghci> (*3) . (+100) \$ 1  
+ghci> (*3) . (+100) \$ 1
 303
 ```
 
@@ -201,7 +200,6 @@ We can check this for `Either[A, B]`.
 
 ```console
 scala> val x: Either[String, Int] = Right(1)
-scala> import cats.syntax.eq._
 scala> assert { (x map identity) === x }
 ```
 

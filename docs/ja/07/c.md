@@ -38,7 +38,7 @@ object Validated extends ValidatedInstances with ValidatedFunctions{
 値はこのように作る:
 
 ```console:new
-scala> import cats._, cats.data.Validated, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> import Validated.{ valid, invalid }
 scala> valid[String, String]("event 1 ok")
 scala> invalid[String, String]("event 1 failed!")
@@ -48,7 +48,6 @@ scala> invalid[String, String]("event 1 failed!")
 最初のイベントの結果を次へと連鎖するのでは無く、`Validated` は全イベントを検証する:
 
 ```console
-scala> import cats.syntax.cartesian._
 scala> val result = (valid[String, String]("event 1 ok") |@|
         invalid[String, String]("event 2 failed!") |@|
         invalid[String, String]("event 3 failed!")) map {_ + _ + _}

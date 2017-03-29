@@ -126,7 +126,7 @@ Let's consider how to implement stack with `State`:
 
 ```console:new
 scala> type Stack = List[Int]
-scala> import cats._, cats.data.State, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> val pop = State[Stack, Int] {
          case x :: xs => (xs, x)
          case Nil     => sys.error("stack is empty")
@@ -203,7 +203,6 @@ Similarly, `State.set(s)` in this context means to overwrite the state with `s` 
 Let's try using them with the `stackyStack` example from the book:
 
 ```console
-scala> import cats.syntax.eq._
 scala> def stackyStack: State[Stack, Unit] = for {
          stackNow <- State.get[Stack]
          r <- if (stackNow === List(1, 2, 3)) State.set[Stack](List(8, 3, 1))

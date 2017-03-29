@@ -67,8 +67,7 @@ java.lang.StackOverflowError
 Next, we'd try to add [Writer][Writer] datatype to do the `pow` calculation using `LongProduct` monoid.
 
 ```console
-scala> import cats._, cats.instances.all._, cats.data.Writer
-scala> import cats.syntax.flatMap._
+scala> import cats._, cats.data._, cats.implicits._
 scala> :paste
 case class LongProduct(value: Long)
 implicit val longProdMonoid: Monoid[LongProduct] = new Monoid[LongProduct] {

@@ -57,7 +57,7 @@ trait Unapply[TC[_[_]], MA] {
 具体例を用いて説明した方が早いと思う。
 
 ```console:new
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> def foo[F[_]: Applicative](fa: F[Int]): F[Int] = fa
 ```
 
@@ -133,7 +133,6 @@ trait FunctorSyntax extends Functor.ToFunctorOps with FunctorSyntax1
 `Apply` の　`*>` 演算子を使ってみる:
 
 ```console
-scala> import cats.syntax.cartesian._
 scala> (Right(1): Either[String, Int]) *> Right(2)
 ```
 

@@ -12,7 +12,7 @@ out: Cartesian.html
 > ここまではファンクター値を写すために、もっぱら 1 引数関数を使ってきました。では、2 引数関数でファンクターを写すと何が起こるでしょう？
 
 ```console
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> val hs = Functor[List].map(List(1, 2, 3, 4)) ({(_: Int) * (_:Int)}.curried)
 scala> Functor[List].map(hs) {_(9)}
 ```
@@ -44,27 +44,16 @@ Cats はこれを `Cartesian`、`Apply`、 `Applicative` に分けている。�
 
 Cartesian は `product` 関数を定義して、これは `F[A]` と `F[B]` から、効果 `F[_]` に包まれたペア `(A, B)` を作る。`product` のシンボリックなエイリアスは `|@|` で、これは applicative style とも呼ばれる。
 
-#### Catnip
+#### Option syntax
 
-次にへ行く前に、Scalaz の `Option` に型付けされた `Option` 値を作るための DSL を移植しよう。
-
-```console
-scala> :paste
-object Catnip {
-  implicit class IdOp[A](val a: A) extends AnyVal {
-    def some: Option[A] = Some(a)
-  }
-  def none[A]: Option[A] = None
-}
-import Catnip._
-```
-
-これで `(Some(9): Option[Int])` を `9.some` と書けるようになった。
+次にへ行く前に、`Optiona` 値を作るために Cats が導入する syntax をみてみる。
 
 ```console
 scala> 9.some
 scala> none[Int]
 ```
+
+これで `(Some(9): Option[Int])` を `9.some` と書ける。
 
 #### Applicative Style
 
@@ -83,7 +72,6 @@ Just (-2)
 Cats には CartesianBuilder 構文というものがある。
 
 ```console
-scala> import cats.syntax.cartesian._
 scala> (3.some |@| 5.some) map { _ - _ }
 scala> (none[Int] |@| 5.some) map { _ - _ }
 scala> (3.some |@| none[Int]) map { _ - _ }

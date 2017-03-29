@@ -50,19 +50,11 @@ simulacrum のお陰で `flatten` はメソッドとしても導入されてい�
 これを抽象型にするために抽象関数を書く必要がある。
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.flatMap._
-scala> :paste
-object Catnip {
-  implicit class IdOp[A](val a: A) extends AnyVal {
-    def some: Option[A] = Some(a)
-  }
-  def none[A]: Option[A] = None
-}
-import Catnip._
+scala> import cats._, cats.data._, cats.implicits._
 scala> def join[F[_]: FlatMap, A](fa: F[F[A]]): F[A] =
          fa.flatten
 scala> join(1.some.some)
-``` 
+```
 
 どうせ関数にしてしまうのなら、関数構文をそのまま使えばいい。
 
@@ -73,7 +65,6 @@ scala> FlatMap[Option].flatten(1.some.some)
 `Xor` 値の `Xor` に対して `flatten` メソッドを使おうと思ったけど、うまくいかなかった:
 
 ```console:error
-scala> import cats.data.Xor
 scala> val xorOfXor = Xor.right[String, Xor[String, Int]](Xor.right[String, Int](1))
 scala> xorOfXor.flatten
 ```

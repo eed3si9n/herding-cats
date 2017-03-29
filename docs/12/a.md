@@ -68,8 +68,7 @@ Here's how we can traverse over `List(1, 2, 3)` using `Id`.
 
 
 ```console:new
-scala> import cats._, cats.instances.all._
-scala> import cats.syntax.traverse._
+scala> import cats._, cats.data._, cats.implicits._
 scala> List(1, 2, 3) traverse[Id, Int] { (x: Int) => x + 1 }
 ```
 
@@ -90,7 +89,6 @@ We're going to skip this one.
 > The function `reduce` performs that accumulation, given an argument that assigns a value to each element
 
 ```console
-scala> import cats.data.Const
 scala> def reduce[A, B, F[_]](fa: F[A])(f: A => B)
          (implicit FF: Traverse[F], BB: Monoid[B]): B =
          {

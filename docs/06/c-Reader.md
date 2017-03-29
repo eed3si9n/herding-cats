@@ -16,7 +16,7 @@ out: Reader.html
 > In the chapter about applicatives, we saw that the function type, `(->) r` is an instance of `Functor`.
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.functor._
+scala> import cats._, cats.data._, cats.implicits._
 scala> val f = (_: Int) * 2
 scala> val g = (_: Int) + 10
 scala> (g map f)(8)
@@ -25,7 +25,6 @@ scala> (g map f)(8)
 > We've also seen that functions are applicative functors. They allow us to operate on the eventual results of functions as if we already had their results.
 
 ```console
-scala> import cats.syntax.cartesian._
 scala> val h = (f |@| g) map {_ + _}
 scala> h(3)
 ```
@@ -35,7 +34,6 @@ scala> h(3)
 Let's try implementing the example:
 
 ```console
-scala> import cats.syntax.flatMap._
 scala> val addStuff: Int => Int = for {
          a <- (_: Int) * 2
          b <- (_: Int) + 10
@@ -109,8 +107,6 @@ To run this `app`, we need something that provides an implementation for `UserRe
 
 ```console
 scala> :paste
-import cats.syntax.eq._
-
 val testUsers = List(User(0, 0, "Vito", "vito@example.com"),
   User(1, 0, "Michael", "michael@example.com"),
   User(2, 0, "Fredo", "fredo@example.com"))

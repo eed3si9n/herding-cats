@@ -12,7 +12,7 @@ out: Cartesian.html
 > So far, when we were mapping functions over functors, we usually mapped functions that take only one parameter. But what happens when we map a function like `*`, which takes two parameters, over a functor?
 
 ```console
-scala> import cats._, cats.instances.all._
+scala> import cats._, cats.data._, cats.implicits._
 scala> val hs = Functor[List].map(List(1, 2, 3, 4)) ({(_: Int) * (_:Int)}.curried)
 scala> Functor[List].map(hs) {_(9)}
 ```
@@ -43,27 +43,16 @@ Cats splits this into `Cartesian`, `Apply`, and `Applicative`. Here's the contra
 
 Cartesian defines `product` function, which produces a pair of `(A, B)` wrapped in effect `F[_]` out of `F[A]` and `F[B]`. The symbolic alias for `product` is `|@|` also known as the applicative style.
 
-#### Catnip
+#### Option syntax
 
-Before we move on, let's port Scalaz's DSL to create `Option` values typed to `Option`.
-
-```console
-scala> :paste
-object Catnip {
-  implicit class IdOp[A](val a: A) extends AnyVal {
-    def some: Option[A] = Some(a)
-  }
-  def none[A]: Option[A] = None
-}
-import Catnip._
-```
-
-This allows us to shorten `(Some(9): Option[Int])` to `9.some`.
+Before we move on, let's look at the syntax that Cats adds to create an `Option` value.
 
 ```console
 scala> 9.some
 scala> none[Int]
 ```
+
+We can write `(Some(9): Option[Int])` as `9.some`.
 
 #### The Applicative Style
 
@@ -83,7 +72,6 @@ Just (-2)
 Cats comes with the `CartesianBuilder` syntax.
 
 ```console
-scala> import cats.syntax.cartesian._
 scala> (3.some |@| 5.some) map { _ - _ }
 scala> (none[Int] |@| 5.some) map { _ - _ }
 scala> (3.some |@| none[Int]) map { _ - _ }

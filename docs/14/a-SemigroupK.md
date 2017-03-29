@@ -9,7 +9,7 @@ out: SemigroupK.html
 [Semigroup][Semigroup] we saw on day 4 is a bread and butter of functional programming that shows up in many places.
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.semigroup._
+scala> import cats._, cats.data._, cats.implicits._
 scala> List(1, 2, 3) |+| List(4, 5, 6)
 scala> "one" |+| "two"
 ```
@@ -40,7 +40,6 @@ There's a similar typeclass called `SemigroupK` for type constructors `F[_]`.
 This enables `combineK` operator and its symbolic alias `<+>`. Let's try using this.
 
 ```console
-scala> import cats.syntax.semigroupk._
 scala> List(1, 2, 3) <+> List(4, 5, 6)
 ```
 
@@ -51,14 +50,6 @@ Unlike `Semigroup`, `SemigroupK` works with any type parameter of `F[_]`.
 `Option[A]` can form a `Semigroup` only when the type parameter `A` forms a `Semigroup`.
 
 ```console
-scala> :paste
-object Catnip {
-  implicit class IdOp[A](val a: A) extends AnyVal {
-    def some: Option[A] = Some(a)
-  }
-  def none[A]: Option[A] = None
-}
-import Catnip._
 scala> case class Foo(x: String)
 ```
 

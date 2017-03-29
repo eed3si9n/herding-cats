@@ -69,8 +69,7 @@ Cats に恒等アプリカティブ・ファンクターは以下のように定
 `Id` を使って、`List(1, 2, 3)` を走査 (traverse) してみる。
 
 ```console:new
-scala> import cats._, cats.instances.all._
-scala> import cats.syntax.traverse._
+scala> import cats._, cats.data._, cats.implicits._
 scala> List(1, 2, 3) traverse[Id, Int] { (x: Int) => x + 1 }
 ```
 
@@ -92,7 +91,6 @@ scala> List(1, 2, 3) traverse { (x: Int) => None }
 > `reduce` 関数は各要素に値を割り当てる関数を受け取って、累積する。
 
 ```console
-scala> import cats.data.Const
 scala> def reduce[A, B, F[_]](fa: F[A])(f: A => B)
          (implicit FF: Traverse[F], BB: Monoid[B]): B =
          {

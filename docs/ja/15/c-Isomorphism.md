@@ -12,7 +12,7 @@ Lawvere:
 残念ながら Cats には同型射を表すデータ型が無いため、自前で定義する必要がある。
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.arrow.Arrow
+scala> import cats._, cats.data._, cats.implicits._, cats.arrow.Arrow
 scala> :paste
 object Isomorphisms {
   trait Isomorphism[Arrow[_, _], A, B] { self =>
@@ -65,8 +65,10 @@ ScalaCheck だとこう書ける:
 scala> import org.scalacheck.{Prop, Arbitrary, Gen}
 import org.scalacheck.{Prop, Arbitrary, Gen}
 
-scala> import cats.syntax.eq._
-import cats.syntax.eq._
+scala> import cats._, cats.data._, cats.implicits._
+import cats._
+import cats.data._
+import cats.implicits._
 
 scala> def func1EqualsProp[A, B](f: A => B, g: A => B)
          (implicit ev1: Eq[B], ev2: Arbitrary[A]): Prop =

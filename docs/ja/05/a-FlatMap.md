@@ -39,7 +39,7 @@ class FlatMapOps[F[_], A](fa: F[A])(implicit F: FlatMap[F]) {
 これは `flatMap` 演算子とシンボルを使ったエイリアスである `>>=` を導入する。他の演算子に関しては後回しにしよう。とりあえず標準ライブラリで `flatMap` は慣れている:
 
 ```console:new
-scala> import cats._, cats.instances.all._, cats.syntax.flatMap._
+scala> import cats._, cats.data._, cats.implicits._
 scala> (Right(3): Either[String, Int]) flatMap { x => Right(x + 1) }
 ```
 
@@ -49,14 +49,6 @@ scala> (Right(3): Either[String, Int]) flatMap { x => Right(x + 1) }
 以下がファンクターとしての `Option`:
 
 ```console
-scala> :paste
-object Catnip {
-  implicit class IdOp[A](val a: A) extends AnyVal {
-    def some: Option[A] = Some(a)
-  }
-  def none[A]: Option[A] = None
-}
-import Catnip._
 scala> "wisdom".some map { _ + "!" }
 scala> none[String] map { _ + "!" }
 ```
@@ -64,7 +56,6 @@ scala> none[String] map { _ + "!" }
 `Apply` としての `Option`:
 
 ```console
-scala> import cats.syntax.apply._
 scala> ({(_: Int) + 3}.some) ap 3.some
 scala> none[String => String] ap "greed".some
 scala> ({(_: String).toInt}.some) ap none[String]

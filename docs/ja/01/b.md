@@ -9,12 +9,10 @@ LYAHFGG:
 > `Eq` は等値性をテストできる型に使われます。Eq のインスタンスが定義すべき関数は `==` と `/=` です。
 
 Cats で `Eq` 型クラスと同じものも `Eq` と呼ばれている。
-<s>細かい点を言うと、`cats.Eq` は実は [non/algebra][algebra] の `algebra.Eq` の型エイリアスだ。
-これがどういう影響を及ぼすかは未だ分からないけども、多分再利用してるのはいいことだろうと思う</s>
 `Eq` は [non/algebra][algebra] から cats-kernel というサブプロジェクトに移行して、Cats の一部になった:
 
 ```console:error
-scala> import cats._, cats.instances.all._, cats.syntax.eq._
+scala> import cats._, cats.data._, cats.implicits._
 scala> 1 === 1
 scala> 1 === "foo"
 scala> 1 == "foo"
