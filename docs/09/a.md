@@ -66,8 +66,7 @@ I could've used the function syntax:
 scala> FlatMap[Option].flatten(1.some.some)
 ```
 
-I tried using `flatten` method for an `Xor` of an `Xor` value,
-but it didn't seem to work:
+Using `flatten` method for an `Xor` of an `Xor` value:
 
 ```console:error
 scala> val xorOfXor = Xor.right[String, Xor[String, Int]](Xor.right[String, Int](1))
