@@ -6,6 +6,14 @@
 
 [Functors, Applicative Functors and Monoids][fafm]:
 
+> ここまではファンクター値を写すために、もっぱら 1 引数関数を使ってきました。では、2 引数関数でファンクターを写すと何が起こるでしょう？
+
+```console
+scala> import cats._, cats.data._, cats.implicits._
+scala> val hs = Functor[List].map(List(1, 2, 3, 4)) ({(_: Int) * (_:Int)}.curried)
+scala> Functor[List].map(hs) {_(9)}
+```
+
 LYAHFGG:
 
 > では、ファンクター値 `Just (3 *)` とファンクター値 `Just 5` があったとして、
@@ -40,6 +48,68 @@ trait Apply[F[_]] extends Functor[F] with Cartesian[F] with ApplyArityFunctions[
 LYAHFGG:
 
 > `<*>` は `fmap` の強化版なのです。`fmap` が普通の関数とファンクター値を引数に取って、関数をファンクター値の中の値に適用してくれるのに対し、`<*>` は関数の入っているファンクター値と値の入っているファンクター値を引数に取って、1つ目のファンクターの中身である関数を2つ目のファンクターの中身に適用するのです。
+
+#### Applicative Style
+
+LYAHFGG:
+
+> `Applicative` 型クラスでは、`<*>` を連続して使うことができ、
+> 1つだけでなく、複数のアプリカティブ値を組み合わせて使うことができます。
+
+以下は Haskell で書かれた例:
+
+```haskell
+ghci> pure (-) <*> Just 3 <*> Just 5
+Just (-2)
+```
+
+Cats には apply 構文というものがある。
+
+```console
+scala> (3.some, 5.some) mapN { _ - _ }
+scala> (none[Int], 5.some) mapN { _ - _ }
+scala> (3.some, none[Int]) mapN { _ - _ }
+```
+
+これは `Option` から `Cartesian` が形成可能であることを示す。
+
+#### Apply としての List
+
+LYAHFGG:
+
+> リスト（正確に言えばリスト型のコンストラクタ `[]`）もアプリカティブファンクターです。意外ですか？
+
+apply 構文で書けるかためしてみよう:
+
+```console
+scala> (List("ha", "heh", "hmm"), List("?", "!", ".")) mapN {_ + _}
+```
+
+#### `*>` と `<*` 演算子
+
+`Apply` は `<*` と `*>` という 2つの演算子を可能とし、これらも `Apply[F].map2` の特殊形だと考えることができる。
+
+定義はシンプルに見えるけども、面白い効果がある:
+
+```console
+scala> 1.some <* 2.some
+scala> none[Int] <* 2.some
+scala> 1.some *> 2.some
+scala> none[Int] *> 2.some
+```
+
+どちらか一方が失敗すると、`None` が返ってくる。
+
+#### Option syntax
+
+次にへ行く前に、`Optiona` 値を作るために Cats が導入する syntax をみてみる。
+
+```console
+scala> 9.some
+scala> none[Int]
+```
+
+これで `(Some(9): Option[Int])` を `9.some` と書ける。
 
 #### Apply としての Option
 
@@ -82,15 +152,28 @@ Scala ではパラメータが逆順であることを覚えているだろう�
 ```scala
 @typeclass(excludeParents = List("ApplyArityFunctions"))
 trait Apply[F[_]] extends Functor[F] with Cartesian[F] with ApplyArityFunctions[F] { self =>
-
-  /**
-   * Given a value and a function in the Apply context, applies the
-   * function to the value.
-   */
   def ap[A, B](ff: F[A => B])(fa: F[A]): F[B]
+
+  def productR[A, B](fa: F[A])(fb: F[B]): F[B] =
+    map2(fa, fb)((_, b) => b)
+
+  def productL[A, B](fa: F[A])(fb: F[B]): F[A] =
+    map2(fa, fb)((a, _) => a)
 
   override def product[A, B](fa: F[A], fb: F[B]): F[(A, B)] =
     ap(map(fa)(a => (b: B) => (a, b)))(fb)
+
+  /** Alias for [[ap]]. */
+  @inline final def <*>[A, B](ff: F[A => B])(fa: F[A]): F[B] =
+    ap(ff)(fa)
+
+  /** Alias for [[productR]]. */
+  @inline final def *>[A, B](fa: F[A])(fb: F[B]): F[B] =
+    productR(fa)(fb)
+
+  /** Alias for [[productL]]. */
+  @inline final def <*[A, B](fa: F[A])(fb: F[B]): F[A] =
+    productL(fa)(fb)
 
   /**
    * ap2 is a binary version of ap, defined in terms of ap.
@@ -98,13 +181,11 @@ trait Apply[F[_]] extends Functor[F] with Cartesian[F] with ApplyArityFunctions[
   def ap2[A, B, Z](ff: F[(A, B) => Z])(fa: F[A], fb: F[B]): F[Z] =
     map(product(fa, product(fb, ff))) { case (a, (b, f)) => f(a, b) }
 
-  /**
-   * Applies the pure (binary) function f to the effectful values fa and fb.
-   *
-   * map2 can be seen as a binary version of [[cats.Functor]]#map.
-   */
   def map2[A, B, Z](fa: F[A], fb: F[B])(f: (A, B) => Z): F[Z] =
-    map(product(fa, fb)) { case (a, b) => f(a, b) }
+    map(product(fa, fb))(f.tupled)
+
+  def map2Eval[A, B, Z](fa: F[A], fb: Eval[F[B]])(f: (A, B) => Z): Eval[F[Z]] =
+    fb.map(fb => map2(fa, fb)(f))
 
   ....
 }
@@ -114,7 +195,7 @@ trait Apply[F[_]] extends Functor[F] with Cartesian[F] with ApplyArityFunctions[
 同じものを 2通りの方法で書いて比較してみる:
 
 ```console
-scala> (3.some |@| List(4).some) map { _ :: _ }
+scala> (3.some, List(4).some) mapN { _ :: _ }
 scala> Apply[Option].map2(3.some, List(4).some) { _ :: _ }
 ```
 

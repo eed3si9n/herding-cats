@@ -12,7 +12,7 @@ LYAHFGG:
 
 ```console:new
 scala> import cats._, cats.data._, cats.implicits._
-scala> (List(1, 2, 3) |@| List(10, 100, 100)) map { _ * _ }
+scala> (List(1, 2, 3), List(10, 100, 100)) mapN { _ * _ }
 ```
 
 > それでは、非決定的値を関数に食わせてみましょう。

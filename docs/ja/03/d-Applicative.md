@@ -63,10 +63,9 @@ sequenceA (x:xs) = (:) <\$> x <*> sequenceA xs
 これを Cats でも実装できるか試してみよう!
 
 ```console
-scala> import cats.syntax.cartesian._
 scala> def sequenceA[F[_]: Applicative, A](list: List[F[A]]): F[List[A]] = list match {
          case Nil     => Applicative[F].pure(Nil: List[A])
-         case x :: xs => (x |@| sequenceA(xs)) map {_ :: _} 
+         case x :: xs => (x, sequenceA(xs)) mapN {_ :: _} 
        }
 ```
 
