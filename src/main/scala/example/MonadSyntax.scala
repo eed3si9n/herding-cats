@@ -8,11 +8,11 @@ object MonadSyntax extends MonadImplicit0 {
 }
 
 sealed trait MonadImplicit0 extends MonadImplicit1 {
-  implicit def toMonadOp[F[_], A](fa: F[A])(implicit ev: Monad[F]): MonadOp[F, A] = new MonadOp(fa)  
+  implicit def toFuncOp[A, B](fa: A => B)(implicit ev: Monad[A => ?]): MonadOp[A => ?, B] = new MonadOp[A => ?, B](fa)
 }
 
 sealed trait MonadImplicit1 {
-  implicit def toFuncOp[A, B](fa: A => B)(implicit ev: Monad[A => ?]): MonadOp[A => ?, B] = new MonadOp[A => ?, B](fa)
+  implicit def toMonadOp[F[_], A](fa: F[A])(implicit ev: Monad[F]): MonadOp[F, A] = new MonadOp(fa)
 }
 
 class MonadOp[F[_], A](fa: F[A]) {

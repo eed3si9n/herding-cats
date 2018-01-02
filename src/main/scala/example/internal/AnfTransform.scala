@@ -17,13 +17,15 @@ private[example] trait AnfTransform {
   import c.internal._
   import decorators._
 
+  sealed abstract class AnfMode
+  case object Anf extends AnfMode
+  case object Linearizing extends AnfMode
+
   def anfTransform(tree: Tree): Block = {
     // Must prepend the () for issue #31.
     val block = c.typecheck(atPos(tree.pos)(Block(List(Literal(Constant(()))), tree))).setType(tree.tpe)
 
-    sealed abstract class AnfMode
-    case object Anf extends AnfMode
-    case object Linearizing extends AnfMode
+
 
     var mode: AnfMode = Anf
     typingTransform(block)((tree, api) => {

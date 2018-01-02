@@ -1,25 +1,6 @@
-
-  [MonadFilterSource]: $catsBaseUrl$/core/src/main/scala/cats/MonadFilter.scala
-
-### MonadFilter
-
-以下が[MonadFilter 型クラスのコントラクト][MonadFilterSource]だ:
-
-```scala
-@typeclass trait MonadFilter[F[_]] extends Monad[F] with FunctorFilter[F] {
-
-  def empty[A]: F[A]
-
-  ...
-}
-```
-
-これを使ってデータ型の空の値を得ることができる:
-
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> MonadFilter[List].empty[Int]
-```
+---
+out: knights-quest.html
+---
 
 #### 騎士の旅
 

@@ -162,7 +162,7 @@ scala> def foldB[A, B](tree: Btree[A], b: (B, B) => B)(t: A => B): B =
 例えば、`fold` は以下のように表現できるらしい。
 
 ```console
-scala> import cats._, cats.data._, cats.implicits._, cats.functor.Bifunctor
+scala> import cats._, cats.data._, cats.implicits._
 scala> :paste
 trait Fix[F[_,_], A]
 def cata[S[_,_]: Bifunctor, A, B](t: Fix[S, A])(f: S[A, B] => B): B = ???

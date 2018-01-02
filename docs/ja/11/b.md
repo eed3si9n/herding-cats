@@ -105,7 +105,6 @@ trait Bifunctor[F[_, _]] extends Serializable { self =>
 
 ```console
 scala> import cats._, cats.data._, cats.implicits._
-scala> import cats.functor.Bifunctor
 scala> :paste
 implicit val listFBifunctor: Bifunctor[ListF] = new Bifunctor[ListF] {
   def bimap[S1, A1, S2, A2](fab: ListF[S1, A1])(f: S1 => S2, g: A1 => A2): ListF[S2, A2] =

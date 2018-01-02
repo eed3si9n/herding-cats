@@ -18,7 +18,7 @@ scala> import cats._, cats.data._, cats.implicits._
 scala> def contents[F[_], A](fa: F[A])(implicit FF: Traverse[F]): Const[List[A], F[Unit]] =
          {
            val contentsBody: A => Const[List[A], Unit] = { (a: A) => Const(List(a)) }
-           FF.traverseU(fa)(contentsBody)
+           FF.traverse(fa)(contentsBody)
          }
 ```
 
@@ -39,7 +39,7 @@ When Gibbons say identity idiom, he means the identity applicative functor, `Id[
 scala> def shape[F[_], A](fa: F[A])(implicit FF: Traverse[F]): Id[F[Unit]] =
          {
            val shapeBody: A => Id[Unit] = { (a: A) => () }
-           FF.traverseU(fa)(shapeBody)
+           FF.traverse(fa)(shapeBody)
          }
 ```
 
@@ -58,7 +58,7 @@ Next EIP demonstrates applicative composition by first combining `shape` and `co
 
 ```console
 scala> def decompose[F[_], A](fa: F[A])(implicit FF: Traverse[F]) =
-         Prod[Const[List[A], ?], Id, F[Unit]](contents(fa), shape(fa))
+         Tuple2K[Const[List[A], ?], Id, F[Unit]](contents(fa), shape(fa))
 scala> val d = decompose(Vector(1, 2, 3))
 scala> d.first
 scala> d.second
@@ -85,4 +85,4 @@ scala> d.second
 ```
 
 The return type of the `decompose` is a bit messy, but it's infered by `AppFunc`:
-`Prod[[X_kp1]Const[List[A], X_kp1], Id, F[Unit]]`.
+`Tuple2K[[X_kp1]Const[List[A], X_kp1], Id, F[Unit]]`.

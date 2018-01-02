@@ -16,44 +16,39 @@ Cats はファンクターの積を全く持っていないみたいだ。
 
 #### ファンクターの積
 
-<s>実装してみよう。</s> (ここで書いた実装は [#388][388] で Cats に取り込まれた。)
+<s>実装してみよう。</s> (ここで書いた実装は [#388][388] で Cats に取り込まれ、後日 `Tuple2K` となった。)
 
 ```scala
 /**
- * [[Prod]] is a product to two independent functor values.
+ * [[Tuple2K]] is a product to two independent functor values.
  *
  * See: [[https://www.cs.ox.ac.uk/jeremy.gibbons/publications/iterator.pdf The Essence of the Iterator Pattern]]
  */
-sealed trait Prod[F[_], G[_], A] {
-  def first: F[A]
-  def second: G[A]
-}
-object Prod extends ProdInstances {
-  def apply[F[_], G[_], A](first0: => F[A], second0: => G[A]): Prod[F, G, A] = new Prod[F, G, A] {
-    val firstThunk: Eval[F[A]] = Later(first0)
-    val secondThunk: Eval[G[A]] = Later(second0)
-    def first: F[A] = firstThunk.value
-    def second: G[A] = secondThunk.value
-  }
-  def unapply[F[_], G[_], A](x: Prod[F, G, A]): Option[(F[A], G[A])] =
-    Some((x.first, x.second))
+final case class Tuple2K[F[_], G[_], A](first: F[A], second: G[A]) {
+
+  /**
+   * Modify the context `G` of `second` using transformation `f`.
+   */
+  def mapK[H[_]](f: G ~> H): Tuple2K[F, H, A] =
+    Tuple2K(first, f(second))
+
 }
 ```
 
 まずは `Functor` の積から始める:
 
 ```scala
-private[data] sealed abstract class ProdInstances4 {
-  implicit def prodFunctor[F[_], G[_]](implicit FF: Functor[F], GG: Functor[G]): Functor[Lambda[X => Prod[F, G, X]]] = new ProdFunctor[F, G] {
+private[data] sealed abstract class Tuple2KInstances8 {
+  implicit def catsDataFunctorForTuple2K[F[_], G[_]](implicit FF: Functor[F], GG: Functor[G]): Functor[λ[α => Tuple2K[F, G, α]]] = new Tuple2KFunctor[F, G] {
     def F: Functor[F] = FF
     def G: Functor[G] = GG
   }
 }
 
-sealed trait ProdFunctor[F[_], G[_]] extends Functor[Lambda[X => Prod[F, G, X]]] {
+private[data] sealed trait Tuple2KFunctor[F[_], G[_]] extends Functor[λ[α => Tuple2K[F, G, α]]] {
   def F: Functor[F]
   def G: Functor[G]
-  def map[A, B](fa: Prod[F, G, A])(f: A => B): Prod[F, G, B] = Prod(F.map(fa.first)(f), G.map(fa.second)(f))
+  override def map[A, B](fa: Tuple2K[F, G, A])(f: A => B): Tuple2K[F, G, B] = Tuple2K(F.map(fa.first)(f), G.map(fa.second)(f))
 }
 ```
 
@@ -61,12 +56,12 @@ sealed trait ProdFunctor[F[_], G[_]] extends Functor[Lambda[X => Prod[F, G, X]]]
 
 ```console:new
 scala> import cats._, cats.data._, cats.implicits._
-scala> val x = Prod(List(1), (Some(1): Option[Int]))
-scala> Functor[Lambda[X => Prod[List, Option, X]]].map(x) { _ + 1 }
+scala> val x = Tuple2K(List(1), 1.some)
+scala> Functor[Lambda[X => Tuple2K[List, Option, X]]].map(x) { _ + 1 }
 ```
 
-まず、ペアのようなデータ型 `Prod` を定義して、型クラスインスタンスの積を表す。
-両方に関数 `f` を渡すことで、簡単に `Prod[F, G]` に関する `Functor` を形成することができる
+まず、ペアのようなデータ型 `Tuple2K` を定義して、型クラスインスタンスの積を表す。
+両方に関数 `f` を渡すことで、簡単に `Tuple2K[F, G]` に関する `Functor` を形成することができる
 (ただし `F`、`G` ともに `Functor`)。
 
 動作を確かめるために `x` を写像して、`1` を加算してみる。
@@ -78,29 +73,26 @@ scala> Functor[Lambda[X => Prod[List, Option, X]]].map(x) { _ + 1 }
 次は `Apply`:
 
 ```scala
-private[data] sealed abstract class ProdInstances3 extends ProdInstances4 {
-  implicit def prodApply[F[_], G[_]](implicit FF: Apply[F], GG: Apply[G]): Apply[Lambda[X => Prod[F, G, X]]] = new ProdApply[F, G] {
+private[data] sealed abstract class Tuple2KInstances6 extends Tuple2KInstances7 {
+  implicit def catsDataApplyForTuple2K[F[_], G[_]](implicit FF: Apply[F], GG: Apply[G]): Apply[λ[α => Tuple2K[F, G, α]]] = new Tuple2KApply[F, G] {
     def F: Apply[F] = FF
     def G: Apply[G] = GG
   }
 }
 
-sealed trait ProdApply[F[_], G[_]] extends Apply[Lambda[X => Prod[F, G, X]]] with ProdFunctor[F, G] {
+private[data] sealed trait Tuple2KApply[F[_], G[_]] extends Apply[λ[α => Tuple2K[F, G, α]]] with Tuple2KFunctor[F, G] {
   def F: Apply[F]
   def G: Apply[G]
-  def ap[A, B](fa: Prod[F, G, A])(f: Prod[F, G, A => B]): Prod[F, G, B] =
-    Prod(F.ap(f.first)(fa.first), G.ap(f.second)(fa.second))
-  def product[A, B](fa: Prod[F, G, A], fb: Prod[F, G, B]): Prod[F, G, (A, B)] =
-    Prod(F.product(fa.first, fb.first), G.product(fa.second, fb.second))
+  ....
 }
 ```
 
 これが用例:
 
 ```console
-scala> val x = Prod(List(1), (Some(1): Option[Int]))
-scala> val f = Prod(List((_: Int) + 1), (Some((_: Int) * 3): Option[Int => Int]))
-scala> Apply[Lambda[X => Prod[List, Option, X]]].ap(f)(x)
+scala> val x = Tuple2K(List(1), (Some(1): Option[Int]))
+scala> val f = Tuple2K(List((_: Int) + 1), (Some((_: Int) * 3): Option[Int => Int]))
+scala> Apply[Lambda[X => Tuple2K[List, Option, X]]].ap(f)(x)
 ```
 
 `Apply` の積は左右で別の関数を渡している。
@@ -110,27 +102,27 @@ scala> Apply[Lambda[X => Prod[List, Option, X]]].ap(f)(x)
 最後に、`Applicative` の積が実装できるようになった:
 
 ```scala
-private[data] sealed abstract class ProdInstances2 extends ProdInstances3 {
-  implicit def prodApplicative[F[_], G[_]](implicit FF: Applicative[F], GG: Applicative[G]): Applicative[Lambda[X => Prod[F, G, X]]] = new ProdApplicative[F, G] {
+private[data] sealed abstract class Tuple2KInstances5 extends Tuple2KInstances6 {
+  implicit def catsDataApplicativeForTuple2K[F[_], G[_]](implicit FF: Applicative[F], GG: Applicative[G]): Applicative[λ[α => Tuple2K[F, G, α]]] = new Tuple2KApplicative[F, G] {
     def F: Applicative[F] = FF
     def G: Applicative[G] = GG
   }
 }
 
-sealed trait ProdApplicative[F[_], G[_]] extends Applicative[Lambda[X => Prod[F, G, X]]] with ProdApply[F, G] {
+private[data] sealed trait Tuple2KApplicative[F[_], G[_]] extends Applicative[λ[α => Tuple2K[F, G, α]]] with Tuple2KApply[F, G] {
   def F: Applicative[F]
   def G: Applicative[G]
-  def pure[A](a: A): Prod[F, G, A] = Prod(F.pure(a), G.pure(a))
+  def pure[A](a: A): Tuple2K[F, G, A] = Tuple2K(F.pure(a), G.pure(a))
 }
 ```
 
 簡単な用例:
 
 ```console
-scala> Applicative[Lambda[X => Prod[List, Option, X]]].pure(1)
+scala> Applicative[Lambda[X => Tuple2K[List, Option, X]]].pure(1)
 ```
 
-`pure(1)` を呼び出すことで `Prod(List(1), Some(1))` を生成することができた。
+`pure(1)` を呼び出すことで `Tuple2K(List(1), Some(1))` を生成することができた。
 
 #### Applicative の合成
 
@@ -211,10 +203,6 @@ object Func extends FuncInstances {
       def F: Applicative[F] = FF
       def run: A => F[B] = run0
     }
-
-  /** applicative function using [[Unapply]]. */
-  def appFuncU[A, R](f: A => R)(implicit RR: Unapply[Applicative, R]): AppFunc[RR.M, A, RR.A] =
-    appFunc({ a: A => RR.subst(f(a)) })(RR.TC)
 }
 
 ....

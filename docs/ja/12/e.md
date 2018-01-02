@@ -24,7 +24,7 @@ EIP:
 
 ```console:new
 scala> import cats._, cats.data._, cats.implicits._
-scala> import Func.{ appFunc, appFuncU }
+scala> import Func.appFunc
 ```
 
 > `wc` プログラムの文字数のカウント部分は「モノイドとしての `Int`」のアプリカティブ・ファンクターを累積した結果となる:
@@ -81,7 +81,7 @@ scala> countLine traverse text
 ```console
 scala> def isSpace(c: Char): Boolean = (c === ' ' || c === '\n' || c === '\t')
 scala> val countWord =
-         appFuncU { (c: Char) =>
+         appFunc { (c: Char) =>
            import cats.data.State.{ get, set }
            for {
              x <- get[Boolean]

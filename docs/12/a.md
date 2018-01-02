@@ -104,16 +104,13 @@ Here's how we can use this:
 scala> reduce(List('a', 'b', 'c')) { c: Char => c.toInt }
 ```
 
-It sort of works, but it would be nicer if we can reduce the type annotation a bit.
-The problem is that as it stands, Scala 2.11 compiler cannot infer `Const[B, ?]`.
-There's a actually a trick to nudge the compiler into looking into several shapes called `Unapply`,
-and we can use `traverseU` instead of `traverse` to take advantage of it:
+Using `-Ypartial-unification`, `traverse` is able to infer the types:
 
 ```console
 scala> def reduce[A, B, F[_]](fa: F[A])(f: A => B)
          (implicit FF: Traverse[F], BB: Monoid[B]): B =
          {
-           val x = fa traverseU { (a: A) => Const((f(a))) }
+           val x = fa traverse { (a: A) => Const[B, Unit]((f(a))) }
            x.getConst
          }
 ```
@@ -199,9 +196,8 @@ scala> Await.result(x, 1 second)
 Another useseful thing might be to turn a `List` of `Either` into an `Either`.
 
 ```console
-scala> List(Right(1): Either[String, Int]).sequenceU
-scala> List(Right(1): Either[String, Int], Left("boom"): Either[String, Int]).sequenceU
+scala> List(Right(1): Either[String, Int]).sequence
+scala> List(Right(1): Either[String, Int], Left("boom"): Either[String, Int]).sequence
 ```
 
-Note we just used `sequenceU`, which is the `Unapply` variant of `sequence`.
-Let's look into that next.
+Note that we no longer need `sequenceU`.

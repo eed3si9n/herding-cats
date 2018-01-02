@@ -106,16 +106,13 @@ scala> def reduce[A, B, F[_]](fa: F[A])(f: A => B)
 scala> reduce(List('a', 'b', 'c')) { c: Char => c.toInt }
 ```
 
-一応できたけど、型注釈を少し減らせるともっと良い感じがする。
-問題は、現状の Scala 2.11 コンパイラは `Const[B, ?]` を推論できないことにある。
-コンパイラを説得していくつかの形を推論させるテクニックがあって、これは `Unapply` と呼ばれている。
-`traverse` の代わりに `traverseU` を使うとこれを利用できる:
+Using `-Ypartial-unification`, `traverse` is able to infer the types:
 
 ```console
 scala> def reduce[A, B, F[_]](fa: F[A])(f: A => B)
          (implicit FF: Traverse[F], BB: Monoid[B]): B =
          {
-           val x = fa traverseU { (a: A) => Const((f(a))) }
+           val x = fa traverse { (a: A) => Const[B, Unit]((f(a))) }
            x.getConst
          }
 ```
@@ -200,9 +197,8 @@ scala> Await.result(x, 1 second)
 `Either` の `List` をまとめて `Either` にするとか便利かもしれない。
 
 ```console
-scala> List(Right(1): Either[String, Int]).sequenceU
-scala> List(Right(1): Either[String, Int], Left("boom"): Either[String, Int]).sequenceU
+scala> List(Right(1): Either[String, Int]).sequence
+scala> List(Right(1): Either[String, Int], Left("boom"): Either[String, Int]).sequence
 ```
 
-`sequence` の `Unapply` 版である `sequenceU` を使ったことに注意。
-続いては、これを見ることにする。
+`sequenceU` を使う必要が無くなったことに注意してほしい。

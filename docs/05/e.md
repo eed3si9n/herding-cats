@@ -1,25 +1,6 @@
-
-  [MonadFilterSource]: $catsBaseUrl$/core/src/main/scala/cats/MonadFilter.scala
-
-### MonadFilter
-
-Here's [the typeclass contract for `MonadFilter`][MonadFilterSource]:
-
-```scala
-@typeclass trait MonadFilter[F[_]] extends Monad[F] with FunctorFilter[F] {
-
-  def empty[A]: F[A]
-
-  ...
-}
-```
-
-We can use this to get an empty value of a datatype that supports it.
-
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> MonadFilter[List].empty[Int]
-```
+---
+out: knights-quest.html
+---
 
 #### A knight's quest
 

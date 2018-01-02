@@ -24,7 +24,7 @@ which is only available on my personal branch. (PR [#388][388] is pending)
 
 ```console:new
 scala> import cats._, cats.data._, cats.implicits._
-scala> import Func.{ appFunc, appFuncU }
+scala> import Func.appFunc
 ```
 
 > The character-counting slice of the `wc` program accumulates a result in the integers-as-monoid applicative functor:
@@ -81,7 +81,7 @@ scala> countLine traverse text
 ```console
 scala> def isSpace(c: Char): Boolean = (c === ' ' || c === '\n' || c === '\t')
 scala> val countWord =
-         appFuncU { (c: Char) =>
+         appFunc { (c: Char) =>
            import cats.data.State.{ get, set }
            for {
              x <- get[Boolean]
