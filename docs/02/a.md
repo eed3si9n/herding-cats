@@ -18,8 +18,8 @@ LYAHFGG:
 The conventional steps of defining a modular typeclass in Scala used to look like:
 
 1. Define typeclass contract trait `Foo`.
-2. Define a companion object `Foo` with a helper method `apply` that acts like `implcitly`, and a way of defining `Foo` instances typically from a function.
-3. Define `FooOps` class that defines unibary or binary operators.
+2. Define a companion object `Foo` with a helper method `apply` that acts like `implicitly`, and a way of defining `Foo` instances typically from a function.
+3. Define `FooOps` class that defines unary or binary operators.
 4. Define `FooSyntax` trait that implicitly provides `FooOps` from a `Foo` instance.
 
 Frankly, these steps are mostly copy-paste boilerplate except for the first one.
