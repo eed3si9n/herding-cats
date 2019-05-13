@@ -28,6 +28,8 @@ val specs2Core  = "org.specs2" %% "specs2-core" % specs2Version
 val specs2Scalacheck = "org.specs2" %% "specs2-scalacheck" % specs2Version
 val scalacheck = "org.scalacheck" %% "scalacheck" % "1.12.4"
 
+resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
+
 lazy val root = (project in file(".")).
   settings(
     organization := "com.example",
