@@ -1,5 +1,5 @@
 ---
-out: Coproduct.md
+out: Coproduct.html
 ---
 
   [@milessabin]: https://twitter.com/milessabin
