@@ -19,6 +19,16 @@ div.credit {
   text-align: right;
 }
 
+body.color_scheme-github code.prettyprint span.com {
+  color: #4d5555;
+}
+
+blockquote {
+  border-left: solid gray 1px;
+  padding-left: 1em;
+  font-family: Georgia;
+}
+
 @media screen and (min-device-width: 800px), projection {
   div.container {
     width: 70%;
