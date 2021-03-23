@@ -17,9 +17,9 @@ data TrafficLight = Red | Yellow | Green
 
 In Scala this would be:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> :paste
+```scala mdoc
+import cats._, cats.data._, cats.implicits._
+
 sealed trait TrafficLight
 object TrafficLight {
   case object Red extends TrafficLight
@@ -30,8 +30,8 @@ object TrafficLight {
 
 Now let's define an instance for `Eq`.
 
-```console
-scala> implicit val trafficLightEq: Eq[TrafficLight] =
+```scala mdoc
+implicit val trafficLightEq: Eq[TrafficLight] =
   new Eq[TrafficLight] {
     def eqv(a1: TrafficLight, a2: TrafficLight): Boolean = a1 == a2
   }
@@ -41,15 +41,16 @@ scala> implicit val trafficLightEq: Eq[TrafficLight] =
 
 Can I use the `Eq`?
 
-```console:error
-scala> TrafficLight.Red === TrafficLight.Yellow
+```scala mdoc:fail
+TrafficLight.Red === TrafficLight.Yellow
 ```
 
 So apparently `Eq[TrafficLight]` doesn't get picked up because `Eq` has nonvariant subtyping: `Eq[A]`.
 One way to workaround this issue is to define helper functions to cast them up to `TrafficLight`:
 
-```console
-scala> :paste
+```scala mdoc:reset
+import cats._, cats.data._, cats.implicits._
+
 sealed trait TrafficLight
 object TrafficLight {
   def red: TrafficLight = Red
@@ -59,11 +60,14 @@ object TrafficLight {
   case object Yellow extends TrafficLight
   case object Green extends TrafficLight
 }
-scala> implicit val trafficLightEq: Eq[TrafficLight] =
-  new Eq[TrafficLight] {
-    def eqv(a1: TrafficLight, a2: TrafficLight): Boolean = a1 == a2
-  }
-scala> TrafficLight.red === TrafficLight.yellow
+
+{
+  implicit val trafficLightEq: Eq[TrafficLight] =
+    new Eq[TrafficLight] {
+      def eqv(a1: TrafficLight, a2: TrafficLight): Boolean = a1 == a2
+    }
+  TrafficLight.red === TrafficLight.yellow
+}
 ```
 
 It is a bit of boilerplate, but it works.

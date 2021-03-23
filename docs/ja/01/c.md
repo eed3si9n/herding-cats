@@ -7,12 +7,20 @@ LYAHFGG:
 
 Cats で `Ord` に対応する型クラスは `Order` だ。
 
-```console:new,error
-scala> import cats._, cats.data._, cats.implicits._
-scala> 1 > 2.0
-scala> 1 compare 2.0
-scala> 1.0 compare 2.0
-scala> 1.0 max 2.0
+```scala mdoc
+import cats._, cats.data._, cats.implicits._
+
+1 > 2.0
+```
+
+```scala mdoc:fail
+1 compare 2.0
+```
+
+```scala mdoc
+1.0 compare 2.0
+
+1.0 max 2.0
 ```
 
 `Order` は `Int` (負、ゼロ、正) を返す `compare` 演算を可能とする。

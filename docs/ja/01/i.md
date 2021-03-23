@@ -17,9 +17,9 @@ data TrafficLight = Red | Yellow | Green
 
 これを Scala で書くと:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> :paste
+```scala mdoc
+import cats._, cats.data._, cats.implicits._
+
 sealed trait TrafficLight
 object TrafficLight {
   case object Red extends TrafficLight
@@ -30,8 +30,8 @@ object TrafficLight {
 
 これに `Eq` のインスタンスを定義する。
 
-```console
-scala> implicit val trafficLightEq: Eq[TrafficLight] =
+```scala mdoc
+implicit val trafficLightEq: Eq[TrafficLight] =
   new Eq[TrafficLight] {
     def eqv(a1: TrafficLight, a2: TrafficLight): Boolean = a1 == a2
   }
@@ -41,16 +41,17 @@ scala> implicit val trafficLightEq: Eq[TrafficLight] =
 
 `Eq` を使えるかな?
 
-```console:error
-scala> TrafficLight.Red === TrafficLight.Yellow
+```scala mdoc:fail
+TrafficLight.Red === TrafficLight.Yellow
 ```
 
 
 `Eq` が不変 (invariant) なサブタイプ `Eq[A]` を持つせいで、`Eq[TrafficLight]` が検知されないみたいだ。
 この問題を回避する方法としては、`TrafficLight` にキャストするヘルパー関数を定義するという方法がある:
 
-```console
-scala> :paste
+```scala mdoc:reset
+import cats._, cats.data._, cats.implicits._
+
 sealed trait TrafficLight
 object TrafficLight {
   def red: TrafficLight = Red
@@ -60,11 +61,14 @@ object TrafficLight {
   case object Yellow extends TrafficLight
   case object Green extends TrafficLight
 }
-scala> implicit val trafficLightEq: Eq[TrafficLight] =
-  new Eq[TrafficLight] {
-    def eqv(a1: TrafficLight, a2: TrafficLight): Boolean = a1 == a2
-  }
-scala> TrafficLight.red === TrafficLight.yellow
+
+{
+  implicit val trafficLightEq: Eq[TrafficLight] =
+    new Eq[TrafficLight] {
+      def eqv(a1: TrafficLight, a2: TrafficLight): Boolean = a1 == a2
+    }
+  TrafficLight.red === TrafficLight.yellow
+}
 ```
 
 ちょっと冗長だけども、一応動いた。
