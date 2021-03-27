@@ -3,19 +3,19 @@
 
 LYAHFGG:
 
-> Members of `Show` can be presented as strings.
+> ある値は、その値が `Show` 型クラスのインスタンスになっていれば、文字列として表現できます。
 
-Cats' equivalent for the `Show` typeclass is `Show`:
+Cats で `Show` に対応する型クラスは `Show` だ:
 
 ```scala mdoc
-import cats._, cats.data._, cats.implicits._
+import cats._, cats.syntax.all._
 
 3.show
 
 "hello".show
 ```
 
-Here's the typeclass contract:
+これが型クラスのコントラクトだ:
 
 ```scala
 @typeclass trait Show[T] {
@@ -23,10 +23,10 @@ Here's the typeclass contract:
 }
 ```
 
-At first, it might seem silly to define `Show` because Scala
-already has `toString` on `Any`.
-`Any` also means anything would match the criteria, so you lose type safety.
-The `toString` could be junk supplied by some parent class:
+Scala には既に `Any` に `toString` があるため、`Show`
+を定義するのは馬鹿げているように一見見えるかもしれない。
+`Any` ということは逆に何でも該当してしまうので、型安全性を失うことになる。
+`toString` は何らかの親クラスが書いたゴミかもしれない:
 
 ```scala mdoc
 (new {}).toString
@@ -36,7 +36,7 @@ The `toString` could be junk supplied by some parent class:
 (new {}).show
 ```
 
-`object Show` provides two functions to create a `Show` instance:
+`object Show` は `Show` のインスタンスを作成するための 2つの関数を提供する:
 
 ```scala
 object Show {
@@ -57,7 +57,7 @@ object Show {
 }
 ```
 
-Let's try using them:
+使ってみる:
 
 ```scala mdoc
 case class Person(name: String)

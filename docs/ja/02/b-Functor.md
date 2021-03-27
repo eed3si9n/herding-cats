@@ -27,9 +27,10 @@ LYAHFGG:
 
 このように使うことができる:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> Functor[List].map(List(1, 2, 3)) { _ + 1 }
+```scala mdoc
+import cats._, cats.syntax.all._
+
+Functor[List].map(List(1, 2, 3)) { _ + 1 }
 ```
 
 このような用例は**関数構文**と呼ぶことにする:
@@ -56,9 +57,10 @@ object Functor {
 
 Cats は `Either[A, B]` の `Functor` インスタンスを定義する。
 
-```console
-scala> (Right(1): Either[String, Int]) map { _ + 1 }
-scala> (Left("boom!"): Either[String, Int]) map { _ + 1 }
+```scala mdoc
+(Right(1): Either[String, Int]) map { _ + 1 }
+
+(Left("boom!"): Either[String, Int]) map { _ + 1 }
 ```
 
 上のデモが正しく動作するのは現在の所 `Either[A, B]` には標準ライブラリでは
@@ -75,9 +77,12 @@ scala> (Left("boom!"): Either[String, Int]) map { _ + 1 }
 
 Cats は `Function1` に対する `Functor` のインスタンスも定義する。
 
-```console
-scala> val h = ((x: Int) => x + 1) map {_ * 7}
-scala> h(3)
+```scala mdoc
+{
+  val addOne: Int => Int = (x: Int) => x + 1
+  val h: Int => Int = addOne map {_ * 7}
+  h(3)
+}
 ```
 
 これは興味深い。つまり、`map` は関数を合成する方法を与えてくれるが、順番が `f compose g` とは逆順だ。通りで Scalaz は `map` のエイリアスとして ` ∘` を提供するわけだ。`Function1` のもう1つのとらえ方は、定義域 (domain) から値域 (range) への無限の写像だと考えることができる。入出力に関しては飛ばして [Functors, Applicative Functors and Monoids](http://learnyouahaskell.com/functors-applicative-functors-and-monoids) へ行こう (本だと、「ファンクターからアプリカティブファンクターへ」)。
@@ -98,22 +103,20 @@ ghci> (*3) . (+100) \$ 1
 
 Haskell では `fmap` は `f compose g` を同じ順序で動作してるみたいだ。Scala でも同じ数字を使って確かめてみる:
 
-```console
-scala> (((_: Int) * 3) map {_ + 100}) (1)
+```scala mdoc
+(((_: Int) * 3) map {_ + 100}) (1)
 ```
 
 何かがおかしい。`fmap` の宣言と Cats の `map` 関数を比べてみよう:
 
 ```haskell
 fmap :: (a -> b) -> f a -> f b
-
 ```
 
 そしてこれが Cats:
 
 ```scala
 def map[A, B](fa: F[A])(f: A => B): F[B]
-
 ```
 
 順番が逆になっている。これに関して Paolo Giarrusso ([@blaisorblade][@blaisorblade]) 氏が説明してくれた:
@@ -138,10 +141,10 @@ LYAHFGG:
 > `fmap` も、関数とファンクター値を取ってファンクター値を返す 2 引数関数と思えますが、そうじゃなくて、関数を取って「元の関数に似てるけどファンクター値を取ってファンクター値を返す関数」を返す関数だと思うこともできます。`fmap` は、関数 `a -> b` を取って、関数 `f a -> f b` を返すのです。こういう操作を、関数の**持ち上げ** (lifting) といいます。
 
 ```haskell
-ghci> :t fmap (*2)  
-fmap (*2) :: (Num a, Functor f) => f a -> f a  
-ghci> :t fmap (replicate 3)  
-fmap (replicate 3) :: (Functor f) => f a -> f [a]  
+ghci> :t fmap (*2)
+fmap (*2) :: (Num a, Functor f) => f a -> f a
+ghci> :t fmap (replicate 3)
+fmap (replicate 3) :: (Functor f) => f a -> f [a]
 ```
 
 パラメータ順が逆だということは、この持ち上げ (lifting) ができないということだろうか?
@@ -180,18 +183,22 @@ fmap (replicate 3) :: (Functor f) => f a -> f [a]
 
 見ての通り、`lift` も入っている!
 
-```console
-scala> val lifted = Functor[List].lift {(_: Int) * 2}
-scala> lifted(List(1, 2, 3))
+```scala mdoc
+{
+  val lifted = Functor[List].lift {(_: Int) * 2}
+  lifted(List(1, 2, 3))
+}
 ```
 
 これで `{(_: Int) * 2}` という関数を `List[Int] => List[Int]` に持ち上げることができた。
 他の派生関数も演算子構文で使ってみる:
 
-```console
-scala> List(1, 2, 3).void
-scala> List(1, 2, 3) fproduct {(_: Int) * 2}
-scala> List(1, 2, 3) as "x"
+```scala mdoc
+List(1, 2, 3).void
+
+List(1, 2, 3) fproduct {(_: Int) * 2}
+
+List(1, 2, 3) as "x"
 ```
 
 ### Functor則
@@ -204,19 +211,22 @@ LYAHFGG:
 
 `Either[A, B]` を使って確かめてみる。
 
-```console
-scala> val x: Either[String, Int] = Right(1)
-scala> assert { (x map identity) === x }
+```scala mdoc
+val x: Either[String, Int] = Right(1)
+
+assert { (x map identity) === x }
 ```
 
 > 第二法則は、2つの関数 `f` と `g` について、「`f` と `g` の合成関数でファンクター値を写したもの」と、「まず `g`、次に `f` でファンクター値を写したもの」が等しいことを要求します。
 
 言い換えると、
 
-```console
-scala> val f = {(_: Int) * 3}
-scala> val g = {(_: Int) + 1}
-scala> assert { (x map (f map g)) === (x map f map g) }
+```scala mdoc
+val f = {(_: Int) * 3}
+
+val g = {(_: Int) + 1}
+
+assert { (x map (f map g)) === (x map f map g) }
 ```
 
 これらの法則は Functor の実装者が従うべき法則で、コンパイラはチェックしてくれない。

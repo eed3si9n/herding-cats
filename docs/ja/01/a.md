@@ -12,30 +12,31 @@ Cats を使ってみるための `build.sbt` はこんな感じになる:
 val catsVersion = "2.4.2"
 val catsCore = "org.typelevel" %% "cats-core" % catsVersion
 val catsFree = "org.typelevel" %% "cats-free" % catsVersion
+val catsLaws = "org.typelevel" %% "cats-laws" % catsVersion
 val catsMtl = "org.typelevel" %% "cats-mtl-core" % "0.7.1"
 
 val simulacrum = "org.typelevel" %% "simulacrum" % "1.0.1"
 val kindProjector = compilerPlugin("org.typelevel" % "kind-projector" % "0.11.3" cross CrossVersion.full)
 val resetAllAttrs = "org.scalamacros" %% "resetallattrs" % "1.0.0"
+val munit = "org.scalameta" %% "munit" % "0.7.22"
+val disciplineMunit = "org.typelevel" %% "discipline-munit" % "1.0.6"
 
-val specs2Version = "4.10.6"
-val specs2Core  = "org.specs2" %% "specs2-core" % specs2Version
-val specs2Scalacheck = "org.specs2" %% "specs2-scalacheck" % specs2Version
-val scalacheck = "org.scalacheck" %% "scalacheck" % "1.15.3"
+ThisBuild / scalaVersion := "2.13.5"
 
 lazy val root = (project in file("."))
   .settings(
     organization := "com.example",
     name := "something",
-    scalaVersion := "2.12.4",
     libraryDependencies ++= Seq(
       catsCore,
       catsFree,
       catsMtl,
       simulacrum,
-      specs2Core % Test, specs2Scalacheck % Test, scalacheck % Test,
       kindProjector,
       resetAllAttrs,
+      catsLaws % Test,
+      munit % Test,
+      disciplineMunit % Test,
     ),
     scalacOptions ++= Seq(
       "-deprecation",

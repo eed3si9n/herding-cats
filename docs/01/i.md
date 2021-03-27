@@ -18,7 +18,7 @@ data TrafficLight = Red | Yellow | Green
 In Scala this would be:
 
 ```scala mdoc
-import cats._, cats.data._, cats.implicits._
+import cats._, cats.syntax.all._
 
 sealed trait TrafficLight
 object TrafficLight {
@@ -49,7 +49,7 @@ So apparently `Eq[TrafficLight]` doesn't get picked up because `Eq` has nonvaria
 One way to workaround this issue is to define helper functions to cast them up to `TrafficLight`:
 
 ```scala mdoc:reset
-import cats._, cats.data._, cats.implicits._
+import cats._, cats.syntax.all._
 
 sealed trait TrafficLight
 object TrafficLight {

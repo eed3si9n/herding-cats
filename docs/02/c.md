@@ -31,18 +31,20 @@ This is based on a library called [Discipline][Discipline], which is a wrapper a
 We can run these tests from the REPL with ScalaCheck.
 
 ```scala
-scala> import cats._, cats.data._, cats.implicits._
+scala> import cats._, cats.syntax.all._
 import cats._
-import cats.data._
-import cats.implicits._
+import cats.syntax.all._
 
 scala> import cats.laws.discipline.FunctorTests
 import cats.laws.discipline.FunctorTests
 
-scala> val rs = FunctorTests[Either[Int, ?]].functor[Int, Int, Int]
-rs: cats.laws.discipline.FunctorTests[[X_kp1]scala.util.Either[Int,X_kp1]]#RuleSet = cats.laws.discipline.FunctorTests\$\$anon\$2@7993373d
+scala> val rs = FunctorTests[Either[Int, *]].functor[Int, Int, Int]
+val rs: cats.laws.discipline.FunctorTests[[?\$0\$]scala.util.Either[Int,?\$0\$]]#RuleSet = org.typelevel.discipline.Laws\$DefaultRuleSet@2b1a2a1d
 
-scala> rs.all.check
+scala> import org.scalacheck.Test.Parameters
+import org.scalacheck.Test.Parameters
+
+scala> rs.all.check(Parameters.default)
 + functor.covariant composition: OK, passed 100 tests.
 + functor.covariant identity: OK, passed 100 tests.
 + functor.invariant composition: OK, passed 100 tests.
@@ -51,25 +53,9 @@ scala> rs.all.check
 
 `rs.all` returns `org.scalacheck.Properties`, which implements `check` method.
 
-#### Checking laws with Discipline + Specs2
+#### Checking laws with Discipline + MUnit
 
-You can also bake your own cake pattern into a test framework of choice.
-Here's for specs2:
-
-```scala
-package example
-
-import org.specs2.Specification
-import org.typelevel.discipline.specs2.Discipline
-import cats.instances.AllInstances
-import cats.syntax.AllSyntax
-
-trait CatsSpec extends Specification with Discipline with AllInstances with AllSyntax
-```
-
-Cats' source include one for ScalaTest.
-
-The spec to check the functor law for `Either[Int, Int]` looks like this:
+In addition to ScalaCheck, you can call these tests from ScalaTest, Specs2, or MUnit. An MUnit test to check the functor law for `Either[Int, Int]` looks like this:
 
 ```scala
 package example
@@ -77,33 +63,21 @@ package example
 import cats._
 import cats.laws.discipline.FunctorTests
 
-class EitherSpec extends CatsSpec { def is = s2"""
-  Either[Int, ?] forms a functor                           \$e1
-  """
-
-  def e1 = checkAll("Either[Int, Int]", FunctorTests[Either[Int, ?]].functor[Int, Int, Int])
+class EitherTest extends munit.DisciplineSuite {
+  checkAll("Either[Int, Int]", FunctorTests[Either[Int, *]].functor[Int, Int, Int])
 }
 ```
 
-The `Either[Int, ?]` is using [non/kind-projector][kindProjector].
+The `Either[Int, *]` is using [non/kind-projector][kindProjector].
 Running the test from sbt displays the following output:
 
 ```
-> test
-[info] EitherSpec
-[info]   
-[info] 
-[info] functor laws must hold for Either[Int, Int]
-[info] 
-[info]  + functor.covariant composition
-[info]  + functor.covariant identity
-[info]  + functor.invariant composition
-[info]  + functor.invariant identity
-[info] 
-[info]   
-[info] Total for specification EitherSpec
-[info] Finished in 14 ms
-[info] 4 examples, 400 expectations, 0 failure, 0 error
+sbt:herding-cats> Test/testOnly example.EitherTest
+example.EitherTest:
+  + Either[Int, Int]: functor.covariant composition 0.096s
+  + Either[Int, Int]: functor.covariant identity 0.017s
+  + Either[Int, Int]: functor.invariant composition 0.041s
+  + Either[Int, Int]: functor.invariant identity 0.011s
 [info] Passed: Total 4, Failed 0, Errors 0, Passed 4
 ```
 
@@ -140,10 +114,11 @@ object COption {
 
 Here's how we can use this:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> import example._
-scala> (CSome(0, "ho"): COption[String]) map {identity}
+```scala mdoc
+import cats._, cats.syntax.all._
+import example._
+
+(CSome(0, "hi"): COption[String]) map {identity}
 ```
 
 This breaks the first law because the result of the `identity` function is not equal to the input.
@@ -156,7 +131,9 @@ import cats._
 import cats.laws.discipline.{ FunctorTests }
 import org.scalacheck.{ Arbitrary, Gen }
 
-class COptionSpec extends CatsSpec {
+class COptionTest extends munit.DisciplineSuite {
+  checkAll("COption[Int]", FunctorTests[COption].functor[Int, Int, Int])
+
   implicit def coptionArbiterary[A](implicit arbA: Arbitrary[A]): Arbitrary[COption[A]] =
     Arbitrary {
       val arbSome = for {
@@ -166,44 +143,91 @@ class COptionSpec extends CatsSpec {
       val arbNone = Gen.const(CNone: COption[Nothing])
       Gen.oneOf(arbSome, arbNone)
     }
-
-  def is = s2"""
-  COption[Int] forms a functor                             \$e1
-  """
-
-  def e1 = checkAll("COption[Int]", FunctorTests[COption].functor[Int, Int, Int])
 }
 ```
 
 Here's the output:
 
 ```
-[info] COptionSpec
-[info]   
-[info] 
-[info] functor laws must hold for COption[Int]
-[info] 
-[info]  x functor.covariant composition
-[error]    A counter-example is [CSome(-1,-1), <function1>, <function1>] (after 0 try)
-[error]    (CSome(1,1358703086) ?== CSome(0,1358703086)) failed
-[info] 
-[info]  x functor.covariant identity
-[error]    A counter-example is 'CSome(1781926821,82888113)' (after 0 try)
-[error]    (CSome(1781926822,82888113) ?== CSome(1781926821,82888113)) failed
-[info] 
-[info]  x functor.invariant composition
-[error]    A counter-example is [CSome(-17878015,0), <function1>, <function1>, <function1>, <function1>] (after 1 try)
-[error]    (CSome(-17878013,-1351608161) ?== CSome(-17878014,-1351608161)) failed
-[info] 
-[info]  x functor.invariant identity
-[error]    A counter-example is 'CSome(-1699259031,1)' (after 0 try)
-[error]    (CSome(-1699259030,1) ?== CSome(-1699259031,1)) failed
-[info] 
-[info] 
-[info]   
-[info] Total for specification COptionSpec
-[info] Finished in 13 ms
-[info] 4 examples, 4 failures, 0 error
+example.COptionTest:
+failing seed for functor.covariant composition is 43LA3KHokN6KnEAzbkXi6IijQU91ran9-zsO2JeIyIP=
+==> X example.COptionTest.COption[Int]: functor.covariant composition  0.058s munit.FailException: /Users/eed3si9n/work/herding-cats/src/test/scala/example/COptionTest.scala:8
+7:class COptionTest extends munit.DisciplineSuite {
+8:  checkAll("COption[Int]", FunctorTests[COption].functor[Int, Int, Int])
+9:
+
+Failing seed: 43LA3KHokN6KnEAzbkXi6IijQU91ran9-zsO2JeIyIP=
+You can reproduce this failure by adding the following override to your suite:
+
+  override val scalaCheckInitialSeed = "43LA3KHokN6KnEAzbkXi6IijQU91ran9-zsO2JeIyIP="
+
+Falsified after 0 passed tests.
+> Labels of failing property:
+Expected: CSome(2,-1)
+Received: CSome(3,-1)
+> ARG_0: CSome(1,0)
+> ARG_1: org.scalacheck.GenArities\$\$Lambda\$36505/1702985322@62d7d97c
+> ARG_2: org.scalacheck.GenArities\$\$Lambda\$36505/1702985322@18bdc9d7
+    ....
+failing seed for functor.covariant identity is a4C-NCiCQEn0lU6F_TXdy5-IZ-XhMYDrC0vipJ3O_tG=
+==> X example.COptionTest.COption[Int]: functor.covariant identity  0.003s munit.FailException: /Users/eed3si9n/work/herding-cats/src/test/scala/example/COptionTest.scala:8
+7:class COptionTest extends munit.DisciplineSuite {
+8:  checkAll("COption[Int]", FunctorTests[COption].functor[Int, Int, Int])
+9:
+
+Failing seed: RhjRyflmRS-5CYveyf0uAFHuX6mWNm-Z98FVIs2aIVC=
+You can reproduce this failure by adding the following override to your suite:
+
+  override val scalaCheckInitialSeed = "RhjRyflmRS-5CYveyf0uAFHuX6mWNm-Z98FVIs2aIVC="
+
+Falsified after 1 passed tests.
+> Labels of failing property:
+Expected: CSome(-1486306630,-1498342842)
+Received: CSome(-1486306629,-1498342842)
+> ARG_0: CSome(-1486306630,-1498342842)
+    ....
+failing seed for functor.invariant composition is 9uQIZNNK_uZksfWg5pRb0VJUIgUtkv9vG9ckZ4UlRwD=
+==> X example.COptionTest.COption[Int]: functor.invariant composition  0.005s munit.FailException: /Users/eed3si9n/work/herding-cats/src/test/scala/example/COptionTest.scala:8
+7:class COptionTest extends munit.DisciplineSuite {
+8:  checkAll("COption[Int]", FunctorTests[COption].functor[Int, Int, Int])
+9:
+
+Failing seed: 9uQIZNNK_uZksfWg5pRb0VJUIgUtkv9vG9ckZ4UlRwD=
+You can reproduce this failure by adding the following override to your suite:
+
+  override val scalaCheckInitialSeed = "9uQIZNNK_uZksfWg5pRb0VJUIgUtkv9vG9ckZ4UlRwD="
+
+Falsified after 0 passed tests.
+> Labels of failing property:
+Expected: CSome(1,2147483647)
+Received: CSome(2,2147483647)
+> ARG_0: CSome(0,1095768235)
+> ARG_1: org.scalacheck.GenArities\$\$Lambda\$36505/1702985322@431263ab
+> ARG_2: org.scalacheck.GenArities\$\$Lambda\$36505/1702985322@5afe6566
+> ARG_3: org.scalacheck.GenArities\$\$Lambda\$36505/1702985322@ca0deda
+> ARG_4: org.scalacheck.GenArities\$\$Lambda\$36505/1702985322@1d7dde37
+    ....
+failing seed for functor.invariant identity is RcktTeI0rbpoUfuI3FHdvZtVGXGMoAjB6JkNBcTNTVK=
+==> X example.COptionTest.COption[Int]: functor.invariant identity  0.002s munit.FailException: /Users/eed3si9n/work/herding-cats/src/test/scala/example/COptionTest.scala:8
+7:class COptionTest extends munit.DisciplineSuite {
+8:  checkAll("COption[Int]", FunctorTests[COption].functor[Int, Int, Int])
+9:
+
+Failing seed: RcktTeI0rbpoUfuI3FHdvZtVGXGMoAjB6JkNBcTNTVK=
+You can reproduce this failure by adding the following override to your suite:
+
+  override val scalaCheckInitialSeed = "RcktTeI0rbpoUfuI3FHdvZtVGXGMoAjB6JkNBcTNTVK="
+
+Falsified after 0 passed tests.
+> Labels of failing property:
+Expected: CSome(2147483647,1054398067)
+Received: CSome(-2147483648,1054398067)
+> ARG_0: CSome(2147483647,1054398067)
+    ....
+[error] Failed: Total 4, Failed 4, Errors 0, Passed 0
+[error] Failed tests:
+[error]   example.COptionTest
+[error] (Test / testOnly) sbt.TestsFailedException: Tests unsuccessful
 ```
 
 The tests failed as expected.

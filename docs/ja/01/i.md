@@ -18,7 +18,7 @@ data TrafficLight = Red | Yellow | Green
 これを Scala で書くと:
 
 ```scala mdoc
-import cats._, cats.data._, cats.implicits._
+import cats._, cats.syntax.all._
 
 sealed trait TrafficLight
 object TrafficLight {
@@ -50,7 +50,7 @@ TrafficLight.Red === TrafficLight.Yellow
 この問題を回避する方法としては、`TrafficLight` にキャストするヘルパー関数を定義するという方法がある:
 
 ```scala mdoc:reset
-import cats._, cats.data._, cats.implicits._
+import cats._, cats.syntax.all._
 
 sealed trait TrafficLight
 object TrafficLight {

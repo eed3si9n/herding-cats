@@ -4,7 +4,7 @@
 In addition to `Order`, Cats also defines `PartialOrder`.
 
 ```scala mdoc
-import cats._, cats.data._, cats.implicits._
+import cats._, cats.syntax.all._
 
 1 tryCompare 2
 

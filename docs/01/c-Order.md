@@ -8,16 +8,19 @@ LYAHFGG:
 Cats' equivalent for the `Ord` typeclass is `Order`.
 
 ```scala mdoc
-import cats._, cats.data._, cats.implicits._
-
+// plain Scala
 1 > 2.0
 ```
 
 ```scala mdoc:fail
+import cats._, cats.syntax.all._
+
 1 compare 2.0
 ```
 
 ```scala mdoc
+import cats._, cats.syntax.all._
+
 1.0 compare 2.0
 
 1.0 max 2.0

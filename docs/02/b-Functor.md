@@ -28,9 +28,10 @@ Like the book let's look [how it's implemented][FunctorSource]:
 
 Here's how we can use this:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> Functor[List].map(List(1, 2, 3)) { _ + 1 }
+```scala mdoc
+import cats._, cats.syntax.all._
+
+Functor[List].map(List(1, 2, 3)) { _ + 1 }
 ```
 
 Let's call the above usage the *function syntax*.
@@ -57,9 +58,10 @@ except this `map` doesn't do the `CanBuildFrom` auto conversion.
 
 Cats defines a `Functor` instance for `Either[A, B]`.
 
-```console
-scala> (Right(1): Either[String, Int]) map { _ + 1 }
-scala> (Left("boom!"): Either[String, Int]) map { _ + 1 }
+```scala mdoc
+(Right(1): Either[String, Int]) map { _ + 1 }
+
+(Left("boom!"): Either[String, Int]) map { _ + 1 }
 ```
 
 Note that the above demonstration only works because `Either[A, B]` at the moment
@@ -74,9 +76,12 @@ One workaround is to opt for the function syntax.
 
 Cats also defines a `Functor` instance for `Function1`.
 
-```console
-scala> val h = ((x: Int) => x + 1) map {_ * 7}
-scala> h(3)
+```scala mdoc
+{
+  val addOne: Int => Int = (x: Int) => x + 1
+  val h: Int => Int = addOne map {_ * 7}
+  h(3)
+}
 ```
 
 This is interesting. Basically `map` gives us a way to compose functions, except the order is in reverse from `f compose g`. Another way of looking at `Function1` is that it's an infinite map from the domain to the range. Now let's skip the input and output stuff and go to [Functors, Applicative Functors and Monoids][fafm].
@@ -97,22 +102,22 @@ ghci> (*3) . (+100) \$ 1
 
 In Haskell, the `fmap` seems to be working in the same order as `f compose g`. Let's check in Scala using the same numbers:
 
-```console
-scala> (((_: Int) * 3) map {_ + 100}) (1)
+```scala mdoc
+{
+  (((_: Int) * 3) map {_ + 100}) (1)
+}
 ```
 
 Something is not right. Let's compare the declaration of `fmap` and Cats' `map` function:
 
 ```haskell
 fmap :: (a -> b) -> f a -> f b
-
 ```
 
 and here's Cats:
 
 ```scala
 def map[A, B](fa: F[A])(f: A => B): F[B]
-
 ```
 
 So the order is flipped. Here's Paolo Giarrusso ([@blaisorblade][@blaisorblade])'s explanation:
@@ -132,10 +137,10 @@ LYAHFGG:
 > [We can think of `fmap` as] a function that takes a function and returns a new function that's just like the old one, only it takes a functor as a parameter and returns a functor as the result. It takes an `a -> b` function and returns a function `f a -> f b`. This is called *lifting* a function.
 
 ```haskell
-ghci> :t fmap (*2)  
-fmap (*2) :: (Num a, Functor f) => f a -> f a  
-ghci> :t fmap (replicate 3)  
-fmap (replicate 3) :: (Functor f) => f a -> f [a]  
+ghci> :t fmap (*2)
+fmap (*2) :: (Num a, Functor f) => f a -> f a
+ghci> :t fmap (replicate 3)
+fmap (replicate 3) :: (Functor f) => f a -> f [a]
 ```
 
 If the parameter order has been flipped, are we going to miss out on this lifting goodness?
@@ -174,17 +179,21 @@ Fortunately, Cats implements derived functions under the `Functor` typeclass:
 
 As you see, we have `lift`!
 
-```console
-scala> val lifted = Functor[List].lift {(_: Int) * 2}
-scala> lifted(List(1, 2, 3))
+```scala mdoc
+{
+  val lifted = Functor[List].lift {(_: Int) * 2}
+  lifted(List(1, 2, 3))
+}
 ```
 
 We've just lifted the function `{(_: Int) * 2}` to `List[Int] => List[Int]`. Here the other derived functions using the operator syntax:
 
-```console
-scala> List(1, 2, 3).void
-scala> List(1, 2, 3) fproduct {(_: Int) * 2}
-scala> List(1, 2, 3) as "x"
+```scala mdoc
+List(1, 2, 3).void
+
+List(1, 2, 3) fproduct {(_: Int) * 2}
+
+List(1, 2, 3) as "x"
 ```
 
 ### Functor Laws
@@ -198,19 +207,22 @@ LYAHFGG:
 
 We can check this for `Either[A, B]`.
 
-```console
-scala> val x: Either[String, Int] = Right(1)
-scala> assert { (x map identity) === x }
+```scala mdoc
+val x: Either[String, Int] = Right(1)
+
+assert { (x map identity) === x }
 ```
 
 > The second law says that composing two functions and then mapping the resulting function over a functor should be the same as first mapping one function over the functor and then mapping the other one.
 
 In other words,
 
-```console
-scala> val f = {(_: Int) * 3}
-scala> val g = {(_: Int) + 1}
-scala> assert { (x map (f map g)) === (x map f map g) }
+```scala mdoc
+val f = {(_: Int) * 3}
+
+val g = {(_: Int) + 1}
+
+assert { (x map (f map g)) === (x map f map g) }
 ```
 
-These are laws the implementer of the functors must abide, and not something the compiler can check for you. 
+These are laws the implementer of the functors must abide, and not something the compiler can check for you.

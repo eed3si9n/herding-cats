@@ -69,7 +69,7 @@ import Monoid.syntax._
 このテクニックを使って、Cats はごくたまに `Option` のような標準ライブラリデータ型へのメソッド注入も提供する:
 
 ```scala mdoc:reset
-import cats._, cats.data._, cats.implicits._
+import cats._, cats.syntax.all._
 
 1.some
 

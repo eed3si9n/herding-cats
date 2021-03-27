@@ -12,7 +12,7 @@ Cats' equivalent for the `Eq` typeclass is also called `Eq`.
 `Eq` was moved from [non/algebra][algebra] into cats-kernel subproject, and became part of Cats:
 
 ```scala mdoc
-import cats._, cats.data._, cats.implicits._
+import cats._, cats.syntax.all._
 
 1 === 1
 ```

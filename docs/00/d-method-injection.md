@@ -69,7 +69,7 @@ We were able to inject `|+|` to both `Int` and `String` with just one definition
 Using the same technique, Cats _occasionally_ provides method injections for standard library datatypes like `Option` and `Vector`:
 
 ```scala mdoc:reset
-import cats._, cats.data._, cats.implicits._
+import cats._, cats.syntax.all._
 
 1.some
 

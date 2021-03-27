@@ -1,7 +1,7 @@
 ---
 out: making-our-own-typeclass-with-simulacrum.html
 ---
-  
+
   [@stewoconnor]: https://twitter.com/stewoconnor
   [@stew]: https://github.com/stew
   [294]: https://github.com/typelevel/cats/pull/294
@@ -13,7 +13,7 @@ out: making-our-own-typeclass-with-simulacrum.html
 LYAHFGG:
 
 > In JavaScript and some other weakly typed languages, you can put almost anything inside an if expression.
-> .... Even though strictly using `Bool` for boolean semantics works better in Haskell, let's try and implement that JavaScript-ish behavior anyway. For fun! 
+> .... Even though strictly using `Bool` for boolean semantics works better in Haskell, let's try and implement that JavaScript-ish behavior anyway. For fun!
 
 The conventional steps of defining a modular typeclass in Scala used to look like:
 
@@ -33,7 +33,7 @@ which refactors Cats to use it.
 In any case, let's see if we can make our own truthy value typeclass.
 Note the `@typeclass` annotation:
 
-```console:new
+```scala
 scala> import simulacrum._
 scala> :paste
 @typeclass trait CanTruthy[A] { self =>
@@ -86,7 +86,7 @@ object CanTruthy {
 
 To make sure it works, let's define an instance for `Int` and use it. The eventual goal is to get `1.truthy` to return `true`:
 
-```console
+```scala
 scala> implicit val intCanTruthy: CanTruthy[Int] = CanTruthy.fromTruthy({
          case 0 => false
          case _ => true
@@ -102,7 +102,7 @@ One caveat is that this requires Macro Paradise plugin to compile. Once it's com
 
 For `CanTruthy` the injected operator happened to be unary, and it matched the name of the function on the typeclass contract. simulacrum can also define operator with symbolic names using `@op` annotation:
 
-```console
+```scala
 scala> @typeclass trait CanAppend[A] {
   @op("|+|") def append(a1: A, a2: A): A
 }

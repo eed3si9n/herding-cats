@@ -12,7 +12,7 @@ Cats で `Eq` 型クラスと同じものも `Eq` と呼ばれている。
 `Eq` は [non/algebra][algebra] から cats-kernel というサブプロジェクトに移行して、Cats の一部になった:
 
 ```scala mdoc
-import cats._, cats.data._, cats.implicits._
+import cats._, cats.syntax.all._
 
 1 === 1
 ```
