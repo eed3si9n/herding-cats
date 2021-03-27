@@ -34,6 +34,10 @@ blockquote {
   font-family: Georgia;
 }
 
+ol.toc a {
+  color: #202020;
+}
+
 @media screen and (min-device-width: 800px), projection {
   div.container {
     width: 70%;
