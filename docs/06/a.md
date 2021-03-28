@@ -22,11 +22,11 @@ foo = do
 
 Typically one would write `return (show x ++ y)`, but I wrote out `Just`, so it's clear that the last line is a monadic value. On the other hand, Scala would look as follows:
 
-```console:new
-scala> def foo = for {
-         x <- Some(3)
-         y <- Some("!")
-       } yield x.toString + y
+```scala mdoc
+def foo = for {
+  x <- Some(3)
+  y <- Some("!")
+} yield x.toString + y
 ```
 
 Looks similar, but there are some differences.
@@ -34,25 +34,29 @@ Looks similar, but there are some differences.
 - Scala doesn't have a built-in `Monad` type. Instead, the compiler desugars `for` comprehensions into `map`, `withFilter`, `flatMap`, and `foreach` calls mechanically. [SLS 6.19][SLS_6_19]
 - For things like `Option` and `List` that the standard library implements `map`/`flatMap`, the built-in implementations would be prioritized over the typeclasses provided by Cats.
 - The Scala collection library's `map` etc accepts `CanBuildFrom`, which may convert `F[A]` into `G[B]`. See [The Architecture of Scala Collections][foco]
-- `CanBuildFrom` may convert some `G[A]` into `F[B]`. 
+- `CanBuildFrom` may convert some `G[A]` into `F[B]`.
 - `yield` with a pure value is required, otherwise `for` turns into `Unit`.
 
 Here are some demonstration of these points:
 
-```console
-scala> import collection.immutable.BitSet
-scala> val bits = BitSet(1, 2, 3)
-scala> for {
-         x <- bits
-       } yield x.toFloat
-scala> for {
-         i <- List(1, 2, 3)
-         j <- Some(1)
-       } yield i + j
-scala> for {
-         i <- Map(1 -> 2)
-         j <- Some(3)
-       } yield j
+```scala mdoc
+import collection.immutable.BitSet
+
+val bits = BitSet(1, 2, 3)
+
+for {
+  x <- bits
+} yield x.toFloat
+
+for {
+  i <- List(1, 2, 3)
+  j <- Some(1)
+} yield i + j
+
+for {
+  i <- Map(1 -> 2)
+  j <- Some(3)
+} yield j
 ```
 
 #### Implementing actM
@@ -87,50 +91,52 @@ I'll omit the details, but the key function is this:
 
 Here's how we can use `actM`:
 
-```console
-scala> import cats._, cats.data._, cats.implicits._
-scala> import example.MonadSyntax._
-scala> actM[Option, String] {
-         val x = 3.some.next
-         val y = "!".some.next
-         x.toString + y
-       }
+```scala mdoc
+import cats._, cats.syntax.all._
+import example.MonadSyntax._
+
+actM[Option, String] {
+  val x = 3.some.next
+  val y = "!".some.next
+  x.toString + y
+}
 ```
 
 `fa.next` expands to a `Monad[F].flatMap(fa)()` call.
 So the above code expands into:
 
-```console
-scala> Monad[Option].flatMap[String, String]({
-         val fa0: Option[Int] = 3.some
-         Monad[Option].flatMap[Int, String](fa0) { (arg0: Int) => {
-           val next0: Int = arg0
-           val x: Int = next0
-           val fa1: Option[String] = "!".some
-           Monad[Option].flatMap[String, String](fa1)((arg1: String) => {
-             val next1: String = arg1
-             val y: String = next1
-             Monad[Option].pure[String](x.toString + y)
-           })
-         }}
-       }) { (arg2: String) => Monad[Option].pure[String](arg2) }
+```scala mdoc
+Monad[Option].flatMap[String, String]({
+  val fa0: Option[Int] = 3.some
+  Monad[Option].flatMap[Int, String](fa0) { (arg0: Int) => {
+    val next0: Int = arg0
+    val x: Int = next0
+    val fa1: Option[String] = "!".some
+    Monad[Option].flatMap[String, String](fa1)((arg1: String) => {
+      val next1: String = arg1
+      val y: String = next1
+      Monad[Option].pure[String](x.toString + y)
+    })
+  }}
+}) { (arg2: String) => Monad[Option].pure[String](arg2) }
 ```
 
 Let's see if this can prevent auto conversion from `Option` to `List`.
 
-```console:error
-scala> actM[List, Int] {
-         val i = List(1, 2, 3).next
-         val j = 1.some.next
-         i + j
-       }
+```scala mdoc:fail
+{
+  actM[List, Int] {
+    val i = List(1, 2, 3).next
+    val j = 1.some.next
+    i + j
+  }
+}
 ```
 
 The error message is a bit rough, but we were able to catch this at compile-time.
 This will also work for any monads including `Future`.
 
-```console
-scala> :paste
+```scala mdoc
 val x = {
   import scala.concurrent.{ExecutionContext, Future}
   import ExecutionContext.Implicits.global
@@ -140,7 +146,8 @@ val x = {
     i + j
   }
 }
-scala> x.value
+
+x.value
 ```
 
 This macro is incomplete toy code, but it demonstrates potential usefulness for having something like this.
