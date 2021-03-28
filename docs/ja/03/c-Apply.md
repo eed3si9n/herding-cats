@@ -8,10 +8,13 @@
 
 > ここまではファンクター値を写すために、もっぱら 1 引数関数を使ってきました。では、2 引数関数でファンクターを写すと何が起こるでしょう？
 
-```console
-scala> import cats._, cats.data._, cats.implicits._
-scala> val hs = Functor[List].map(List(1, 2, 3, 4)) ({(_: Int) * (_:Int)}.curried)
-scala> Functor[List].map(hs) {_(9)}
+```scala mdoc
+import cats._, cats.syntax.all._
+
+{
+  val hs = Functor[List].map(List(1, 2, 3, 4)) ({(_: Int) * (_:Int)}.curried)
+  Functor[List].map(hs) {_(9)}
+}
 ```
 
 LYAHFGG:
@@ -65,10 +68,12 @@ Just (-2)
 
 Cats には apply 構文というものがある。
 
-```console
-scala> (3.some, 5.some) mapN { _ - _ }
-scala> (none[Int], 5.some) mapN { _ - _ }
-scala> (3.some, none[Int]) mapN { _ - _ }
+```scala mdoc
+(3.some, 5.some) mapN { _ - _ }
+
+(none[Int], 5.some) mapN { _ - _ }
+
+(3.some, none[Int]) mapN { _ - _ }
 ```
 
 これは `Option` から `Cartesian` が形成可能であることを示す。
@@ -81,8 +86,8 @@ LYAHFGG:
 
 apply 構文で書けるかためしてみよう:
 
-```console
-scala> (List("ha", "heh", "hmm"), List("?", "!", ".")) mapN {_ + _}
+```scala mdoc
+(List("ha", "heh", "hmm"), List("?", "!", ".")) mapN {_ + _}
 ```
 
 #### `*>` と `<*` 演算子
@@ -91,11 +96,14 @@ scala> (List("ha", "heh", "hmm"), List("?", "!", ".")) mapN {_ + _}
 
 定義はシンプルに見えるけども、面白い効果がある:
 
-```console
-scala> 1.some <* 2.some
-scala> none[Int] <* 2.some
-scala> 1.some *> 2.some
-scala> none[Int] *> 2.some
+```scala mdoc
+1.some <* 2.some
+
+none[Int] <* 2.some
+
+1.some *> 2.some
+
+none[Int] *> 2.some
 ```
 
 どちらか一方が失敗すると、`None` が返ってくる。
@@ -104,9 +112,10 @@ scala> none[Int] *> 2.some
 
 次にへ行く前に、`Optiona` 値を作るために Cats が導入する syntax をみてみる。
 
-```console
-scala> 9.some
-scala> none[Int]
+```scala mdoc
+9.some
+
+none[Int]
 ```
 
 これで `(Some(9): Option[Int])` を `9.some` と書ける。
@@ -115,12 +124,16 @@ scala> none[Int]
 
 これを `Apply[Option].ap` と一緒に使ってみる:
 
-```console
-scala> import cats._, cats.data._, cats.implicits._
-scala> Apply[Option].ap({{(_: Int) + 3}.some })(9.some)
-scala> Apply[Option].ap({{(_: Int) + 3}.some })(10.some)
-scala> Apply[Option].ap({{(_: String) + "hahah"}.some })(none[String])
-scala> Apply[Option].ap({ none[String => String] })("woot".some)
+```scala mdoc:reset
+import cats._, cats.syntax.all._
+
+Apply[Option].ap({{(_: Int) + 3}.some })(9.some)
+
+Apply[Option].ap({{(_: Int) + 3}.some })(10.some)
+
+Apply[Option].ap({{(_: String) + "hahah"}.some })(none[String])
+
+Apply[Option].ap({ none[String => String] })("woot".some)
 ```
 
 どちらかが失敗すると、`None` が返ってくる。
@@ -128,11 +141,14 @@ scala> Apply[Option].ap({ none[String => String] })("woot".some)
 昨日の [simulacrum を用いた独自型クラスの定義][mootws]で見たとおり、
 simulacrum は型クラス・コントラクト内で定義された関数を演算子として (魔法の力で) 転写する。
 
-```console
-scala> ({(_: Int) + 3}.some) ap 9.some
-scala> ({(_: Int) + 3}.some) ap 10.some
-scala> ({(_: String) + "hahah"}.some) ap none[String]
-scala> (none[String => String]) ap "woot".some
+```scala mdoc
+({(_: Int) + 3}.some) ap 9.some
+
+({(_: Int) + 3}.some) ap 10.some
+
+({(_: String) + "hahah"}.some) ap none[String]
+
+(none[String => String]) ap "woot".some
 ```
 
 #### Apply の便利な関数
@@ -194,24 +210,26 @@ trait Apply[F[_]] extends Functor[F] with Cartesian[F] with ApplyArityFunctions[
 2項演算子に関しては、`map2` を使うことでアプリカティブ・スタイルを隠蔽することができる。
 同じものを 2通りの方法で書いて比較してみる:
 
-```console
-scala> (3.some, List(4).some) mapN { _ :: _ }
-scala> Apply[Option].map2(3.some, List(4).some) { _ :: _ }
+```scala mdoc
+(3.some, List(4).some) mapN { _ :: _ }
+
+Apply[Option].map2(3.some, List(4).some) { _ :: _ }
 ```
 
 同じ結果となった。
 
 `Apply[F].ap` の 2パラメータ版は `Apply[F].ap2` と呼ばれる:
 
-```console
-scala> Apply[Option].ap2({{ (_: Int) :: (_: List[Int]) }.some })(3.some, List(4).some)
+```scala mdoc
+Apply[Option].ap2({{ (_: Int) :: (_: List[Int]) }.some })(3.some, List(4).some)
 ```
 
 `map2` の特殊形で `tuple2` というものもあって、このように使う:
 
-```console
-scala> Apply[Option].tuple2(1.some, 2.some)
-scala> Apply[Option].tuple2(1.some, none[Int])
+```scala mdoc
+Apply[Option].tuple2(1.some, 2.some)
+
+Apply[Option].tuple2(1.some, none[Int])
 ```
 
 2つ以上のパラメータを受け取る関数があったときはどうなるんだろうかと気になっている人は、

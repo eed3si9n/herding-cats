@@ -11,10 +11,13 @@ out: Semigroupal.html
 
 > So far, when we were mapping functions over functors, we usually mapped functions that take only one parameter. But what happens when we map a function like `*`, which takes two parameters, over a functor?
 
-```console
-scala> import cats._, cats.data._, cats.implicits._
-scala> val hs = Functor[List].map(List(1, 2, 3, 4)) ({(_: Int) * (_:Int)}.curried)
-scala> Functor[List].map(hs) {_(9)}
+```scala mdoc
+import cats._
+
+{
+  val hs = Functor[List].map(List(1, 2, 3, 4)) ({(_: Int) * (_:Int)}.curried)
+  Functor[List].map(hs) {_(9)}
+}
 ```
 
 LYAHFGG:

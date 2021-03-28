@@ -8,10 +8,13 @@
 
 > So far, when we were mapping functions over functors, we usually mapped functions that take only one parameter. But what happens when we map a function like `*`, which takes two parameters, over a functor?
 
-```console
-scala> import cats._, cats.data._, cats.implicits._
-scala> val hs = Functor[List].map(List(1, 2, 3, 4)) ({(_: Int) * (_:Int)}.curried)
-scala> Functor[List].map(hs) {_(9)}
+```scala mdoc
+import cats._, cats.syntax.all._
+
+{
+  val hs = Functor[List].map(List(1, 2, 3, 4)) ({(_: Int) * (_:Int)}.curried)
+  Functor[List].map(hs) {_(9)}
+}
 ```
 
 LYAHFGG:
@@ -65,10 +68,12 @@ Just (-2)
 
 Cats comes with the apply syntax.
 
-```console
-scala> (3.some, 5.some) mapN { _ - _ }
-scala> (none[Int], 5.some) mapN { _ - _ }
-scala> (3.some, none[Int]) mapN { _ - _ }
+```scala mdoc
+(3.some, 5.some) mapN { _ - _ }
+
+(none[Int], 5.some) mapN { _ - _ }
+
+(3.some, none[Int]) mapN { _ - _ }
 ```
 
 This shows that `Option` forms `Cartesian`.
@@ -81,8 +86,8 @@ LYAHFGG:
 
 Let's see if we can use the `apply` sytax:
 
-```console
-scala> (List("ha", "heh", "hmm"), List("?", "!", ".")) mapN {_ + _}
+```scala mdoc
+(List("ha", "heh", "hmm"), List("?", "!", ".")) mapN {_ + _}
 ```
 
 #### `*>` and `<*` operators
@@ -91,11 +96,14 @@ scala> (List("ha", "heh", "hmm"), List("?", "!", ".")) mapN {_ + _}
 
 The definition looks simple enough, but the effect is cool:
 
-```console
-scala> 1.some <* 2.some
-scala> none[Int] <* 2.some
-scala> 1.some *> 2.some
-scala> none[Int] *> 2.some
+```scala mdoc
+1.some <* 2.some
+
+none[Int] <* 2.some
+
+1.some *> 2.some
+
+none[Int] *> 2.some
 ```
 
 If either side fails, we get `None`.
@@ -104,9 +112,10 @@ If either side fails, we get `None`.
 
 Before we move on, let's look at the syntax that Cats adds to create an `Option` value.
 
-```console
-scala> 9.some
-scala> none[Int]
+```scala mdoc
+9.some
+
+none[Int]
 ```
 
 We can write `(Some(9): Option[Int])` as `9.some`.
@@ -115,12 +124,16 @@ We can write `(Some(9): Option[Int])` as `9.some`.
 
 Here's how we can use it with `Apply[Option].ap`:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> Apply[Option].ap({{(_: Int) + 3}.some })(9.some)
-scala> Apply[Option].ap({{(_: Int) + 3}.some })(10.some)
-scala> Apply[Option].ap({{(_: String) + "hahah"}.some })(none[String])
-scala> Apply[Option].ap({ none[String => String] })("woot".some)
+```scala mdoc:reset
+import cats._, cats.syntax.all._
+
+Apply[Option].ap({{(_: Int) + 3}.some })(9.some)
+
+Apply[Option].ap({{(_: Int) + 3}.some })(10.some)
+
+Apply[Option].ap({{(_: String) + "hahah"}.some })(none[String])
+
+Apply[Option].ap({ none[String => String] })("woot".some)
 ```
 
 If either side fails, we get `None`.
@@ -129,11 +142,14 @@ If you remember [Making our own typeclass with simulacrum][mootws] from yesterda
 simulacrum will automatically transpose the function defined on
 the typeclass contract into an operator, magically.
 
-```console
-scala> ({(_: Int) + 3}.some) ap 9.some
-scala> ({(_: Int) + 3}.some) ap 10.some
-scala> ({(_: String) + "hahah"}.some) ap none[String]
-scala> (none[String => String]) ap "woot".some
+```scala mdoc
+({(_: Int) + 3}.some) ap 9.some
+
+({(_: Int) + 3}.some) ap 10.some
+
+({(_: String) + "hahah"}.some) ap none[String]
+
+(none[String => String]) ap "woot".some
 ```
 
 #### Useful functions for Apply
@@ -196,25 +212,26 @@ trait Apply[F[_]] extends Functor[F] with Cartesian[F] with ApplyArityFunctions[
 For binary operators, `map2` can be used to hide the applicative style.
 Here we can write the same thing in two different ways:
 
-```console
-scala> (3.some, List(4).some) mapN { _ :: _ }
-scala> Apply[Option].map2(3.some, List(4).some) { _ :: _ }
+```scala mdoc
+(3.some, List(4).some) mapN { _ :: _ }
+
+Apply[Option].map2(3.some, List(4).some) { _ :: _ }
 ```
 
 The results match up.
 
 The 2-parameter version of `Apply[F].ap` is called `Apply[F].ap2`:
 
-```console
-scala> Apply[Option].ap2({{ (_: Int) :: (_: List[Int]) }.some })(3.some, List(4).some)
+```scala mdoc
+Apply[Option].ap2({{ (_: Int) :: (_: List[Int]) }.some })(3.some, List(4).some)
 ```
 
 There's a special case of `map2` called `tuple2`, which works like this:
 
+```scala mdoc
+Apply[Option].tuple2(1.some, 2.some)
 
-```console
-scala> Apply[Option].tuple2(1.some, 2.some)
-scala> Apply[Option].tuple2(1.some, none[Int])
+Apply[Option].tuple2(1.some, none[Int])
 ```
 
 If you are wondering what happens when you have a function with more than two

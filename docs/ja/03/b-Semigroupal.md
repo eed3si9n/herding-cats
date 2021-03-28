@@ -11,10 +11,13 @@ out: Semigroupal.html
 
 > ここまではファンクター値を写すために、もっぱら 1 引数関数を使ってきました。では、2 引数関数でファンクターを写すと何が起こるでしょう？
 
-```console
-scala> import cats._, cats.data._, cats.implicits._
-scala> val hs = Functor[List].map(List(1, 2, 3, 4)) ({(_: Int) * (_:Int)}.curried)
-scala> Functor[List].map(hs) {_(9)}
+```scala mdoc
+import cats._
+
+{
+  val hs = Functor[List].map(List(1, 2, 3, 4)) ({(_: Int) * (_:Int)}.curried)
+  Functor[List].map(hs) {_(9)}
+}
 ```
 
 LYAHFGG:
