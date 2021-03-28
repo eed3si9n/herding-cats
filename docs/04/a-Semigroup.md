@@ -23,10 +23,12 @@ LYAHFGG:
 
 Let's check this:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> assert { (3 * 2) * (8 * 5) === 3 * (2 * (8 * 5)) }
-scala> assert { List("la") ++ (List("di") ++ List("da")) === (List("la") ++ List("di")) ++ List("da") }
+```scala mdoc
+import cats._, cats.syntax.all._
+
+assert { (3 * 2) * (8 * 5) === 3 * (2 * (8 * 5)) }
+
+assert { List("la") ++ (List("di") ++ List("da")) === (List("la") ++ List("di")) ++ List("da") }
 ```
 
 No error means, they are equal.
@@ -52,9 +54,10 @@ trait Semigroup[@sp(Int, Long, Float, Double) A] extends Any with Serializable {
 
 This enables `combine` operator and its symbolic alias `|+|`. Let's try using this.
 
-```console
-scala> List(1, 2, 3) |+| List(4, 5, 6)
-scala> "one" |+| "two"
+```scala mdoc
+List(1, 2, 3) |+| List(4, 5, 6)
+
+"one" |+| "two"
 ```
 
 #### The Semigroup Laws
@@ -87,8 +90,8 @@ scala> rs1.all.check
 
 #### Lists are Semigroups
 
-```console
-scala> List(1, 2, 3) |+| List(4, 5, 6)
+```scala mdoc
+List(1, 2, 3) |+| List(4, 5, 6)
 ```
 
 #### Product and Sum
@@ -98,14 +101,15 @@ Instead of tagged types, cats provides only the instance  additive.
 
 Trying to use operator syntax here is tricky.
 
-```console
-scala> def doSomething[A: Semigroup](a1: A, a2: A): A =
-         a1 |+| a2
-scala> doSomething(3, 5)(Semigroup[Int])
+```scala mdoc
+def doSomething[A: Semigroup](a1: A, a2: A): A =
+  a1 |+| a2
+
+doSomething(3, 5)(Semigroup[Int])
 ```
 
 I might as well stick to function syntax:
 
-```console
-scala> Semigroup[Int].combine(3, 5)
+```scala mdoc
+Semigroup[Int].combine(3, 5)
 ```
