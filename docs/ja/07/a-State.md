@@ -29,20 +29,26 @@ val (s3, moved1) =
 
 本にあわせてここではスタックの例を使う。まずは、`State` 無しでの実装:
 
-```console:new
-scala> type Stack = List[Int]
-scala> def pop(s0: Stack): (Stack, Int) =
-         s0 match {
-           case x :: xs => (xs, x)
-           case Nil     => sys.error("stack is empty")
-         }
-scala> def push(s0: Stack, a: Int): (Stack, Unit) = (a :: s0, ())
-scala> def stackManip(s0: Stack): (Stack, Int) = {
-         val (s1, _) = push(s0, 3)
-         val (s2, a) = pop(s1)
-         pop(s2)
-       }
-scala> stackManip(List(5, 8, 2, 1))
+```scala mdoc
+import cats._, cats.syntax.all._
+
+type Stack = List[Int]
+
+def pop(s0: Stack): (Stack, Int) =
+  s0 match {
+    case x :: xs => (xs, x)
+    case Nil     => sys.error("stack is empty")
+  }
+
+def push(s0: Stack, a: Int): (Stack, Unit) = (a :: s0, ())
+
+def stackManip(s0: Stack): (Stack, Int) = {
+  val (s1, _) = push(s0, 3)
+  val (s2, a) = pop(s1)
+  pop(s2)
+}
+
+stackManip(List(5, 8, 2, 1))
 ```
 
 ### State と StateT データ型
@@ -123,28 +129,32 @@ REPL から `State` を使ってみると、最初の state は成功するけ�
 
 `State` を使ってスタックを実装してみよう:
 
-```console:new
-scala> type Stack = List[Int]
-scala> import cats._, cats.data._, cats.implicits._
-scala> val pop = State[Stack, Int] {
-         case x :: xs => (xs, x)
-         case Nil     => sys.error("stack is empty")
-       }
-scala> def push(a: Int) = State[Stack, Unit] {
-         case xs => (a :: xs, ())
-       }
+```scala mdoc:reset
+type Stack = List[Int]
+
+import cats._, cats.data._, cats.syntax.all._
+
+val pop = State[Stack, Int] {
+  case x :: xs => (xs, x)
+  case Nil     => sys.error("stack is empty")
+}
+
+def push(a: Int) = State[Stack, Unit] {
+  case xs => (a :: xs, ())
+}
 ```
 
 これらがプリミティブ・プログラムだ。
 これらをモナド的に合成することで複合プログラムを構築することができる。
 
-```console
-scala> def stackManip: State[Stack, Int] = for {
-         _ <- push(3)
-         a <- pop
-         b <- pop
-       } yield(b)
-scala> stackManip.run(List(5, 8, 2, 1)).value
+```scala mdoc
+def stackManip: State[Stack, Int] = for {
+  _ <- push(3)
+  a <- pop
+  b <- pop
+} yield(b)
+
+stackManip.run(List(5, 8, 2, 1)).value
 ```
 
 最初の `run` は `SateT` のためで、2つ目の `run` は `Eval` を最後まで実行する。
@@ -200,27 +210,33 @@ private[data] abstract class StateFunctions {
 
 本で出てくる `stackStack` 関数を実装して具体例でみてみよう。
 
-```console
-scala> def stackyStack: State[Stack, Unit] = for {
-         stackNow <- State.get[Stack]
-         r <- if (stackNow === List(1, 2, 3)) State.set[Stack](List(8, 3, 1))
-              else State.set[Stack](List(9, 2, 1))
-       } yield r
-scala> stackyStack.run(List(1, 2, 3)).value
+```scala mdoc:reset
+type Stack = List[Int]
+
+import cats._, cats.data._, cats.syntax.all._
+
+def stackyStack: State[Stack, Unit] = for {
+  stackNow <- State.get[Stack]
+  r <- if (stackNow === List(1, 2, 3)) State.set[Stack](List(8, 3, 1))
+       else State.set[Stack](List(9, 2, 1))
+} yield r
+
+stackyStack.run(List(1, 2, 3)).value
 ```
 
 `pop` と `push` も `get` と `set` を使って実装できる:
 
-```console
-scala> val pop: State[Stack, Int] = for {
-         s <- State.get[Stack]
-         (x :: xs) = s
-         _ <- State.set[Stack](xs)
-       } yield x
-scala> def push(x: Int): State[Stack, Unit] = for {
-         xs <- State.get[Stack]
-         r <- State.set(x :: xs)
-       } yield r
+```scala mdoc
+val pop: State[Stack, Int] = for {
+  s <- State.get[Stack]
+  (x :: xs) = s
+  _ <- State.set[Stack](xs)
+} yield x
+
+def push(x: Int): State[Stack, Unit] = for {
+  xs <- State.get[Stack]
+  r <- State.set(x :: xs)
+} yield r
 ```
 
 見ての通りモナドそのものはあんまり大したこと無い (タプルを返す関数のカプセル化) けど、連鎖することでボイラープレートを省くことができた。

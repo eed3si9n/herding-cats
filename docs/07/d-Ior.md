@@ -49,12 +49,16 @@ object Ior extends IorInstances with IorFunctions {
 
 These values are created using the `left`, `right`, and `both` methods on `Ior`:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> import cats.data.{ NonEmptyList => NEL }
-scala> Ior.right[NEL[String], Int](1)
-scala> Ior.left[NEL[String], Int](NEL.of("error"))
-scala> Ior.both[NEL[String], Int](NEL.of("warning"), 1)
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
+import cats.data.{ NonEmptyList => NEL }
+
+Ior.right[NEL[String], Int](1)
+
+Ior.left[NEL[String], Int](NEL.of("error"))
+
+Ior.both[NEL[String], Int](NEL.of("warning"), 1)
 ```
 
 As noted in the scaladoc comment, `Ior`'s `flatMap` uses `Semigroup[A]` to accumulate
@@ -63,35 +67,43 @@ So we could probably use this as a hybrid of `Xor` and `Validated`.
 
 Here's how `flatMap` behaves for all nine combinations:
 
-```console
-scala> Ior.right[NEL[String], Int](1) >>=
-         { x => Ior.right[NEL[String], Int](x + 1) }
-scala> Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
-         { x => Ior.right[NEL[String], Int](x + 1) }
-scala> Ior.both[NEL[String], Int](NEL.of("warning 1"), 1) >>=
-         { x => Ior.right[NEL[String], Int](x + 1) }
-scala> Ior.right[NEL[String], Int](1) >>=
-         { x => Ior.left[NEL[String], Int](NEL.of("error 2")) }
-scala> Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
-         { x => Ior.left[NEL[String], Int](NEL.of("error 2")) }
-scala> Ior.both[NEL[String], Int](NEL.of("warning 1"), 1) >>=
-         { x => Ior.left[NEL[String], Int](NEL.of("error 2")) }
-scala> Ior.right[NEL[String], Int](1) >>=
-         { x => Ior.both[NEL[String], Int](NEL.of("warning 2"), x + 1) }
-scala> Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
-         { x => Ior.both[NEL[String], Int](NEL.of("warning 2"), x + 1) }
-scala> Ior.both[NEL[String], Int](NEL.of("warning 1"), 1) >>=
-         { x => Ior.both[NEL[String], Int](NEL.of("warning 2"), x + 1) }
+```scala mdoc
+Ior.right[NEL[String], Int](1) >>=
+  { x => Ior.right[NEL[String], Int](x + 1) }
+
+Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
+  { x => Ior.right[NEL[String], Int](x + 1) }
+
+Ior.both[NEL[String], Int](NEL.of("warning 1"), 1) >>=
+  { x => Ior.right[NEL[String], Int](x + 1) }
+
+Ior.right[NEL[String], Int](1) >>=
+  { x => Ior.left[NEL[String], Int](NEL.of("error 2")) }
+
+Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
+  { x => Ior.left[NEL[String], Int](NEL.of("error 2")) }
+
+Ior.both[NEL[String], Int](NEL.of("warning 1"), 1) >>=
+  { x => Ior.left[NEL[String], Int](NEL.of("error 2")) }
+
+Ior.right[NEL[String], Int](1) >>=
+  { x => Ior.both[NEL[String], Int](NEL.of("warning 2"), x + 1) }
+
+Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
+  { x => Ior.both[NEL[String], Int](NEL.of("warning 2"), x + 1) }
+
+Ior.both[NEL[String], Int](NEL.of("warning 1"), 1) >>=
+  { x => Ior.both[NEL[String], Int](NEL.of("warning 2"), x + 1) }
 ```
 
 Let's try using it in `for` comprehension:
 
-```console
-scala> for {
-         e1 <- Ior.right[NEL[String], Int](1)
-         e2 <- Ior.both[NEL[String], Int](NEL.of("event 2 warning"), e1 + 1)
-         e3 <- Ior.both[NEL[String], Int](NEL.of("event 3 warning"), e2 + 1)
-       } yield (e1 |+| e2 |+| e3)
+```scala mdoc
+for {
+  e1 <- Ior.right[NEL[String], Int](1)
+  e2 <- Ior.both[NEL[String], Int](NEL.of("event 2 warning"), e1 + 1)
+  e3 <- Ior.both[NEL[String], Int](NEL.of("event 3 warning"), e2 + 1)
+} yield (e1 |+| e2 |+| e3)
 ```
 
 So `Ior.left` short curcuits like the failure values in `Xor[A, B]` and `Either[A, B]`,

@@ -38,24 +38,26 @@ object Validated extends ValidatedInstances with ValidatedFunctions{
 
 Here's how to create the values:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> import Validated.{ valid, invalid }
-scala> valid[String, String]("event 1 ok")
-scala> invalid[String, String]("event 1 failed!")
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+import Validated.{ valid, invalid }
+
+valid[String, String]("event 1 ok")
+
+invalid[String, String]("event 1 failed!")
 ```
 
-What's different about `Validation` is that it is does not form a monad,
+What's different about `Validated` is that it is does not form a monad,
 but forms an applicative functor.
 Instead of chaining the result from first event to the next, `Validated` validates all events:
 
-```console
-scala> val result = (valid[String, String]("event 1 ok") |@|
-        invalid[String, String]("event 2 failed!") |@|
-        invalid[String, String]("event 3 failed!")) map {_ + _ + _}
+```scala mdoc
+val result = (valid[String, String]("event 1 ok"),
+  invalid[String, String]("event 2 failed!"),
+  invalid[String, String]("event 3 failed!")) mapN {_ + _ + _}
 ```
 
-The final result is `Invalid(event 3 failed!event 2 failed!)`.
+The final result is `Invalid(event 2 failed!event 3 failed!)`.
 Unlike the `Xor`'s monad, which cuts the calculation short,
 `Validated` keeps going to report back all failures.
 This would be useful for validating user input on an online bacon shop.
@@ -68,27 +70,28 @@ Shouldn't it be something like a list?
 This is where `NonEmptyList` datatype comes in handy.
 For now, think of it as a list that's guaranteed to have at least one element.
 
-```console
-scala> import cats.data.{ NonEmptyList => NEL }
-scala> NEL.of(1)
+```scala mdoc
+import cats.data.{ NonEmptyList => NEL }
+
+NEL.of(1)
 ```
 
 We can use `NEL[A]` on the invalid side to accumulate the errors:
 
-```console
-scala> val result =
-         (valid[NEL[String], String]("event 1 ok") |@|
-           invalid[NEL[String], String](NEL.of("event 2 failed!")) |@|
-           invalid[NEL[String], String](NEL.of("event 3 failed!"))) map {_ + _ + _}
+```scala mdoc
+val result2 =
+  (valid[NEL[String], String]("event 1 ok"),
+    invalid[NEL[String], String](NEL.of("event 2 failed!")),
+    invalid[NEL[String], String](NEL.of("event 3 failed!"))) mapN {_ + _ + _}
 ```
 
 Inside `Invalid`, we were able to accumulate all failed messages.
 
 We can use the `fold` method to extract the values:
 
-```console
-scala> val errs: NEL[String] = result.fold(
-         { l => l },
-         { r => sys.error("invalid is expected") }
-       )
+```scala mdoc
+val errs: NEL[String] = result2.fold(
+  { l => l },
+  { r => sys.error("invalid is expected") }
+)
 ```
