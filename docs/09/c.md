@@ -39,22 +39,24 @@ private[data] sealed trait KleisliFunctions {
 
 We can use the `Kleisli()` constructor to construct a `Kliesli` value:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> val f = Kleisli { (x: Int) => (x + 1).some }
-scala> val g = Kleisli { (x: Int) => (x * 100).some }
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
+val f = Kleisli { (x: Int) => (x + 1).some }
+
+val g = Kleisli { (x: Int) => (x * 100).some }
 ```
 
 We can then compose the functions using `compose`, which runs the right-hand side first:
 
-```console
-scala> 4.some >>= (f compose g).run
+```scala mdoc
+4.some >>= (f compose g).run
 ```
 
 There's also `andThen`, which runs the left-hand side first:
 
-```console
-scala> 4.some >>= (f andThen g).run
+```scala mdoc
+4.some >>= (f andThen g).run
 ```
 
 Both `compose` and `andThen` work like function composition
@@ -73,7 +75,10 @@ When I tried using it, I realized it's broken, so here's the fixed version [#354
 
 Here's how we can use it:
 
-```console
-scala> val l = f.lift[List]
-scala> List(1, 2, 3) >>= l.run
+```scala mdoc
+{
+  val l = f.lift[List]
+
+  List(1, 2, 3) >>= l.run
+}
 ```

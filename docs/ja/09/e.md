@@ -27,9 +27,10 @@ out: monads-are-fractals.html
 
 例えば、`List` を例にとる。複数の `List` の `List` は、単一のフラットな `List` として取り扱うことができる。
 
-```console:new
-scala> val xss = List(List(1), List(2, 3), List(4))
-scala> xss.flatten
+```scala mdoc
+val xss = List(List(1), List(2, 3), List(4))
+
+xss.flatten
 ```
 
 この `flatten` 関数は `List` データ構造の押し潰しを体現する。
@@ -39,8 +40,8 @@ scala> xss.flatten
 
 平坦化を `foldLeft` を使って再実装することで、より良い理解を得ることができる:
 
-```console
-scala> xss.foldLeft(List(): List[Int]) { _ ++ _ }
+```scala mdoc
+xss.foldLeft(List(): List[Int]) { _ ++ _ }
 ```
 
 これによって `List` は `++` に関してモナドを形成すると言うことができる。
@@ -49,18 +50,22 @@ scala> xss.foldLeft(List(): List[Int]) { _ ++ _ }
 
 次に、どの演算に関して `Option` はモナドを形成しているのが考えてみる:
 
-```console
-scala> val o1 = Some(None: Option[Int]): Option[Option[Int]]
-scala> val o2 = Some(Some(1): Option[Int]): Option[Option[Int]]
-scala> val o3 = None: Option[Option[Int]]
+```scala mdoc
+val o1 = Some(None: Option[Int]): Option[Option[Int]]
+
+val o2 = Some(Some(1): Option[Int]): Option[Option[Int]]
+
+val o3 = None: Option[Option[Int]]
 ```
 
 `foldLeft` で書いてみる:
 
-```console
-scala> o1.foldLeft(None: Option[Int]) { (_, _)._2 }
-scala> o2.foldLeft(None: Option[Int]) { (_, _)._2 }
-scala> o3.foldLeft(None: Option[Int]) { (_, _)._2 }
+```scala mdoc
+o1.foldLeft(None: Option[Int]) { (_, _)._2 }
+
+o2.foldLeft(None: Option[Int]) { (_, _)._2 }
+
+o3.foldLeft(None: Option[Int]) { (_, _)._2 }
 ```
 
 `Option` は `(_, _)._2` に関してモナドを形成しているみたいだ。

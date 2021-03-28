@@ -52,26 +52,20 @@ Thanks to simulacrum, `flatten` can also be injected as a method.
 Since `Option[A]` already implements `flatten` we need to
 make an abtract function to turn it into an abtract type.
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> def join[F[_]: FlatMap, A](fa: F[F[A]]): F[A] =
-         fa.flatten
-scala> join(1.some.some)
+```scala mdoc
+import cats._, cats.syntax.all._
+
+def join[F[_]: FlatMap, A](fa: F[F[A]]): F[A] =
+  fa.flatten
+
+join(1.some.some)
 ```
 
 If I'm going to make it into a function,
 I could've used the function syntax:
 
-```console
-scala> FlatMap[Option].flatten(1.some.some)
-```
-
-I tried using `flatten` method for an `Xor` of an `Xor` value,
-but it didn't seem to work:
-
-```console:error
-scala> val xorOfXor = Xor.right[String, Xor[String, Int]](Xor.right[String, Int](1))
-scala> xorOfXor.flatten
+```scala mdoc
+FlatMap[Option].flatten(1.some.some)
 ```
 
 #### filterM method
@@ -90,9 +84,7 @@ LYAHFGG:
 
 > The monadic counterpart to `foldl` is `foldM`.
 
-I did not find `foldM` in Cats, so implemented it myself, but it wasn't stack-safe. Tomas Mikula added a better implementation and that got merged as [#925][925].
-
-:
+I did not find `foldM` in Cats, so implemented it myself, but it wasn't stack-safe. Tomas Mikula added a better implementation and that got merged as [#925][925]:
 
 ```scala
   /**
@@ -104,11 +96,13 @@ I did not find `foldM` in Cats, so implemented it myself, but it wasn't stack-sa
 
 Let's try using this.
 
-```console
-scala> def binSmalls(acc: Int, x: Int): Option[Int] =
-         if (x > 9) none[Int] else (acc + x).some
-scala> (Foldable[List].foldM(List(2, 8, 3, 1), 0) {binSmalls})
-scala> (Foldable[List].foldM(List(2, 11, 3, 1), 0) {binSmalls})
+```scala mdoc
+def binSmalls(acc: Int, x: Int): Option[Int] =
+  if (x > 9) none[Int] else (acc + x).some
+
+(Foldable[List].foldM(List(2, 8, 3, 1), 0) {binSmalls})
+
+(Foldable[List].foldM(List(2, 11, 3, 1), 0) {binSmalls})
 ```
 
 In the above, `binSmalls` returns `None` when it finds a number larger than 9.

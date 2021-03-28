@@ -12,9 +12,9 @@ LYAHFGG:
 
 Scala に有理数が標準で入っていないので、`Double` を使う。以下が case class:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> :paste
+```scala mdoc
+import cats._, cats.syntax.all._
+
 case class Prob[A](list: List[(A, Double)])
 
 trait ProbInstances {
@@ -26,8 +26,11 @@ case object Prob extends ProbInstances
 
 > これってファンクターでしょうか？ええ、リストはファンクターですから、リストに何かを足したものである `Prob` もたぶんファンクターでしょう。
 
-```console
-scala> :paste
+```scala mdoc:reset:invisible
+import cats._, cats.syntax.all._
+```
+
+```scala mdoc
 case class Prob[A](list: List[(A, Double)])
 
 trait ProbInstances {
@@ -37,14 +40,19 @@ trait ProbInstances {
   }
   implicit def probShow[A]: Show[Prob[A]] = Show.fromToString
 }
+
 case object Prob extends ProbInstances
-scala> Prob((3, 0.5) :: (5, 0.25) :: (9, 0.25) :: Nil) map {-_}
+
+Prob((3, 0.5) :: (5, 0.25) :: (9, 0.25) :: Nil) map { -_ }
 ```
 
 本と同様に `flatten` をまず実装する。
 
-```console
-scala> :paste
+```scala mdoc:reset:invisible
+import cats._, cats.syntax.all._
+```
+
+```scala mdoc
 case class Prob[A](list: List[(A, Double)])
 
 trait ProbInstances {
@@ -66,9 +74,13 @@ case object Prob extends ProbInstances
 
 これでモナドのための準備は整ったはずだ:
 
-```console
-scala> :paste
+```scala mdoc:reset:invisible
+import cats._, cats.syntax.all._
+```
+
+```scala mdoc
 import scala.annotation.tailrec
+
 case class Prob[A](list: List[(A, Double)])
 
 trait ProbInstances { self =>
@@ -79,12 +91,17 @@ trait ProbInstances { self =>
   }
 
   implicit val probInstance: Monad[Prob] = new Monad[Prob] {
+
     def pure[A](a: A): Prob[A] = Prob((a, 1.0) :: Nil)
+
     def flatMap[A, B](fa: Prob[A])(f: A => Prob[B]): Prob[B] = self.flatten(map(fa)(f))
+
     override def map[A, B](fa: Prob[A])(f: A => B): Prob[B] =
       Prob(fa.list map { case (x, p) => (f(x), p) })
+
     def tailRecM[A, B](a: A)(f: A => Prob[Either[A, B]]): Prob[B] = {
       val buf = List.newBuilder[(B, Double)]
+
       @tailrec def go(lists: List[List[(Either[A, B], Double)]]): Unit =
         lists match {
           case (ab :: abs) :: tail => ab match {
@@ -101,6 +118,7 @@ trait ProbInstances { self =>
       Prob(buf.result)
     }
   }
+
   implicit def probShow[A]: Show[Prob[A]] = Show.fromToString
 }
 
@@ -109,9 +127,9 @@ case object Prob extends ProbInstances
 
 本によるとモナド則は満たしているらしい。`Coin` の例題も実装してみよう:
 
-```console
-scala> :paste
+```scala mdoc
 sealed trait Coin
+
 object Coin {
   case object Heads extends Coin
   case object Tails extends Coin
@@ -121,20 +139,24 @@ object Coin {
   def heads: Coin = Heads
   def tails: Coin = Tails
 }
+
 import Coin.{heads, tails}
+
 def coin: Prob[Coin] = Prob(heads -> 0.5 :: tails -> 0.5 :: Nil)
+
 def loadedCoin: Prob[Coin] = Prob(heads -> 0.1 :: tails -> 0.9 :: Nil)
 ```
 
 `flipThree` の実装はこうなる:
 
-```console
-scala> def flipThree: Prob[Boolean] = for {
+```scala mdoc
+def flipThree: Prob[Boolean] = for {
   a <- coin
   b <- coin
   c <- loadedCoin
 } yield { List(a, b, c) forall {_ === tails} }
-scala> flipThree
+
+flipThree
 ```
 
 イカサマのコインを 1つ使っても 3回とも裏が出る確率はかなり低いことが分かった。

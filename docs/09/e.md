@@ -27,9 +27,10 @@ Each part of a fractal is self-similar to the whole shape.
 
 Take `List` for example. A `List` of `List`s can be treated a flat `List`.
 
-```console:new
-scala> val xss = List(List(1), List(2, 3), List(4))
-scala> xss.flatten
+```scala mdoc
+val xss = List(List(1), List(2, 3), List(4))
+
+xss.flatten
 ```
 
 The `flatten` function embodies the crunching of the `List` data structure.
@@ -39,8 +40,8 @@ If we think in terms of the type signature, it would be `F[F[A]] => F[A]`.
 
 We can get a better idea of the flattening by reimplementing it using `foldLeft`:
 
-```console
-scala> xss.foldLeft(List(): List[Int]) { _ ++ _ }
+```scala mdoc
+xss.foldLeft(List(): List[Int]) { _ ++ _ }
 ```
 
 We can say that `List` forms a monad under `++`.
@@ -49,18 +50,22 @@ We can say that `List` forms a monad under `++`.
 
 Now let try to figure out under what operation does `Option` form a monad:
 
-```console
-scala> val o1 = Some(None: Option[Int]): Option[Option[Int]]
-scala> val o2 = Some(Some(1): Option[Int]): Option[Option[Int]]
-scala> val o3 = None: Option[Option[Int]]
+```scala mdoc
+val o1 = Some(None: Option[Int]): Option[Option[Int]]
+
+val o2 = Some(Some(1): Option[Int]): Option[Option[Int]]
+
+val o3 = None: Option[Option[Int]]
 ```
 
 And here's the `foldLeft`:
 
-```console
-scala> o1.foldLeft(None: Option[Int]) { (_, _)._2 }
-scala> o2.foldLeft(None: Option[Int]) { (_, _)._2 }
-scala> o3.foldLeft(None: Option[Int]) { (_, _)._2 }
+```scala mdoc
+o1.foldLeft(None: Option[Int]) { (_, _)._2 }
+
+o2.foldLeft(None: Option[Int]) { (_, _)._2 }
+
+o3.foldLeft(None: Option[Int]) { (_, _)._2 }
 ```
 
 It seems like `Option` forms a monad under `(_, _)._2`.
