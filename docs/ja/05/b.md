@@ -25,16 +25,23 @@ LYAHFGG:
 
 本の `Pole` の例題を実装してみよう。
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> type Birds = Int
-scala> case class Pole(left: Birds, right: Birds)
+```scala mdoc
+import cats._, cats.syntax.all._
+
+type Birds = Int
+
+case class Pole(left: Birds, right: Birds)
 ```
 
 Scala ではこんな風に `Int` に型エイリアスを付けるのは一般的じゃないと思うけど、ものは試しだ。`landLeft` と `landRight` をメソッドをとして実装したいから `Pole` は case class にする:
 
-```console
-scala> :paste
+```scala mdoc:reset:invisible
+import cats._, cats.syntax.all._
+
+type Birds = Int
+```
+
+```scala mdoc
 case class Pole(left: Birds, right: Birds) {
   def landLeft(n: Birds): Pole = copy(left = left + n)
   def landRight(n: Birds): Pole = copy(right = right + n)
@@ -43,23 +50,31 @@ case class Pole(left: Birds, right: Birds) {
 
 OO の方が見栄えが良いと思う:
 
-```console
-scala> Pole(0, 0).landLeft(2)
-scala> Pole(1, 2).landRight(1)
-scala> Pole(1, 2).landRight(-1)
+```scala mdoc
+Pole(0, 0).landLeft(2)
+
+Pole(1, 2).landRight(1)
+
+Pole(1, 2).landRight(-1)
 ```
 
 連鎖も可能:
 
-```console
-scala> Pole(0, 0).landLeft(1).landRight(1).landLeft(2)
-scala> Pole(0, 0).landLeft(1).landRight(4).landLeft(-1).landRight(-2)
+```scala mdoc
+Pole(0, 0).landLeft(1).landRight(1).landLeft(2)
+
+Pole(0, 0).landLeft(1).landRight(4).landLeft(-1).landRight(-2)
 ```
 
 本が言うとおり、中間値で失敗しても計算が続行してしまっている。失敗を `Option[Pole]` で表現しよう:
 
-```console
-scala> :paste
+```scala mdoc:reset:invisible
+import cats._, cats.syntax.all._
+
+type Birds = Int
+```
+
+```scala mdoc
 case class Pole(left: Birds, right: Birds) {
   def landLeft(n: Birds): Option[Pole] =
     if (math.abs((left + n) - right) < 4) copy(left = left + n).some
@@ -67,25 +82,26 @@ case class Pole(left: Birds, right: Birds) {
   def landRight(n: Birds): Option[Pole] =
     if (math.abs(left - (right + n)) < 4) copy(right = right + n).some
     else none[Pole]
-  }
-scala> Pole(0, 0).landLeft(2)
-scala> Pole(0, 3).landLeft(10)
+}
+
+Pole(0, 0).landLeft(2)
+
+Pole(0, 3).landLeft(10)
 ```
 
 `flatMap` もしくはシンボル使ったエイリアスである `>>=` を使って `landLeft` と `landRight` をチェインする:
 
-```console
-scala> val rlr = Monad[Option].pure(Pole(0, 0)) >>= {_.landRight(2)} >>=
+```scala mdoc
+val rlr = Monad[Option].pure(Pole(0, 0)) >>= {_.landRight(2)} >>=
   {_.landLeft(2)} >>= {_.landRight(2)}
 ```
 
 モナディックチェインが綱渡りのシミュレーションを改善したか確かめる:
 
-```console
-scala> val lrlr = Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)} >>=
+```scala mdoc
+val lrlr = Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)} >>=
   {_.landRight(4)} >>= {_.landLeft(-1)} >>= {_.landRight(-2)}
 ```
-
 
 うまくいった。この例はモナドが何なのかをうまく体現しているので、じっくり考えて理解してほしい。
 
@@ -105,8 +121,13 @@ LYAHFGG:
 
 以下が常に失敗する `banana` だ:
 
-```console
-scala> :paste
+```scala mdoc:reset:invisible
+import cats._, cats.syntax.all._
+
+type Birds = Int
+```
+
+```scala mdoc
 case class Pole(left: Birds, right: Birds) {
   def landLeft(n: Birds): Option[Pole] =
     if (math.abs((left + n) - right) < 4) copy(left = left + n).some
@@ -116,7 +137,8 @@ case class Pole(left: Birds, right: Birds) {
     else none[Pole]
   def banana: Option[Pole] = none[Pole]
 }
-scala> val lbl = Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)} >>=
+
+val lbl = Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)} >>=
   {_.banana} >>= {_.landRight(1)}
 ```
 
@@ -126,17 +148,21 @@ LYAHFGG:
 
 以下が `>>` の `Option` での振る舞い:
 
-```console
-scala> none[Int] >> 3.some
-scala> 3.some >> 4.some
-scala> 3.some >> none[Int]
+```scala mdoc
+none[Int] >> 3.some
+
+3.some >> 4.some
+
+3.some >> none[Int]
 ```
 
 `banana` を `>> none[Pole]` に置き換えてみよう:
 
-```console:error
-scala> val lbl = Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)} >>
-  none[Pole] >>= {_.landRight(1)}
+```scala mdoc:fail
+{
+  val lbl = Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)} >>
+    none[Pole] >>= {_.landRight(1)}
+}
 ```
 
 突然型推論が崩れてしまった。問題の原因はおそらく演算子の優先順位にある。 [Programming in Scala](http://www.artima.com/pins1ed/basic-types-and-operations.html) 曰く:
@@ -147,14 +173,14 @@ scala> val lbl = Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)} >>
 
 `>>=` (bind) が等号で終わるため、優先順位は最下位に落とされ、`({_.landLeft(1)} >> (none: Option[Pole]))` が先に評価される。いくつかの気が進まない回避方法がある。まず、普通のメソッド呼び出しのようにドットと括弧の記法を使うことができる:
 
-```console
-scala> Monad[Option].pure(Pole(0, 0)).>>=({_.landLeft(1)}).>>(none[Pole]).>>=({_.landRight(1)})
+```scala mdoc
+Monad[Option].pure(Pole(0, 0)).>>=({_.landLeft(1)}).>>(none[Pole]).>>=({_.landRight(1)})
 ```
 
 もしくは優先順位の問題に気付いたなら、適切な場所に括弧を置くことができる:
 
-```console
-scala> (Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)}) >> none[Pole] >>= {_.landRight(1)}
+```scala mdoc
+(Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)}) >> none[Pole] >>= {_.landRight(1)}
 ```
 
 両方とも正しい答が得られた。
@@ -167,25 +193,27 @@ LYAHFGG:
 
 まずは入れ子のラムダ式を書いてみよう:
 
-```console
-scala> 3.some >>= { x => "!".some >>= { y => (x.show + y).some } }
+```scala mdoc
+3.some >>= { x => "!".some >>= { y => (x.show + y).some } }
 ```
 
 `>>=` が使われたことで計算のどの部分も失敗することができる:
 
-```console
-scala> 3.some >>= { x => none[String] >>= { y => (x.show + y).some } }
-scala> (none: Option[Int]) >>= { x => "!".some >>= { y => (x.show + y).some } }
-scala> 3.some >>= { x => "!".some >>= { y => none[String] } }
+```scala mdoc
+3.some >>= { x => none[String] >>= { y => (x.show + y).some } }
+
+(none: Option[Int]) >>= { x => "!".some >>= { y => (x.show + y).some } }
+
+3.some >>= { x => "!".some >>= { y => none[String] } }
 ```
 
 Haskell の `do` 記法のかわりに、Scala には `for` 内包表記があり、これらは似た機能を持つ:
 
-```console
-scala> for {
-         x <- 3.some
-         y <- "!".some
-       } yield (x.show + y)
+```scala mdoc
+for {
+  x <- 3.some
+  y <- "!".some
+} yield (x.show + y)
 ```
 
 LYAHFGG:
@@ -200,15 +228,16 @@ LYAHFGG:
 
 > ピエールの綱渡りの動作も、もちろん `do` 記法で書けます。
 
-```console
-scala> def routine: Option[Pole] =
-         for {
-           start <- Monad[Option].pure(Pole(0, 0))
-           first <- start.landLeft(2)
-           second <- first.landRight(2)
-           third <- second.landLeft(1)
-         } yield third
-scala> routine
+```scala mdoc
+def routine: Option[Pole] =
+  for {
+    start <- Monad[Option].pure(Pole(0, 0))
+    first <- start.landLeft(2)
+    second <- first.landRight(2)
+    third <- second.landLeft(1)
+  } yield third
+
+routine
 ```
 
 `yield` は `Option[Pole]` じゃなくて `Pole` を受け取るため、`third` も抽出する必要があった。
@@ -217,16 +246,19 @@ LYAHFGG:
 
 > ピエールにバナナの皮を踏ませたい場合、`do` 記法ではこう書きます。
 
-```console
-scala> def routine: Option[Pole] =
-         for {
-           start <- Monad[Option].pure(Pole(0, 0))
-           first <- start.landLeft(2)
-           _ <- none[Pole]
-           second <- first.landRight(2)
-           third <- second.landLeft(1)
-         } yield third
-scala> routine
+```scala mdoc
+{
+  def routine: Option[Pole] =
+    for {
+      start <- Monad[Option].pure(Pole(0, 0))
+      first <- start.landLeft(2)
+      _ <- none[Pole]
+      second <- first.landRight(2)
+      third <- second.landLeft(1)
+    } yield third
+
+  routine
+}
 ```
 
 #### パターンマッチングと失敗
@@ -235,22 +267,24 @@ LYAHFGG:
 
 > `do` 記法でモナド値を変数名に束縛するときには、`let` 式や関数の引数のときと同様、パターンマッチが使えます。
 
-```console
-scala> def justH: Option[Char] =
-         for {
-           (x :: xs) <- "hello".toList.some
-         } yield x
-scala> justH
+```scala mdoc
+def justH: Option[Char] =
+  for {
+    (x :: xs) <- "hello".toList.some
+  } yield x
+
+justH
 ```
 
 > `do` 式の中でパターンマッチが失敗した場合、`Monad` 型クラスの一員である `fail` 関数が使われるので、異常終了という形ではなく、そのモナドの文脈に合った形で失敗を処理できます。
 
-```console
-scala> def wopwop: Option[Char] =
-         for {
-           (x :: xs) <- "".toList.some
-         } yield x
-scala> wopwop
+```scala mdoc
+def wopwop: Option[Char] =
+  for {
+    (x :: xs) <- "".toList.some
+  } yield x
+
+wopwop
 ```
 
 失敗したパターンマッチングは `None` を返している。これは `for` 構文の興味深い一面で、今まで考えたことがなかったが、言われるとなるほどと思う。
@@ -269,30 +303,31 @@ LYAHFGG:
 
 これを Scala で表現すると、
 
-```console
-scala> assert { (Monad[Option].pure(3) >>= { x => (x + 100000).some }) ===
-         ({ (x: Int) => (x + 100000).some })(3) }
+```scala mdoc
+assert { (Monad[Option].pure(3) >>= { x => (x + 100000).some }) ===
+  ({ (x: Int) => (x + 100000).some })(3) }
 ```
 
 LYAHFGG:
 
 > モナドの第二法則は、`>>=` を使ってモナド値を `return` に食わせた結果は、元のモナド値と不変であると言っています。
 
-```console
-scala> assert { ("move on up".some >>= {Monad[Option].pure(_)}) === "move on up".some }
+```scala mdoc
+assert { ("move on up".some >>= {Monad[Option].pure(_)}) === "move on up".some }
 ```
 
 LYAHFGG:
 
 > 最後のモナド則は、`>>=` を使ったモナド関数適用の連鎖があるときに、どの順序で評価しても結果は同じであるべき、というものです。
 
-```console
-scala> Monad[Option].pure(Pole(0, 0)) >>= {_.landRight(2)} >>= {_.landLeft(2)} >>= {_.landRight(2)}
-scala> Monad[Option].pure(Pole(0, 0)) >>= { x =>
-       x.landRight(2) >>= { y =>
-       y.landLeft(2) >>= { z =>
-       z.landRight(2)
-       }}}
+```scala mdoc
+Monad[Option].pure(Pole(0, 0)) >>= {_.landRight(2)} >>= {_.landLeft(2)} >>= {_.landRight(2)}
+
+Monad[Option].pure(Pole(0, 0)) >>= { x =>
+  x.landRight(2) >>= { y =>
+  y.landLeft(2) >>= { z =>
+  z.landRight(2)
+}}}
 ```
 
 4日目の Monoid則を覚えていると、見覚えがあるかもしれない。
@@ -307,27 +342,43 @@ Haskell スタイルの関数型プログラミングはコンテナや実行モ
 Discipline を使った Monad則の検査はこうなる:
 
 ```scala
-scala> import cats._, cats.data._, cats.implicits._, cats.laws.discipline.MonadTests
+scala> import cats._, cats.syntax.all._, cats.laws.discipline.MonadTests
 import cats._
-import cats.data._
-import cats.implicits._
+import cats.syntax.all._
 import cats.laws.discipline.MonadTests
 
 scala> val rs = MonadTests[Option].monad[Int, Int, Int]
-rs: cats.laws.discipline.MonadTests[Option]#RuleSet = cats.laws.discipline.MonadTests\$\$anon\$2@35e8de37
+val rs: cats.laws.discipline.MonadTests[Option]#RuleSet = cats.laws.discipline.MonadTests\$\$anon\$1@253d7b2b
 
-scala> rs.all.check
+scala> import org.scalacheck.Test.Parameters
+import org.scalacheck.Test.Parameters
+
+scala> rs.all.check(Parameters.default)
++ monad.ap consistent with product + map: OK, passed 100 tests.
 + monad.applicative homomorphism: OK, passed 100 tests.
 + monad.applicative identity: OK, passed 100 tests.
 + monad.applicative interchange: OK, passed 100 tests.
 + monad.applicative map: OK, passed 100 tests.
++ monad.applicative unit: OK, passed 100 tests.
 + monad.apply composition: OK, passed 100 tests.
 + monad.covariant composition: OK, passed 100 tests.
 + monad.covariant identity: OK, passed 100 tests.
 + monad.flatMap associativity: OK, passed 100 tests.
 + monad.flatMap consistent apply: OK, passed 100 tests.
++ monad.flatMap from tailRecM consistency: OK, passed 100 tests.
 + monad.invariant composition: OK, passed 100 tests.
 + monad.invariant identity: OK, passed 100 tests.
++ monad.map flatMap coherence: OK, passed 100 tests.
++ monad.map2/map2Eval consistency: OK, passed 100 tests.
++ monad.map2/product-map consistency: OK, passed 100 tests.
 + monad.monad left identity: OK, passed 100 tests.
 + monad.monad right identity: OK, passed 100 tests.
++ monad.monoidal left identity: OK, passed 100 tests.
++ monad.monoidal right identity: OK, passed 100 tests.
++ monad.mproduct consistent flatMap: OK, passed 100 tests.
++ monad.productL consistent map2: OK, passed 100 tests.
++ monad.productR consistent map2: OK, passed 100 tests.
++ monad.semigroupal associativity: OK, passed 100 tests.
++ monad.tailRecM consistent flatMap: OK, passed 100 tests.
++ monad.tailRecM stack safety: OK, proved property.
 ```

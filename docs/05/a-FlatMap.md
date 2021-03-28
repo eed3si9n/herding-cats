@@ -38,36 +38,42 @@ class FlatMapOps[F[_], A](fa: F[A])(implicit F: FlatMap[F]) {
 
 It introduces the `flatMap` operator and its symbolic alias `>>=`. We'll worry about the other operators later. We are used to `flapMap` from the standard library:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> (Right(3): Either[String, Int]) flatMap { x => Right(x + 1) }
+```scala mdoc
+import cats._, cats.syntax.all._
+
+(Right(3): Either[String, Int]) flatMap { x => Right(x + 1) }
 ```
 
 #### Getting our feet wet with Option
 
 Following the book, let's explore `Option`. In this section I'll be less fussy about whether it's using Cats' typeclass or standard library's implementation. Here's `Option` as a functor:
 
-```console
-scala> "wisdom".some map { _ + "!" }
-scala> none[String] map { _ + "!" }
+```scala mdoc
+"wisdom".some map { _ + "!" }
+
+none[String] map { _ + "!" }
 ```
 
 Here's `Option` as an `Apply`:
 
-```console
-scala> ({(_: Int) + 3}.some) ap 3.some
-scala> none[String => String] ap "greed".some
-scala> ({(_: String).toInt}.some) ap none[String]
+```scala mdoc
+({(_: Int) + 3}.some) ap 3.some
+
+none[String => String] ap "greed".some
+
+({(_: String).toInt}.some) ap none[String]
 ```
 
 Here's `Option` as a `FlatMap`:
 
+```scala mdoc
+3.some flatMap { (x: Int) => (x + 1).some }
 
-```console
-scala> 3.some flatMap { (x: Int) => (x + 1).some }
-scala> "smile".some flatMap { (x: String) =>  (x + " :)").some }
-scala> none[Int] flatMap { (x: Int) => (x + 1).some }
-scala> none[String] flatMap { (x: String) =>  (x + " :)").some }
+"smile".some flatMap { (x: String) =>  (x + " :)").some }
+
+none[Int] flatMap { (x: Int) => (x + 1).some }
+
+none[String] flatMap { (x: String) =>  (x + " :)").some }
 ```
 
 Just as expected, we get `None` if the monadic value is `None`.

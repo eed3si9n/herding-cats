@@ -25,16 +25,23 @@ LYAHFGG:
 
 Now let's try implementing the `Pole` example from the book.
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> type Birds = Int
-scala> case class Pole(left: Birds, right: Birds)
+```scala mdoc
+import cats._, cats.syntax.all._
+
+type Birds = Int
+
+case class Pole(left: Birds, right: Birds)
 ```
 
 I don't think it's common to alias `Int` like this in Scala, but we'll go with the flow. I am going to turn `Pole` into a case class so I can implement `landLeft` and `landRight` as methods:
 
-```console
-scala> :paste
+```scala mdoc:reset:invisible
+import cats._, cats.syntax.all._
+
+type Birds = Int
+```
+
+```scala mdoc
 case class Pole(left: Birds, right: Birds) {
   def landLeft(n: Birds): Pole = copy(left = left + n)
   def landRight(n: Birds): Pole = copy(right = right + n)
@@ -43,23 +50,31 @@ case class Pole(left: Birds, right: Birds) {
 
 I think it looks better with some OO:
 
-```console
-scala> Pole(0, 0).landLeft(2)
-scala> Pole(1, 2).landRight(1)
-scala> Pole(1, 2).landRight(-1)
+```scala mdoc
+Pole(0, 0).landLeft(2)
+
+Pole(1, 2).landRight(1)
+
+Pole(1, 2).landRight(-1)
 ```
 
 We can chain these too:
 
-```console
-scala> Pole(0, 0).landLeft(1).landRight(1).landLeft(2)
-scala> Pole(0, 0).landLeft(1).landRight(4).landLeft(-1).landRight(-2)
+```scala mdoc
+Pole(0, 0).landLeft(1).landRight(1).landLeft(2)
+
+Pole(0, 0).landLeft(1).landRight(4).landLeft(-1).landRight(-2)
 ```
 
 As the book says, an intermediate value has failed but the calculation kept going. Now let's introduce failures as `Option[Pole]`:
 
-```console
-scala> :paste
+```scala mdoc:reset:invisible
+import cats._, cats.syntax.all._
+
+type Birds = Int
+```
+
+```scala mdoc
 case class Pole(left: Birds, right: Birds) {
   def landLeft(n: Birds): Option[Pole] =
     if (math.abs((left + n) - right) < 4) copy(left = left + n).some
@@ -67,22 +82,24 @@ case class Pole(left: Birds, right: Birds) {
   def landRight(n: Birds): Option[Pole] =
     if (math.abs(left - (right + n)) < 4) copy(right = right + n).some
     else none[Pole]
-  }
-scala> Pole(0, 0).landLeft(2)
-scala> Pole(0, 3).landLeft(10)
+}
+
+Pole(0, 0).landLeft(2)
+
+Pole(0, 3).landLeft(10)
 ```
 
 Now we can chain the `landLeft`/`landRight` using `flatMap` or its symbolic alias `>>=`.
 
-```console
-scala> val rlr = Monad[Option].pure(Pole(0, 0)) >>= {_.landRight(2)} >>=
+```scala mdoc
+val rlr = Monad[Option].pure(Pole(0, 0)) >>= {_.landRight(2)} >>=
   {_.landLeft(2)} >>= {_.landRight(2)}
 ```
 
 Let's see if monadic chaining simulates the pole balancing better:
 
-```console
-scala> val lrlr = Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)} >>=
+```scala mdoc
+val lrlr = Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)} >>=
   {_.landRight(4)} >>= {_.landLeft(-1)} >>= {_.landRight(-2)}
 ```
 
@@ -105,8 +122,13 @@ LYAHFGG:
 
 Here's the `banana` that always fails:
 
-```console
-scala> :paste
+```scala mdoc:reset:invisible
+import cats._, cats.syntax.all._
+
+type Birds = Int
+```
+
+```scala mdoc
 case class Pole(left: Birds, right: Birds) {
   def landLeft(n: Birds): Option[Pole] =
     if (math.abs((left + n) - right) < 4) copy(left = left + n).some
@@ -116,7 +138,8 @@ case class Pole(left: Birds, right: Birds) {
     else none[Pole]
   def banana: Option[Pole] = none[Pole]
 }
-scala> val lbl = Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)} >>=
+
+val lbl = Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)} >>=
   {_.banana} >>= {_.landRight(1)}
 ```
 
@@ -126,17 +149,21 @@ LYAHFGG:
 
 Here's how `>>` behaves with `Option`:
 
-```console
-scala> none[Int] >> 3.some
-scala> 3.some >> 4.some
-scala> 3.some >> none[Int]
+```scala mdoc
+none[Int] >> 3.some
+
+3.some >> 4.some
+
+3.some >> none[Int]
 ```
 
 Let's try replacing `banana` with `>> none[Pole]`:
 
-```console:error
-scala> val lbl = Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)} >>
-  none[Pole] >>= {_.landRight(1)}
+```scala mdoc:fail
+{
+  val lbl = Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)} >>
+    none[Pole] >>= {_.landRight(1)}
+}
 ```
 
 The type inference broke down all the sudden. The problem is likely the operator precedence. [Programming in Scala](http://www.artima.com/pins1ed/basic-types-and-operations.html) says:
@@ -145,17 +172,16 @@ The type inference broke down all the sudden. The problem is likely the operator
 
 Note: The above description is incomplete. Another exception from the assignment operator rule is if it starts with (`=`) like `===`.
 
-
 Because `>>=` (bind) ends in the equals character, its precedence is the lowest, which forces `({_.landLeft(1)} >> (none: Option[Pole]))` to evaluate first. There are a few unpalatable work arounds. First we can use dot-and-parens like normal method calls:
 
-```console
-scala> Monad[Option].pure(Pole(0, 0)).>>=({_.landLeft(1)}).>>(none[Pole]).>>=({_.landRight(1)})
+```scala mdoc
+Monad[Option].pure(Pole(0, 0)).>>=({_.landLeft(1)}).>>(none[Pole]).>>=({_.landRight(1)})
 ```
 
 Or we can recognize the precedence issue and place parens around just the right place:
 
-```console
-scala> (Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)}) >> none[Pole] >>= {_.landRight(1)}
+```scala mdoc
+(Monad[Option].pure(Pole(0, 0)) >>= {_.landLeft(1)}) >> none[Pole] >>= {_.landRight(1)}
 ```
 
 Both yield the right result.
@@ -168,25 +194,27 @@ LYAHFGG:
 
 First, let's write the nested lambda:
 
-```console
-scala> 3.some >>= { x => "!".some >>= { y => (x.show + y).some } }
+```scala mdoc
+3.some >>= { x => "!".some >>= { y => (x.show + y).some } }
 ```
 
 By using `>>=`, any part of the calculation can fail:
 
-```console
-scala> 3.some >>= { x => none[String] >>= { y => (x.show + y).some } }
-scala> (none: Option[Int]) >>= { x => "!".some >>= { y => (x.show + y).some } }
-scala> 3.some >>= { x => "!".some >>= { y => none[String] } }
+```scala mdoc
+3.some >>= { x => none[String] >>= { y => (x.show + y).some } }
+
+(none: Option[Int]) >>= { x => "!".some >>= { y => (x.show + y).some } }
+
+3.some >>= { x => "!".some >>= { y => none[String] } }
 ```
 
 Instead of the `do` notation in Haskell, Scala has the `for` comprehension, which does similar things:
 
-```console
-scala> for {
-         x <- 3.some
-         y <- "!".some
-       } yield (x.show + y)
+```scala mdoc
+for {
+  x <- 3.some
+  y <- "!".some
+} yield (x.show + y)
 ```
 
 LYAHFGG:
@@ -201,15 +229,16 @@ LYAHFGG:
 
 > Our tightwalker's routine can also be expressed with `do` notation.
 
-```console
-scala> def routine: Option[Pole] =
-         for {
-           start <- Monad[Option].pure(Pole(0, 0))
-           first <- start.landLeft(2)
-           second <- first.landRight(2)
-           third <- second.landLeft(1)
-         } yield third
-scala> routine
+```scala mdoc
+def routine: Option[Pole] =
+  for {
+    start <- Monad[Option].pure(Pole(0, 0))
+    first <- start.landLeft(2)
+    second <- first.landRight(2)
+    third <- second.landLeft(1)
+  } yield third
+
+routine
 ```
 
 We had to extract `third` since `yield` expects `Pole` not `Option[Pole]`.
@@ -218,16 +247,19 @@ LYAHFGG:
 
 > If we want to throw the Pierre a banana peel in `do` notation, we can do the following:
 
-```console
-scala> def routine: Option[Pole] =
-         for {
-           start <- Monad[Option].pure(Pole(0, 0))
-           first <- start.landLeft(2)
-           _ <- none[Pole]
-           second <- first.landRight(2)
-           third <- second.landLeft(1)
-         } yield third
-scala> routine
+```scala mdoc
+{
+  def routine: Option[Pole] =
+    for {
+      start <- Monad[Option].pure(Pole(0, 0))
+      first <- start.landLeft(2)
+      _ <- none[Pole]
+      second <- first.landRight(2)
+      third <- second.landLeft(1)
+    } yield third
+
+  routine
+}
 ```
 
 #### Pattern matching and failure
@@ -236,22 +268,24 @@ LYAHFGG:
 
 > In `do` notation, when we bind monadic values to names, we can utilize pattern matching, just like in let expressions and function parameters.
 
-```console
-scala> def justH: Option[Char] =
-         for {
-           (x :: xs) <- "hello".toList.some
-         } yield x
-scala> justH
+```scala mdoc
+def justH: Option[Char] =
+  for {
+    (x :: xs) <- "hello".toList.some
+  } yield x
+
+justH
 ```
 
 > When pattern matching fails in a do expression, the `fail` function is called. It's part of the `Monad` type class and it enables failed pattern matching to result in a failure in the context of the current monad instead of making our program crash.
 
-```console
-scala> def wopwop: Option[Char] =
-         for {
-           (x :: xs) <- "".toList.some
-         } yield x
-scala> wopwop
+```scala mdoc
+def wopwop: Option[Char] =
+  for {
+    (x :: xs) <- "".toList.some
+  } yield x
+
+wopwop
 ```
 
 The failed pattern matching returns `None` here. This is an interesting aspect of `for` syntax that I haven't thought about, but totally makes sense.
@@ -266,32 +300,33 @@ Monad had three laws:
 
 LYAHFGG:
 
-> The first monad law states that if we take a value, put it in a default context with `return` and then feed it to a function by using `>>=`, it's the same as just taking the value and applying the function to it. 
+> The first monad law states that if we take a value, put it in a default context with `return` and then feed it to a function by using `>>=`, it's the same as just taking the value and applying the function to it.
 
-```console
-scala> assert { (Monad[Option].pure(3) >>= { x => (x + 100000).some }) ===
-         ({ (x: Int) => (x + 100000).some })(3) }
+```scala mdoc
+assert { (Monad[Option].pure(3) >>= { x => (x + 100000).some }) ===
+  ({ (x: Int) => (x + 100000).some })(3) }
 ```
 
 LYAHFGG:
 
 > The second law states that if we have a monadic value and we use `>>=` to feed it to `return`, the result is our original monadic value.
 
-```console
-scala> assert { ("move on up".some >>= {Monad[Option].pure(_)}) === "move on up".some }
+```scala mdoc
+assert { ("move on up".some >>= {Monad[Option].pure(_)}) === "move on up".some }
 ```
 
 LYAHFGG:
 
-> The final monad law says that when we have a chain of monadic function applications with `>>=`, it shouldn't matter how they're nested. 
+> The final monad law says that when we have a chain of monadic function applications with `>>=`, it shouldn't matter how they're nested.
 
-```console
-scala> Monad[Option].pure(Pole(0, 0)) >>= {_.landRight(2)} >>= {_.landLeft(2)} >>= {_.landRight(2)}
-scala> Monad[Option].pure(Pole(0, 0)) >>= { x =>
-       x.landRight(2) >>= { y =>
-       y.landLeft(2) >>= { z =>
-       z.landRight(2)
-       }}}
+```scala mdoc
+Monad[Option].pure(Pole(0, 0)) >>= {_.landRight(2)} >>= {_.landLeft(2)} >>= {_.landRight(2)}
+
+Monad[Option].pure(Pole(0, 0)) >>= { x =>
+  x.landRight(2) >>= { y =>
+  y.landLeft(2) >>= { z =>
+  z.landRight(2)
+}}}
 ```
 
 These laws look might look familiar if you remember monoid laws from day 4.
@@ -306,27 +341,43 @@ Instead of thinking "omg so many laws," know that there's an underlying structur
 Here's how to check Monad laws using Discipline:
 
 ```scala
-scala> import cats._, cats.data._, cats.implicits._, cats.laws.discipline.MonadTests
+scala> import cats._, cats.syntax.all._, cats.laws.discipline.MonadTests
 import cats._
-import cats.data._
-import cats.implicits._
+import cats.syntax.all._
 import cats.laws.discipline.MonadTests
 
 scala> val rs = MonadTests[Option].monad[Int, Int, Int]
-rs: cats.laws.discipline.MonadTests[Option]#RuleSet = cats.laws.discipline.MonadTests\$\$anon\$2@35e8de37
+val rs: cats.laws.discipline.MonadTests[Option]#RuleSet = cats.laws.discipline.MonadTests\$\$anon\$1@253d7b2b
 
-scala> rs.all.check
+scala> import org.scalacheck.Test.Parameters
+import org.scalacheck.Test.Parameters
+
+scala> rs.all.check(Parameters.default)
++ monad.ap consistent with product + map: OK, passed 100 tests.
 + monad.applicative homomorphism: OK, passed 100 tests.
 + monad.applicative identity: OK, passed 100 tests.
 + monad.applicative interchange: OK, passed 100 tests.
 + monad.applicative map: OK, passed 100 tests.
++ monad.applicative unit: OK, passed 100 tests.
 + monad.apply composition: OK, passed 100 tests.
 + monad.covariant composition: OK, passed 100 tests.
 + monad.covariant identity: OK, passed 100 tests.
 + monad.flatMap associativity: OK, passed 100 tests.
 + monad.flatMap consistent apply: OK, passed 100 tests.
++ monad.flatMap from tailRecM consistency: OK, passed 100 tests.
 + monad.invariant composition: OK, passed 100 tests.
 + monad.invariant identity: OK, passed 100 tests.
++ monad.map flatMap coherence: OK, passed 100 tests.
++ monad.map2/map2Eval consistency: OK, passed 100 tests.
++ monad.map2/product-map consistency: OK, passed 100 tests.
 + monad.monad left identity: OK, passed 100 tests.
 + monad.monad right identity: OK, passed 100 tests.
++ monad.monoidal left identity: OK, passed 100 tests.
++ monad.monoidal right identity: OK, passed 100 tests.
++ monad.mproduct consistent flatMap: OK, passed 100 tests.
++ monad.productL consistent map2: OK, passed 100 tests.
++ monad.productR consistent map2: OK, passed 100 tests.
++ monad.semigroupal associativity: OK, passed 100 tests.
++ monad.tailRecM consistent flatMap: OK, passed 100 tests.
++ monad.tailRecM stack safety: OK, proved property.
 ```

@@ -10,22 +10,23 @@ LYAHFGG:
 
 Let's look at using `List` as Applicatives again:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> (List(1, 2, 3), List(10, 100, 100)) mapN { _ * _ }
+```scala mdoc
+import cats._, cats.syntax.all._
+
+(List(1, 2, 3), List(10, 100, 100)) mapN { _ * _ }
 ```
 
 > let's try feeding a non-deterministic value to a function:
 
-```console
-scala> List(3, 4, 5) >>= { x => List(x, -x) }
+```scala mdoc
+List(3, 4, 5) >>= { x => List(x, -x) }
 ```
 
 So in this monadic view, a `List` context represents a mathematical value that could have multiple solutions. Other than that manipulating `List`s using `for` notation is just like plain Scala:
 
-```console
-scala> for {
-         n <- List(1, 2)
-         ch <- List('a', 'b')
-       } yield (n, ch)
+```scala mdoc
+for {
+  n <- List(1, 2)
+  ch <- List('a', 'b')
+} yield (n, ch)
 ```
