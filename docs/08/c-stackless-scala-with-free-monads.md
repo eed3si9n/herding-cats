@@ -65,8 +65,8 @@ object Trampoline {
   def done[A](a: A): Trampoline[A] =
     Free.Pure[Function0,A](a)
 
-  def suspend[A](a: => Trampoline[A]): Trampoline[A] =
-    Free.Suspend[Function0, A](() => a)
+  def defer[A](a: => Trampoline[A]): Trampoline[A] =
+    Free.defer(a)
 
   def delay[A](a: => A): Trampoline[A] =
     suspend(done(a))
@@ -75,22 +75,25 @@ object Trampoline {
 
 Let's try implementing `even` and `odd` from the talk:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._, cats.free.{ Free, Trampoline }
-scala> import Trampoline._
-scala> :paste
+```scala mdoc
+import cats._, cats.syntax.all._, cats.free.{ Free, Trampoline }
+import Trampoline._
+
 def even[A](ns: List[A]): Trampoline[Boolean] =
   ns match {
-    case Nil => done(true)
-    case x :: xs => suspend(odd(xs))
+    case Nil     => done(true)
+    case x :: xs => defer(odd(xs))
   }
+
 def odd[A](ns: List[A]): Trampoline[Boolean] =
   ns match {
-    case Nil => done(false)
-    case x :: xs => suspend(even(xs))
+    case Nil     => done(false)
+    case x :: xs => defer(even(xs))
   }
-scala> even(List(1, 2, 3)).run
-scala> even((0 to 3000).toList).run
+
+even(List(1, 2, 3)).run
+
+even((0 to 3000).toList).run
 ```
 
 While implementing the above I ran into SI-7139 again, so I had to tweak the Cats' code. [#322][322]
@@ -121,25 +124,30 @@ Finally, he summarizes free monads in nice bullet points:
 
 Let's try defining "List" using `Free`.
 
-```console
-scala> type FreeMonoid[A] = Free[(A, +?), Unit]
-scala> def cons[A](a: A): FreeMonoid[A] =
-         Free.liftF[(A, +?), Unit]((a, ()))
-scala> val x = cons(1)
-scala> val xs = cons(1) flatMap {_ => cons(2)}
+```scala mdoc
+type FreeMonoid[A] = Free[(A, +*), Unit]
+
+def cons[A](a: A): FreeMonoid[A] =
+  Free.liftF[(A, +*), Unit]((a, ()))
+
+val x = cons(1)
+
+val xs = cons(1) flatMap { _ => cons(2) }
 ```
 
 As a way of interpreting the result, let's try converting this to a standard `List`:
 
-```console
-scala> implicit def tuple2Functor[A]: Functor[(A, ?)] =
-         new Functor[(A, ?)] {
-           def map[B, C](fa: (A, B))(f: B => C) =
-             (fa._1, f(fa._2))
-         }
-scala> def toList[A](list: FreeMonoid[A]): List[A] =
-         list.fold(
-           { _ => Nil },
-           { case (x: A @unchecked, xs: FreeMonoid[A]) => x :: toList(xs) })
-scala> toList(xs)
+```scala mdoc
+implicit def tuple2Functor[A]: Functor[(A, *)] =
+  new Functor[(A, *)] {
+    def map[B, C](fa: (A, B))(f: B => C) =
+      (fa._1, f(fa._2))
+  }
+
+def toList[A](list: FreeMonoid[A]): List[A] =
+  list.fold(
+    { _ => Nil },
+    { case (x: A @unchecked, xs: FreeMonoid[A]) => x :: toList(xs) })
+
+toList(xs)
 ```

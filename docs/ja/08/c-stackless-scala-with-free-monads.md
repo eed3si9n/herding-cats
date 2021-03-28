@@ -76,22 +76,25 @@ object Trampoline {
 
 トークに出てきた `even` と `odd` を実装してみよう:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._, cats.free.{ Free, Trampoline }
-scala> import Trampoline._
-scala> :paste
+```scala mdoc
+import cats._, cats.syntax.all._, cats.free.{ Free, Trampoline }
+import Trampoline._
+
 def even[A](ns: List[A]): Trampoline[Boolean] =
   ns match {
-    case Nil => done(true)
-    case x :: xs => suspend(odd(xs))
+    case Nil     => done(true)
+    case x :: xs => defer(odd(xs))
   }
+
 def odd[A](ns: List[A]): Trampoline[Boolean] =
   ns match {
-    case Nil => done(false)
-    case x :: xs => suspend(even(xs))
+    case Nil     => done(false)
+    case x :: xs => defer(even(xs))
   }
-scala> even(List(1, 2, 3)).run
-scala> even((0 to 3000).toList).run
+
+even(List(1, 2, 3)).run
+
+even((0 to 3000).toList).run
 ```
 
 上を実装してるうちにまた SI-7139 に引っかかったので、Cats を少し改良する必要があった。 [#322][322]
@@ -121,25 +124,30 @@ type Option[+A] = Free[Trivial, A]
 
 `Free` を使って「リスト」を定義してみよう。
 
-```console
-scala> type FreeMonoid[A] = Free[(A, +?), Unit]
-scala> def cons[A](a: A): FreeMonoid[A] =
-         Free.liftF[(A, +?), Unit]((a, ()))
-scala> val x = cons(1)
-scala> val xs = cons(1) flatMap {_ => cons(2)}
+```scala mdoc
+type FreeMonoid[A] = Free[(A, +*), Unit]
+
+def cons[A](a: A): FreeMonoid[A] =
+  Free.liftF[(A, +*), Unit]((a, ()))
+
+val x = cons(1)
+
+val xs = cons(1) flatMap { _ => cons(2) }
 ```
 
 この結果を処理する一例として標準の `List` に変換してみる:
 
-```console
-scala> implicit def tuple2Functor[A]: Functor[(A, ?)] =
-         new Functor[(A, ?)] {
-           def map[B, C](fa: (A, B))(f: B => C) =
-             (fa._1, f(fa._2))
-         }
-scala> def toList[A](list: FreeMonoid[A]): List[A] =
-         list.fold(
-           { _ => Nil },
-           { case (x: A @unchecked, xs: FreeMonoid[A]) => x :: toList(xs) })
-scala> toList(xs)
+```scala mdoc
+implicit def tuple2Functor[A]: Functor[(A, *)] =
+  new Functor[(A, *)] {
+    def map[B, C](fa: (A, B))(f: B => C) =
+      (fa._1, f(fa._2))
+  }
+
+def toList[A](list: FreeMonoid[A]): List[A] =
+  list.fold(
+    { _ => Nil },
+    { case (x: A @unchecked, xs: FreeMonoid[A]) => x :: toList(xs) })
+
+toList(xs)
 ```

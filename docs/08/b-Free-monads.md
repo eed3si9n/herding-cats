@@ -45,7 +45,7 @@ This is particularly useful for interpreter pattern,
 which is explained by
 Gabriel Gonzalez ([@gabrielg439][@gabrielg439])'s [Why free monads matter][wfmm]:
 
-> Let's try to come up with some sort of abstraction that represents the essence of a syntax tree. ... 
+> Let's try to come up with some sort of abstraction that represents the essence of a syntax tree. ...
 >
 > Our toy language will only have three commands:
 
@@ -66,16 +66,18 @@ data Toy b next =
 
 Here's `Toy` translated into Scala as is:
 
-```console:new
-scala> :paste
+```scala mdoc
 sealed trait Toy[+A, +Next]
+
 object Toy {
   case class Output[A, Next](a: A, next: Next) extends Toy[A, Next]
   case class Bell[Next](next: Next) extends Toy[Nothing, Next]
   case class Done() extends Toy[Nothing, Nothing]
 }
-scala> Toy.Output('A', Toy.Done())
-scala> Toy.Bell(Toy.Output('A', Toy.Done()))
+
+Toy.Output('A', Toy.Done())
+
+Toy.Bell(Toy.Output('A', Toy.Done()))
 ```
 
 #### CharToy
@@ -86,9 +88,9 @@ As demonstrated above as `Toy`, Scala can do this too.
 But doing so unnecessarily complicates the demonstration of `Free` because of
 Scala's handling of partially applied types. So we'll first hardcode the datatype to `Char` as follows:
 
-```console
-scala> :paste
+```scala mdoc
 sealed trait CharToy[+Next]
+
 object CharToy {
   case class CharOutput[Next](a: Char, next: Next) extends CharToy[Next]
   case class CharBell[Next](next: Next) extends CharToy[Next]
@@ -98,12 +100,16 @@ object CharToy {
   def bell[Next](next: Next): CharToy[Next] = CharBell(next)
   def done: CharToy[Nothing] = CharDone()
 }
-scala> { import CharToy._
-         output('A', done)
-       }
-scala> { import CharToy._
-         bell(output('A', done))
-       }
+
+{
+  import CharToy._
+  output('A', done)
+}
+
+{
+  import CharToy._
+  bell(output('A', done))
+}
 ```
 
 I've added helper functions lowercase `output`, `bell`, and `done` to unify the types to `CharToy`.
@@ -116,18 +122,22 @@ WFMM:
 
 Let's define `Fix`:
 
-```console
-scala> :paste
+```scala mdoc
 case class Fix[F[_]](f: F[Fix[F]])
+
 object Fix {
   def fix(toy: CharToy[Fix[CharToy]]) = Fix[CharToy](toy)
 }
-scala> { import Fix._, CharToy._
-         fix(output('A', fix(done)))
-       }
-scala> { import Fix._, CharToy._
-         fix(bell(fix(output('A', fix(done)))))
-       }
+
+{
+  import Fix._, CharToy._
+  fix(output('A', fix(done)))
+}
+
+{
+  import Fix._, CharToy._
+  fix(bell(fix(output('A', fix(done)))))
+}
 ```
 
 Again, `fix` is provided so that the type inference works.
@@ -136,9 +146,9 @@ Again, `fix` is provided so that the type inference works.
 
 We are also going to try to implement `FixE`, which adds an exception to this. Since `throw` and `catch` are reserved, I am renaming them to `throwy` and `catchy`:
 
-```console
-scala> import cats._, cats.data._, cats.implicits._
-scala> :paste
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
 sealed trait FixE[F[_], E]
 object FixE {
   case class Fix[F[_], E](f: F[FixE[F, E]]) extends FixE[F, E]
@@ -159,20 +169,19 @@ object FixE {
 
 Let's define `Functor` for `CharToy`:
 
-```console
-scala> implicit val charToyFunctor: Functor[CharToy] = new Functor[CharToy] {
-         def map[A, B](fa: CharToy[A])(f: A => B): CharToy[B] = fa match {
-           case o: CharToy.CharOutput[A] => CharToy.CharOutput(o.a, f(o.next))
-           case b: CharToy.CharBell[A]   => CharToy.CharBell(f(b.next))
-           case CharToy.CharDone()       => CharToy.CharDone()
-         }
-       }
+```scala mdoc
+implicit val charToyFunctor: Functor[CharToy] = new Functor[CharToy] {
+  def map[A, B](fa: CharToy[A])(f: A => B): CharToy[B] = fa match {
+    case o: CharToy.CharOutput[A] => CharToy.CharOutput(o.a, f(o.next))
+    case b: CharToy.CharBell[A]   => CharToy.CharBell(f(b.next))
+    case CharToy.CharDone()       => CharToy.CharDone()
+  }
+}
 ```
 
 Here's a sample usage:
 
-```console
-scala> :paste
+```scala mdoc
 {
   import FixE._, CharToy._
   case class IncompleteException()
@@ -268,9 +277,21 @@ object Free {
 
 To use these datatypes in Cats, use `Free.liftF`:
 
-```console
-scala> import cats.free.Free
-scala> :paste
+```scala mdoc:reset:invisible
+import cats._, cats.data._, cats.syntax.all._
+
+implicit val charToyFunctor: Functor[CharToy] = new Functor[CharToy] {
+  def map[A, B](fa: CharToy[A])(f: A => B): CharToy[B] = fa match {
+    case o: CharToy.CharOutput[A] => CharToy.CharOutput(o.a, f(o.next))
+    case b: CharToy.CharBell[A]   => CharToy.CharBell(f(b.next))
+    case CharToy.CharDone()       => CharToy.CharDone()
+  }
+}
+```
+
+```scala mdoc
+import cats.free.Free
+
 sealed trait CharToy[+Next]
 object CharToy {
   case class CharOutput[Next](a: Char, next: Next) extends CharToy[Next]
@@ -294,14 +315,16 @@ object CharToy {
 
 Here's the command sequence:
 
-```console
-scala> import CharToy._
-scala> val subroutine = output('A')
-scala> val program = for {
-         _ <- subroutine
-         _ <- bell
-         _ <- done
-       } yield ()
+```scala mdoc
+import CharToy._
+
+val subroutine = output('A')
+
+val program = for {
+  _ <- subroutine
+  _ <- bell
+  _ <- done
+} yield ()
 ```
 
 > This is where things get magical. We now have `do` notation for something
@@ -309,28 +332,33 @@ scala> val program = for {
 
 Next we'd like to define `showProgram` to prove that what we have is just data:
 
-```console
-scala> def showProgram[R: Show](p: Free[CharToy, R]): String =
-         p.fold({ r: R => "return " + Show[R].show(r) + "\n" },
-           {
-             case CharOutput(a, next) =>
-               "output " + Show[Char].show(a) + "\n" + showProgram(next)
-             case CharBell(next) =>
-               "bell " + "\n" + showProgram(next)
-             case CharDone() =>
-               "done\n"
-           })
-scala> showProgram(program)
+```scala mdoc
+def showProgram[R: Show](p: Free[CharToy, R]): String =
+  p.fold({ r: R => "return " + Show[R].show(r) + "\n" },
+    {
+      case CharOutput(a, next) =>
+        "output " + Show[Char].show(a) + "\n" + showProgram(next)
+      case CharBell(next) =>
+        "bell " + "\n" + showProgram(next)
+      case CharDone() =>
+        "done\n"
+    })
+
+showProgram(program)
 ```
 
 We can manually check that the monad generated using `Free` satisfies the monad laws:
 
-```console
-scala> showProgram(output('A'))
-scala> showProgram(pure('A') flatMap output)
-scala> showProgram(output('A') flatMap pure)
-scala> showProgram((output('A') flatMap { _ => done }) flatMap { _ => output('C') })
-scala> showProgram(output('A') flatMap { _ => (done flatMap { _ => output('C') }) })
+```scala mdoc
+showProgram(output('A'))
+
+showProgram(pure('A') flatMap output)
+
+showProgram(output('A') flatMap pure)
+
+showProgram((output('A') flatMap { _ => done }) flatMap { _ => output('C') })
+
+showProgram(output('A') flatMap { _ => (done flatMap { _ => output('C') }) })
 ```
 
 Looking good. Notice the abort-like semantics of `done`.
