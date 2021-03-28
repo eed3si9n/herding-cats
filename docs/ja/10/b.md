@@ -37,19 +37,21 @@ out: stacking-future-and-either.html
 
 ここからが準備段階となる:
 
-```console:new
-scala> :paste
+```scala mdoc
 case class User(id: Long, name: String)
 
 // In actual code, probably more than 2 errors
 sealed trait Error
+
 object Error {
   final case class UserNotFound(userId: Long) extends Error
   final case class ConnectionError(message: String) extends Error
 }
+
 object UserRepo {
   def followers(userId: Long): Either[Error, List[User]] = ???
 }
+
 import UserRepo.followers
 ```
 
@@ -62,18 +64,26 @@ import UserRepo.followers
 
 答えも載っているので、そのまま REPL に書き出してみる。`UserId` 型だけは `Long` に変えた。
 
-```console
-scala> def isFriends0(user1: Long, user2: Long): Either[Error, Boolean] =
-         for {
-           a <- followers(user1).right
-           b <- followers(user2).right
-         } yield a.exists(_.id == user2) && b.exists(_.id == user1)
+```scala mdoc
+def isFriends0(user1: Long, user2: Long): Either[Error, Boolean] =
+  for {
+    a <- followers(user1).right
+    b <- followers(user2).right
+  } yield a.exists(_.id == user2) && b.exists(_.id == user1)
 ```
 
 次に、データベース・アクセスか何かを非同期にするために `followers` が `Future` を返すようにする:
 
-```console
-scala> :paste
+```scala mdoc:reset:invisible
+case class User(id: Long, name: String)
+sealed trait Error
+object Error {
+  final case class UserNotFound(userId: Long) extends Error
+  final case class ConnectionError(message: String) extends Error
+}
+```
+
+```scala mdoc
 import scala.concurrent.{ Future, ExecutionContext }
 object UserRepo {
   def followers(userId: Long): Future[Either[Error, List[User]]] = ???
@@ -84,34 +94,34 @@ import UserRepo.followers
 > さてそうしたときに、isFriendsメソッドは、どのように書き換えればいいでしょうか？さて、これもすぐに正解だしてしまいます。
 > ただ、一応２パターンくらい出しておきましょう
 
-```console
-scala> def isFriends1(user1: Long, user2: Long)
-         (implicit ec: ExecutionContext): Future[Either[Error, Boolean]] =
-         for {
-           a <- followers(user1)
-           b <- followers(user2)
-         } yield for {
-           x <- a.right
-           y <- b.right
-         } yield x.exists(_.id == user2) && y.exists(_.id == user1)
+```scala mdoc
+def isFriends1(user1: Long, user2: Long)
+  (implicit ec: ExecutionContext): Future[Either[Error, Boolean]] =
+  for {
+    a <- followers(user1)
+    b <- followers(user2)
+  } yield for {
+    x <- a.right
+    y <- b.right
+  } yield x.exists(_.id == user2) && y.exists(_.id == user1)
 ```
 
 次のがこれ:
 
-```console
-scala> def isFriends2(user1: Long, user2: Long)
-         (implicit ec: ExecutionContext): Future[Either[Error, Boolean]] =
-         followers(user1) flatMap {
-           case Right(a) =>
-             followers(user2) map {
-               case Right(b) =>
-                 Right(a.exists(_.id == user2) && b.exists(_.id == user1))
-               case Left(e) =>
-                 Left(e)
-             }
-           case Left(e) =>
-             Future.successful(Left(e))
-         }
+```scala mdoc
+def isFriends2(user1: Long, user2: Long)
+  (implicit ec: ExecutionContext): Future[Either[Error, Boolean]] =
+  followers(user1) flatMap {
+    case Right(a) =>
+      followers(user2) map {
+        case Right(b) =>
+          Right(a.exists(_.id == user2) && b.exists(_.id == user1))
+        case Left(e) =>
+          Left(e)
+      }
+    case Left(e) =>
+      Future.successful(Left(e))
+  }
 ```
 
 これらの2つのバージョンの違いは何だろうか?
@@ -129,7 +139,7 @@ scala> def isFriends2(user1: Long, user2: Long)
 
 #### EitherT データ型
 
-`Either` のモナド変換子版である `XorT` データ型というものがある。
+`Either` のモナド変換子版である `EitherT` データ型というものがある。
 
 ```scala
 /**
@@ -146,9 +156,19 @@ case class EitherT[F[_], A, B](value: F[Either[A, B]]) {
 
 `UserRepo.followers` を仮実装してみると、こうなった:
 
-```console
-scala> :paste
-import cats._, cats.data._, cats.implicits._
+```scala mdoc:reset:invisible
+import scala.concurrent.{ Future, ExecutionContext }
+case class User(id: Long, name: String)
+sealed trait Error
+object Error {
+  final case class UserNotFound(userId: Long) extends Error
+  final case class ConnectionError(message: String) extends Error
+}
+```
+
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
 object UserRepo {
   def followers(userId: Long)
     (implicit ec: ExecutionContext): EitherT[Future, Error, List[User]] =
@@ -167,13 +187,13 @@ import UserRepo.followers
 
 `isFriends0` の書き換えをもう一度やってみる。
 
-```console
-scala> def isFriends3(user1: Long, user2: Long)
-         (implicit ec: ExecutionContext): EitherT[Future, Error, Boolean] =
-         for{
-           a <- followers(user1)
-           b <- followers(user2)
-         } yield a.exists(_.id == user2) && b.exists(_.id == user1)
+```scala mdoc
+def isFriends3(user1: Long, user2: Long)
+  (implicit ec: ExecutionContext): EitherT[Future, Error, Boolean] =
+  for{
+    a <- followers(user1)
+    b <- followers(user2)
+  } yield a.exists(_.id == user2) && b.exists(_.id == user1)
 ```
 
 素晴らしくないだろうか? 型シグネチャを変えて、あと `ExecutionContext` を受け取るようしたこと以外は、
@@ -181,19 +201,26 @@ scala> def isFriends3(user1: Long, user2: Long)
 
 実際に使ってみよう。
 
-```console
-scala> implicit val ec = scala.concurrent.ExecutionContext.global
-scala> import scala.concurrent.Await
-scala> import scala.concurrent.duration._
-scala> Await.result(isFriends3(0, 1).value, 1 second)
+```scala mdoc
+{
+  implicit val ec = scala.concurrent.ExecutionContext.global
+  import scala.concurrent.Await
+  import scala.concurrent.duration._
+
+  Await.result(isFriends3(0, 1).value, 1 second)
+}
 ```
 
 最初のユーザが見つからない場合は、`EitherT` はショートするようになっている。
 
-```scala
-scala> Await.result(isFriends3(2, 3).value, 1 second)
-not found
-res34: cats.data.Xor[Error,Boolean] = Left(UserNotFound(2))
+```scala mdoc
+{
+  implicit val ec = scala.concurrent.ExecutionContext.global
+  import scala.concurrent.Await
+  import scala.concurrent.duration._
+
+  Await.result(isFriends3(2, 3).value, 1 second)
+}
 ```
 
 `"not found"` は一回しか表示されなかった。
