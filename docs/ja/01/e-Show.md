@@ -7,10 +7,12 @@ LYAHFGG:
 
 Cats で `Show` に対応する型クラスは `Show` だ:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> 3.show
-scala> "hello".show
+```scala mdoc
+import cats._, cats.syntax.all._
+
+3.show
+
+"hello".show
 ```
 
 これが型クラスのコントラクトだ:
@@ -26,9 +28,12 @@ Scala には既に `Any` に `toString` があるため、`Show`
 `Any` ということは逆に何でも該当してしまうので、型安全性を失うことになる。
 `toString` は何らかの親クラスが書いたゴミかもしれない:
 
-```console:error
-scala> (new {}).toString
-scala> (new {}).show
+```scala mdoc
+(new {}).toString
+```
+
+```scala mdoc:fail
+(new {}).show
 ```
 
 `object Show` は `Show` のインスタンスを作成するための 2つの関数を提供する:
@@ -54,13 +59,17 @@ object Show {
 
 使ってみる:
 
-```console
-scala> :paste
+```scala mdoc
 case class Person(name: String)
 case class Car(model: String)
 
-scala> implicit val personShow = Show.show[Person](_.name)
-scala> Person("Alice").show
-scala> implicit val carShow = Show.fromToString[Car]
-scala> Car("CR-V")
+{
+  implicit val personShow = Show.show[Person](_.name)
+  Person("Alice").show
+}
+
+{
+  implicit val carShow = Show.fromToString[Car]
+  Car("CR-V")
+}
 ```

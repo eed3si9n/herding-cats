@@ -39,22 +39,24 @@ private[data] sealed trait KleisliFunctions {
 
 `Kleisli()` コンストラクタを使って `Kliesli` 値を構築する:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> val f = Kleisli { (x: Int) => (x + 1).some }
-scala> val g = Kleisli { (x: Int) => (x * 100).some }
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
+val f = Kleisli { (x: Int) => (x + 1).some }
+
+val g = Kleisli { (x: Int) => (x * 100).some }
 ```
 
 `compose` を使って関数を合成すると、右辺項が先に適用される。
 
-```console
-scala> 4.some >>= (f compose g).run
+```scala mdoc
+4.some >>= (f compose g).run
 ```
 
 `andThen` を使うと、左辺項が先に適用される:
 
-```console
-scala> 4.some >>= (f andThen g).run
+```scala mdoc
+4.some >>= (f andThen g).run
 ```
 
 `compose` と `andThen` は関数の合成同様に動作するが、モナディックなコンテキストを保持するのが違いだ。
@@ -71,7 +73,10 @@ Kleisli には、モナディック関数を別のアプリカティブ・ファ
 
 使ってみる:
 
-```scala
-scala> val l = f.lift[List]
-scala> List(1, 2, 3) >>= l.run
+```scala mdoc
+{
+  val l = f.lift[List]
+
+  List(1, 2, 3) >>= l.run
+}
 ```

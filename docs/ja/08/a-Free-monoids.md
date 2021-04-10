@@ -70,7 +70,7 @@ i: (x: Char)Set[String]
 scala> def f(x: Char): Set[Int] = Set(x.toInt) // example
 f: (x: Char)Set[Int]
 
-scala> val f_hom: PartialFunction[String, Int] = 
+scala> val f_hom: PartialFunction[String, Int] =
          { case mx: String if mx.size == 1 => mx.charAt(0).toInt }
 f_hom: PartialFunction[String,Int] = <function1>
 

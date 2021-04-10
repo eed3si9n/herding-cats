@@ -11,11 +11,12 @@ Nick says:
 
 > In this function `head`, it takes a list of `A`'s, and returns an `A`. And it doesn't matter what the `A` is: It could be `Int`s, `String`s, `Orange`s, `Car`s, whatever. Any `A` would work, and the function is defined for every `A` that there can be.
 
-```console:new
-scala> def head[A](xs: List[A]): A = xs(0)
-scala> head(1 :: 2 :: Nil)
-scala> case class Car(make: String)
-scala> head(Car("Civic") :: Car("CR-V") :: Nil)
+```scala mdoc:reset
+def head[A](xs: List[A]): A = xs(0)
+head(1 :: 2 :: Nil)
+
+case class Car(make: String)
+head(Car("Civic") :: Car("CR-V") :: Nil)
 ```
 
 [Haskell wiki](http://www.haskell.org/haskellwiki/Polymorphism) says:
@@ -26,19 +27,19 @@ scala> head(Car("Civic") :: Car("CR-V") :: Nil)
 
 Let's think of a function `plus` that can add two values of type `A`:
 
-```scala
-scala> def plus[A](a1: A, a2: A): A = ???
-plus: [A](a1: A, a2: A)A
+```scala mdoc
+def plus[A](a1: A, a2: A): A = ???
 ```
 
 Depending on the type `A`, we need to provide different definition for what it means to add them.
 One way to achieve this is through subtyping.
 
-```console
-scala> trait PlusIntf[A] {
-         def plus(a2: A): A
-       }
-scala> def plusBySubtype[A <: PlusIntf[A]](a1: A, a2: A): A = a1.plus(a2)
+```scala mdoc
+trait PlusIntf[A] {
+  def plus(a2: A): A
+}
+
+def plusBySubtype[A <: PlusIntf[A]](a1: A, a2: A): A = a1.plus(a2)
 ```
 
 We can at least provide different definitions of `plus` for `A`.
@@ -49,11 +50,12 @@ So it can't work for `Int` and `String`.
 
 The third approach in Scala is to provide an implicit conversion or implicit parameters for the trait.
 
-```console
-scala> trait CanPlus[A] {
-         def plus(a1: A, a2: A): A
-       }
-scala> def plus[A: CanPlus](a1: A, a2: A): A = implicitly[CanPlus[A]].plus(a1, a2)
+```scala mdoc
+trait CanPlus[A] {
+  def plus(a1: A, a2: A): A
+}
+
+def plus[A: CanPlus](a1: A, a2: A): A = implicitly[CanPlus[A]].plus(a1, a2)
 ```
 
 This is truely ad-hoc in the sense that

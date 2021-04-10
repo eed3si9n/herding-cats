@@ -40,7 +40,7 @@ The definition of the free monoid *M(A)* is given as follows:
 > Universal Mapping Property of *M(A)*<br>
 > There is a function *i: A => |M(A)|*, and given any monoid *N*
 > and any function *f: A => |N|*, there is a *unique* monoid homomorphism
-> *f_hom = M(A) => N* such that 
+> *f_hom = M(A) => N* such that
 > *|f_hom| ∘ i = f*, all as indicated in the following diagram:
 
 Instead of `A`, I'll use `X` here. Also *|N|* means `Set[N]`:
@@ -71,7 +71,7 @@ i: (x: Char)Set[String]
 scala> def f(x: Char): Set[Int] = Set(x.toInt) // example
 f: (x: Char)Set[Int]
 
-scala> val f_hom: PartialFunction[String, Int] = 
+scala> val f_hom: PartialFunction[String, Int] =
          { case mx: String if mx.size == 1 => mx.charAt(0).toInt }
 f_hom: PartialFunction[String,Int] = <function1>
 

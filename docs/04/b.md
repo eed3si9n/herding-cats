@@ -17,11 +17,14 @@ LYAHFGG:
 
 Let's check it out in Scala:
 
-```console:new
-scala> 4 * 1
-scala> 1 * 9
-scala> List(1, 2, 3) ++ Nil
-scala> Nil ++ List(0.5, 2.5)
+```scala mdoc
+4 * 1
+
+1 * 9
+
+List(1, 2, 3) ++ Nil
+
+Nil ++ List(0.5, 2.5)
 ```
 
 Looks right.
@@ -59,43 +62,50 @@ In addition to the semigroup law, monoid must satify two more laws:
 Here's how we can check monoid laws from the REPL:
 
 ```scala
-scala> import cats._, cats.data._, cats.implicits._
+scala> import cats._, cats.syntax.all._
 import cats._
-import cats.data._
-import cats.implicits._
+import cats.syntax.all._
 
-scala> import cats.kernel.laws.GroupLaws
-import cats.kernel.laws.GroupLaws
+scala> import cats.kernel.laws.discipline.MonoidTests
+import cats.kernel.laws.discipline.MonoidTests
 
-scala> val rs1 = GroupLaws[Int].monoid(Monoid[Int])
-rs1: cats.kernel.laws.GroupLaws[Int]#GroupProperties = cats.kernel.laws.GroupLaws\$GroupProperties@17a695f0
+scala> import org.scalacheck.Test.Parameters
+import org.scalacheck.Test.Parameters
 
-scala> rs1.all.check
-+ monoid.associativity: OK, passed 100 tests.
-+ monoid.combineAll(Nil) == id: OK, passed 100 tests.
-+ monoid.combineN(a, 0) == id: OK, passed 100 tests.
-+ monoid.combineN(a, 1) == a: OK, passed 100 tests.
-+ monoid.combineN(a, 2) == a |+| a: OK, passed 100 tests.
-+ monoid.isEmpty: OK, passed 100 tests.
-+ monoid.leftIdentity: OK, passed 100 tests.
-+ monoid.rightIdentity: OK, passed 100 tests.
-+ monoid.serializable: OK, proved property.
+scala> val rs1 = MonoidTests[Int].monoid
+val rs1: cats.kernel.laws.discipline.MonoidTests[Int]#RuleSet = org.typelevel.discipline.Laws\$DefaultRuleSet@108684fb
+
+scala> rs1.all.check(Parameters.default)
++ monoid.associative: OK, passed 100 tests.
++ monoid.collect0: OK, passed 100 tests.
++ monoid.combine all: OK, passed 100 tests.
++ monoid.combineAllOption: OK, passed 100 tests.
++ monoid.intercalateCombineAllOption: OK, passed 100 tests.
++ monoid.intercalateIntercalates: OK, passed 100 tests.
++ monoid.intercalateRepeat1: OK, passed 100 tests.
++ monoid.intercalateRepeat2: OK, passed 100 tests.
++ monoid.is id: OK, passed 100 tests.
++ monoid.left identity: OK, passed 100 tests.
++ monoid.repeat0: OK, passed 100 tests.
++ monoid.repeat1: OK, passed 100 tests.
++ monoid.repeat2: OK, passed 100 tests.
++ monoid.reverseCombineAllOption: OK, passed 100 tests.
++ monoid.reverseRepeat1: OK, passed 100 tests.
++ monoid.reverseRepeat2: OK, passed 100 tests.
++ monoid.reverseReverses: OK, passed 100 tests.
++ monoid.right identity: OK, passed 100 tests.
 ```
 
-Here's the spec2 specification of the above:
+Here's the MUnit test of the above:
 
 ```scala
 package example
 
 import cats._
-import algebra.laws.GroupLaws
+import cats.kernel.laws.discipline.MonoidTests
 
-class IntSpec extends CatsSpec { def is = s2"""
-  (Int, +) should
-     form a monoid                                         \$e1
-  """
-
-  def e1 = checkAll("Int", GroupLaws[Int].monoid(Monoid[Int]))
+class IntTest extends munit.DisciplineSuite {
+  checkAll("Int", MonoidTests[Int].monoid)
 }
 ```
 
@@ -107,8 +117,7 @@ LYAHFGG:
 
 Cats does not ship with a tagged-type facility, but Scala now has [value classes][value-classes-overview]. This will remain unboxed under certain conditions, so it should work for simple examples.
 
-```console:new
-scala> :paste
+```scala
 class Wrapper(val unwrap: Int) extends AnyVal
 ```
 
@@ -122,10 +131,12 @@ LYAHFGG:
 
 Cats does not provide this, but we can implement it ourselves.
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> :paste
-class Disjunction(val unwrap: Boolean) extends AnyVal
+```scala mdoc
+import cats._, cats.syntax.all._
+
+// `class Disjunction(val unwrap: Boolean) extends AnyVal` doesn't work on mdoc
+class Disjunction(val unwrap: Boolean)
+
 object Disjunction {
   @inline def apply(b: Boolean): Disjunction = new Disjunction(b)
   implicit val disjunctionMonoid: Monoid[Disjunction] = new Monoid[Disjunction] {
@@ -138,17 +149,22 @@ object Disjunction {
       a1.unwrap == a2.unwrap
   }
 }
-scala> val x1 = Disjunction(true) |+| Disjunction(false)
-scala> x1.unwrap
-scala> val x2 = Monoid[Disjunction].empty |+| Disjunction(true)
-scala> x2.unwrap
+
+val x1 = Disjunction(true) |+| Disjunction(false)
+
+x1.unwrap
+
+val x2 = Monoid[Disjunction].empty |+| Disjunction(true)
+
+x2.unwrap
 ```
 
 Here's conjunction:
 
-```console
-scala> :paste
-class Conjunction(val unwrap: Boolean) extends AnyVal
+```scala mdoc
+// `class Conjunction(val unwrap: Boolean) extends AnyVal` doesn't work on mdoc
+class Conjunction(val unwrap: Boolean)
+
 object Conjunction {
   @inline def apply(b: Boolean): Conjunction = new Conjunction(b)
   implicit val conjunctionMonoid: Monoid[Conjunction] = new Monoid[Conjunction] {
@@ -161,67 +177,66 @@ object Conjunction {
       a1.unwrap == a2.unwrap
   }
 }
-scala> val x3 = Conjunction(true) |+| Conjunction(false)
-scala> x3.unwrap
-scala> val x4 = Monoid[Conjunction].empty |+| Conjunction(true)
-scala> x4.unwrap
+
+val x3 = Conjunction(true) |+| Conjunction(false)
+
+x3.unwrap
+
+val x4 = Monoid[Conjunction].empty |+| Conjunction(true)
+
+x4.unwrap
 ```
 
 We should check if our custom new types satisfy the the monoid laws.
 
 ```scala
-scala> import algebra.laws.GroupLaws
-import algebra.laws.GroupLaws
+scala> import cats._, cats.syntax.all._
+import cats._
+import cats.syntax.all._
+
+scala> import cats.kernel.laws.discipline.MonoidTests
+import cats.kernel.laws.discipline.MonoidTests
+
+scala> import org.scalacheck.Test.Parameters
+import org.scalacheck.Test.Parameters
 
 scala> import org.scalacheck.{ Arbitrary, Gen }
 import org.scalacheck.{Arbitrary, Gen}
 
 scala> implicit def arbDisjunction(implicit ev: Arbitrary[Boolean]): Arbitrary[Disjunction] =
          Arbitrary { ev.arbitrary map { Disjunction(_) } }
-arbDisjunction: (implicit ev: org.scalacheck.Arbitrary[Boolean])org.scalacheck.Arbitrary[Disjunction]
+def arbDisjunction(implicit ev: org.scalacheck.Arbitrary[Boolean]): org.scalacheck.Arbitrary[Disjunction]
 
-scala> val rs1 = GroupLaws[Disjunction].monoid
-rs1: algebra.laws.GroupLaws[Disjunction]#GroupProperties = algebra.laws.GroupLaws\$GroupProperties@77663edf
+scala> val rs1 = MonoidTests[Disjunction].monoid
+val rs1: cats.kernel.laws.discipline.MonoidTests[Disjunction]#RuleSet = org.typelevel.discipline.Laws\$DefaultRuleSet@464d134
 
-scala> rs1.all.check
-+ monoid.associativity: OK, passed 100 tests.
-+ monoid.combineAll(Nil) == id: OK, passed 100 tests.
-+ monoid.combineN(a, 0) == id: OK, passed 100 tests.
-+ monoid.combineN(a, 1) == a: OK, passed 100 tests.
-+ monoid.combineN(a, 2) == a |+| a: OK, passed 100 tests.
-+ monoid.isEmpty: OK, passed 100 tests.
-+ monoid.leftIdentity: OK, passed 100 tests.
-+ monoid.rightIdentity: OK, passed 100 tests.
-! monoid.serializable: Falsified after 0 passed tests.
+scala> rs1.all.check(Parameters.default)
++ monoid.associative: OK, passed 100 tests.
++ monoid.collect0: OK, passed 100 tests.
++ monoid.combine all: OK, passed 100 tests.
++ monoid.combineAllOption: OK, passed 100 tests.
+....
 ```
 
-The test failed because our monoid is not `Serializable`.
-I'm confused as to why the monoid law is checking for `Serializable`.
-[non/algebra#13][algebra13] says it's convenient for Spark. I feel like this should be a separate thing.
-
-> **Update**: It turns out, the failure is due to the fact I'm using REPL to define the typeclass instances!
+`Disjunction` looks ok.
 
 ```scala
 scala> implicit def arbConjunction(implicit ev: Arbitrary[Boolean]): Arbitrary[Conjunction] =
          Arbitrary { ev.arbitrary map { Conjunction(_) } }
-arbConjunction: (implicit ev: org.scalacheck.Arbitrary[Boolean])org.scalacheck.Arbitrary[Conjunction]
+def arbConjunction(implicit ev: org.scalacheck.Arbitrary[Boolean]): org.scalacheck.Arbitrary[Conjunction]
 
-scala> val rs2 = GroupLaws[Conjunction].monoid
-rs2: algebra.laws.GroupLaws[Conjunction]#GroupProperties = algebra.laws.GroupLaws\$GroupProperties@15f279d
+scala> val rs2 = MonoidTests[Conjunction].monoid
+val rs2: cats.kernel.laws.discipline.MonoidTests[Conjunction]#RuleSet = org.typelevel.discipline.Laws\$DefaultRuleSet@71a4f643
 
-scala> rs2.all.check
-+ monoid.associativity: OK, passed 100 tests.
-+ monoid.combineAll(Nil) == id: OK, passed 100 tests.
-+ monoid.combineN(a, 0) == id: OK, passed 100 tests.
-+ monoid.combineN(a, 1) == a: OK, passed 100 tests.
-+ monoid.combineN(a, 2) == a |+| a: OK, passed 100 tests.
-+ monoid.isEmpty: OK, passed 100 tests.
-+ monoid.leftIdentity: OK, passed 100 tests.
-+ monoid.rightIdentity: OK, passed 100 tests.
-! monoid.serializable: Falsified after 0 passed tests.
+scala> rs2.all.check(Parameters.default)
++ monoid.associative: OK, passed 100 tests.
++ monoid.collect0: OK, passed 100 tests.
++ monoid.combine all: OK, passed 100 tests.
++ monoid.combineAllOption: OK, passed 100 tests.
+....
 ```
 
-Apart from the serializable rule, `Conjunction` looks ok.
+`Conjunction` looks ok too.
 
 #### Option as Monoids
 
@@ -249,9 +264,10 @@ Let's see if this is how Cats does it.
 If we replace `mappend` with the equivalent `combine`, the rest is just pattern matching.
 Let's try using it.
 
-```console
-scala> none[String] |+| "andy".some
-scala> 1.some |+| none[Int]
+```scala mdoc
+none[String] |+| "andy".some
+
+1.some |+| none[Int]
 ```
 
 It works.
@@ -262,9 +278,9 @@ LYAHFGG:
 
 Haskell is using `newtype` to implement `First` type constructor. Since we can't prevent allocation for generic value class, we can just make a normal case class.
 
-```console
-scala> :paste
+```scala mdoc
 case class First[A: Eq](val unwrap: Option[A])
+
 object First {
   implicit def firstMonoid[A: Eq]: Monoid[First[A]] = new Monoid[First[A]] {
     def combine(a1: First[A], a2: First[A]): First[A] =
@@ -279,8 +295,10 @@ object First {
       Eq[Option[A]].eqv(a1.unwrap, a2.unwrap)
   }
 }
-scala> First('a'.some) |+| First('b'.some)
-scala> First(none[Char]) |+| First('b'.some)
+
+First('a'.some) |+| First('b'.some)
+
+First(none[Char]) |+| First('b'.some)
 ```
 
 Let's check the laws:
@@ -288,21 +306,17 @@ Let's check the laws:
 ```scala
 scala> implicit def arbFirst[A: Eq](implicit ev: Arbitrary[Option[A]]): Arbitrary[First[A]] =
          Arbitrary { ev.arbitrary map { First(_) } }
-arbFirst: [A](implicit evidence\$1: cats.Eq[A], implicit ev: org.scalacheck.Arbitrary[Option[A]])org.scalacheck.Arbitrary[First[A]]
+def arbFirst[A](implicit evidence\$1: cats.Eq[A], ev: org.scalacheck.Arbitrary[Option[A]]): org.scalacheck.Arbitrary[First[A]]
 
-scala> val rs3 = GroupLaws[First[Int]].monoid
-rs3: algebra.laws.GroupLaws[First[Int]]#GroupProperties = algebra.laws.GroupLaws\$GroupProperties@44736530
+scala> val rs3 = MonoidTests[First[Int]].monoid
+val rs3: cats.kernel.laws.discipline.MonoidTests[First[Int]]#RuleSet = org.typelevel.discipline.Laws\$DefaultRuleSet@17d3711d
 
-scala> rs3.all.check
-+ monoid.associativity: OK, passed 100 tests.
-+ monoid.combineAll(Nil) == id: OK, passed 100 tests.
-+ monoid.combineN(a, 0) == id: OK, passed 100 tests.
-+ monoid.combineN(a, 1) == a: OK, passed 100 tests.
-+ monoid.combineN(a, 2) == a |+| a: OK, passed 100 tests.
-+ monoid.isEmpty: OK, passed 100 tests.
-+ monoid.leftIdentity: OK, passed 100 tests.
-+ monoid.rightIdentity: OK, passed 100 tests.
-! monoid.serializable: Falsified after 0 passed tests.
+scala> rs3.all.check(Parameters.default)
++ monoid.associative: OK, passed 100 tests.
++ monoid.collect0: OK, passed 100 tests.
++ monoid.combine all: OK, passed 100 tests.
++ monoid.combineAllOption: OK, passed 100 tests.
+....
 ```
 
 It thinks `First` is not serializable either.
@@ -311,9 +325,9 @@ LYAHFGG:
 
 > If we want a monoid on `Maybe a` such that the second parameter is kept if both parameters of `mappend` are `Just` values, `Data.Monoid` provides a the `Last a` type.
 
-```console
-scala> :paste
+```scala mdoc
 case class Last[A: Eq](val unwrap: Option[A])
+
 object Last {
   implicit def lastMonoid[A: Eq]: Monoid[Last[A]] = new Monoid[Last[A]] {
     def combine(a1: Last[A], a2: Last[A]): Last[A] =
@@ -328,8 +342,10 @@ object Last {
       Eq[Option[A]].eqv(a1.unwrap, a2.unwrap)
   }
 }
-scala> Last('a'.some) |+| Last('b'.some)
-scala> Last('a'.some) |+| Last(none[Char])
+
+Last('a'.some) |+| Last('b'.some)
+
+Last('a'.some) |+| Last(none[Char])
 ```
 
 More law checking:
@@ -337,21 +353,17 @@ More law checking:
 ```scala
 scala> implicit def arbLast[A: Eq](implicit ev: Arbitrary[Option[A]]): Arbitrary[Last[A]] =
          Arbitrary { ev.arbitrary map { Last(_) } }
-arbLast: [A](implicit evidence\$1: cats.Eq[A], implicit ev: org.scalacheck.Arbitrary[Option[A]])org.scalacheck.Arbitrary[Last[A]]
+def arbLast[A](implicit evidence\$1: cats.Eq[A], ev: org.scalacheck.Arbitrary[Option[A]]): org.scalacheck.Arbitrary[Last[A]]
 
-scala> val rs4 = GroupLaws[Last[Int]].monoid
-rs4: algebra.laws.GroupLaws[Last[Int]]#GroupProperties = algebra.laws.GroupLaws\$GroupProperties@121fd6d9
+scala> val rs4 = MonoidTests[Last[Int]].monoid
+val rs4: cats.kernel.laws.discipline.MonoidTests[Last[Int]]#RuleSet = org.typelevel.discipline.Laws\$DefaultRuleSet@7b28ea53
 
-scala> rs4.all.check
-+ monoid.associativity: OK, passed 100 tests.
-+ monoid.combineAll(Nil) == id: OK, passed 100 tests.
-+ monoid.combineN(a, 0) == id: OK, passed 100 tests.
-+ monoid.combineN(a, 1) == a: OK, passed 100 tests.
-+ monoid.combineN(a, 2) == a |+| a: OK, passed 100 tests.
-+ monoid.isEmpty: OK, passed 100 tests.
-+ monoid.leftIdentity: OK, passed 100 tests.
-+ monoid.rightIdentity: OK, passed 100 tests.
-! monoid.serializable: Falsified after 0 passed tests.
+scala> rs4.all.check(Parameters.default)
++ monoid.associative: OK, passed 100 tests.
++ monoid.collect0: OK, passed 100 tests.
++ monoid.combine all: OK, passed 100 tests.
++ monoid.combineAllOption: OK, passed 100 tests.
+....
 ```
 
 I think we got a pretty good feel for monoids.

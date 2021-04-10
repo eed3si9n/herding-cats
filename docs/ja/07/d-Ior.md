@@ -50,12 +50,16 @@ object Ior extends IorInstances with IorFunctions {
 
 これらの値は `Ior` の `left`、`right`、`both` メソッドを使って定義する:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> import cats.data.{ NonEmptyList => NEL }
-scala> Ior.right[NEL[String], Int](1)
-scala> Ior.left[NEL[String], Int](NEL.of("error"))
-scala> Ior.both[NEL[String], Int](NEL.of("warning"), 1)
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
+import cats.data.{ NonEmptyList => NEL }
+
+Ior.right[NEL[String], Int](1)
+
+Ior.left[NEL[String], Int](NEL.of("error"))
+
+Ior.both[NEL[String], Int](NEL.of("warning"), 1)
 ```
 
 scaladoc コメントに書いてある通り、`Ior` の `flatMap` は
@@ -64,35 +68,43 @@ scaladoc コメントに書いてある通り、`Ior` の `flatMap` は
 
 `flatMap` の振る舞いを 9つ全ての組み合わせでみてみよう:
 
-```console
-scala> Ior.right[NEL[String], Int](1) >>=
-         { x => Ior.right[NEL[String], Int](x + 1) }
-scala> Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
-         { x => Ior.right[NEL[String], Int](x + 1) }
-scala> Ior.both[NEL[String], Int](NEL.of("warning 1"), 1) >>=
-         { x => Ior.right[NEL[String], Int](x + 1) }
-scala> Ior.right[NEL[String], Int](1) >>=
-         { x => Ior.left[NEL[String], Int](NEL.of("error 2")) }
-scala> Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
-         { x => Ior.left[NEL[String], Int](NEL.of("error 2")) }
-scala> Ior.both[NEL[String], Int](NEL.of("warning 1"), 1) >>=
-         { x => Ior.left[NEL[String], Int](NEL.of("error 2")) }
-scala> Ior.right[NEL[String], Int](1) >>=
-         { x => Ior.both[NEL[String], Int](NEL.of("warning 2"), x + 1) }
-scala> Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
-         { x => Ior.both[NEL[String], Int](NEL.of("warning 2"), x + 1) }
-scala> Ior.both[NEL[String], Int](NEL.of("warning 1"), 1) >>=
-         { x => Ior.both[NEL[String], Int](NEL.of("warning 2"), x + 1) }
+```scala mdoc
+Ior.right[NEL[String], Int](1) >>=
+  { x => Ior.right[NEL[String], Int](x + 1) }
+
+Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
+  { x => Ior.right[NEL[String], Int](x + 1) }
+
+Ior.both[NEL[String], Int](NEL.of("warning 1"), 1) >>=
+  { x => Ior.right[NEL[String], Int](x + 1) }
+
+Ior.right[NEL[String], Int](1) >>=
+  { x => Ior.left[NEL[String], Int](NEL.of("error 2")) }
+
+Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
+  { x => Ior.left[NEL[String], Int](NEL.of("error 2")) }
+
+Ior.both[NEL[String], Int](NEL.of("warning 1"), 1) >>=
+  { x => Ior.left[NEL[String], Int](NEL.of("error 2")) }
+
+Ior.right[NEL[String], Int](1) >>=
+  { x => Ior.both[NEL[String], Int](NEL.of("warning 2"), x + 1) }
+
+Ior.left[NEL[String], Int](NEL.of("error 1")) >>=
+  { x => Ior.both[NEL[String], Int](NEL.of("warning 2"), x + 1) }
+
+Ior.both[NEL[String], Int](NEL.of("warning 1"), 1) >>=
+  { x => Ior.both[NEL[String], Int](NEL.of("warning 2"), x + 1) }
 ```
 
 `for` 内包表記からも使える:
 
-```console
-scala> for {
-         e1 <- Ior.right[NEL[String], Int](1)
-         e2 <- Ior.both[NEL[String], Int](NEL.of("event 2 warning"), e1 + 1)
-         e3 <- Ior.both[NEL[String], Int](NEL.of("event 3 warning"), e2 + 1)
-       } yield (e1 |+| e2 |+| e3)
+```scala mdoc
+for {
+  e1 <- Ior.right[NEL[String], Int](1)
+  e2 <- Ior.both[NEL[String], Int](NEL.of("event 2 warning"), e1 + 1)
+  e3 <- Ior.both[NEL[String], Int](NEL.of("event 3 warning"), e2 + 1)
+} yield (e1 |+| e2 |+| e3)
 ```
 
 `Ior.left` は `Xor[A, B]` や `Either[A, B]` の失敗値のようにショート回路になるが、

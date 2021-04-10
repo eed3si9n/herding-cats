@@ -24,11 +24,11 @@ foo = do
 
 通常は `return (show x ++ y)` と書くと思うけど、最後の行がモナディックな値であることを強調するために `Just` を書き出した。一方 Scala はこうだ:
 
-```console:new
-scala> def foo = for {
-         x <- Some(3)
-         y <- Some("!")
-       } yield x.toString + y
+```scala mdoc
+def foo = for {
+  x <- Some(3)
+  y <- Some("!")
+} yield x.toString + y
 ```
 
 似ているように見えるけども、いくつかの違いがある。
@@ -41,20 +41,24 @@ scala> def foo = for {
 
 具体例を見てみよう:
 
-```console
-scala> import collection.immutable.BitSet
-scala> val bits = BitSet(1, 2, 3)
-scala> for {
-         x <- bits
-       } yield x.toFloat
-scala> for {
-         i <- List(1, 2, 3)
-         j <- Some(1)
-       } yield i + j
-scala> for {
-         i <- Map(1 -> 2)
-         j <- Some(3)
-       } yield j
+```scala mdoc
+import collection.immutable.BitSet
+
+val bits = BitSet(1, 2, 3)
+
+for {
+  x <- bits
+} yield x.toFloat
+
+for {
+  i <- List(1, 2, 3)
+  j <- Some(1)
+} yield i + j
+
+for {
+  i <- Map(1 -> 2)
+  j <- Some(3)
+} yield j
 ```
 
 #### actM を実装する
@@ -89,50 +93,52 @@ Async と Effectful のコードをコピペすることで単純な式と `val`
 
 `actM` を使ってみよう:
 
-```console
-scala> import cats._, cats.data._, cats.implicits._
-scala> import example.MonadSyntax._
-scala> actM[Option, String] {
-         val x = 3.some.next
-         val y = "!".some.next
-         x.toString + y
-       }
+```scala mdoc
+import cats._, cats.syntax.all._
+import example.MonadSyntax._
+
+actM[Option, String] {
+  val x = 3.some.next
+  val y = "!".some.next
+  x.toString + y
+}
 ```
 
 `fa.next` は `Monad[F].flatMap(fa)()` の呼び出しに展開される。
 そのため、上の例はこのように展開される:
 
-```console
-scala> Monad[Option].flatMap[String, String]({
-         val fa0: Option[Int] = 3.some
-         Monad[Option].flatMap[Int, String](fa0) { (arg0: Int) => {
-           val next0: Int = arg0
-           val x: Int = next0
-           val fa1: Option[String] = "!".some
-           Monad[Option].flatMap[String, String](fa1)((arg1: String) => {
-             val next1: String = arg1
-             val y: String = next1
-             Monad[Option].pure[String](x.toString + y)
-           })
-         }}
-       }) { (arg2: String) => Monad[Option].pure[String](arg2) }
+```scala mdoc
+Monad[Option].flatMap[String, String]({
+  val fa0: Option[Int] = 3.some
+  Monad[Option].flatMap[Int, String](fa0) { (arg0: Int) => {
+    val next0: Int = arg0
+    val x: Int = next0
+    val fa1: Option[String] = "!".some
+    Monad[Option].flatMap[String, String](fa1)((arg1: String) => {
+      val next1: String = arg1
+      val y: String = next1
+      Monad[Option].pure[String](x.toString + y)
+    })
+  }}
+}) { (arg2: String) => Monad[Option].pure[String](arg2) }
 ```
 
 `Option` から `List` への自動変換を防止できるか試してみる:
 
-```console:error
-scala> actM[List, Int] {
-         val i = List(1, 2, 3).next
-         val j = 1.some.next
-         i + j
-       }
+```scala mdoc:fail
+{
+  actM[List, Int] {
+    val i = List(1, 2, 3).next
+    val j = 1.some.next
+    i + j
+  }
+}
 ```
 
 エラーメッセージがこなれないけども、コンパイル時に検知することができた。
 これは、`Future` を含むどのモナドでも動作する。
 
-```console
-scala> :paste
+```scala mdoc
 val x = {
   import scala.concurrent.{ExecutionContext, Future}
   import ExecutionContext.Implicits.global
@@ -142,7 +148,8 @@ val x = {
     i + j
   }
 }
-scala> x.value
+
+x.value
 ```
 
 このマクロは不完全な toy code だけども、こういうものがあれば便利なのではという示唆はできたと思う。

@@ -31,14 +31,14 @@ private[example] trait TransformUtils {
     val state         = newTermName("state")
     val result        = newTermName("result")
     val execContext   = newTermName("execContext")
-    val stateMachine  = newTermName(fresh("stateMachine"))
+    val stateMachine  = fresh("stateMachine")
     val stateMachineT = stateMachine.toTypeName
     val tr            = newTermName("tr")
     val t             = newTermName("throwable")
 
     def fresh(name: TermName): TermName = c.freshName(name)
 
-    def fresh(name: String): String = c.freshName(name)
+    def fresh(name: String): TermName = c.freshName(newTermName(name))
   }
 
   def isMonadOp(fun: Tree): Boolean =
@@ -157,8 +157,8 @@ private[example] trait TransformUtils {
     }
 
     val NonFatalClass = rootMirror.staticModule("scala.util.control.NonFatal")
-    
-    val MonadSyntaxClass = rootMirror.staticModule("example.MonadSyntax") 
+
+    val MonadSyntaxClass = rootMirror.staticModule("example.MonadSyntax")
     val conversionSymbol = MonadSyntaxClass.typeSignature.member(TermName("toMonadOp"))
     val funcConversionSymbol = MonadSyntaxClass.typeSignature.member(TermName("toFuncOp"))
     // val Async_await   = asyncBase.awaitMethod(c.universe)(c.macroApplication.symbol).ensuring(_ != NoSymbol)

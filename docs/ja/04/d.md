@@ -62,9 +62,10 @@ Cats でこれに対応するものも `Foldable` と呼ばれている。[型�
 
 このように使う:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> Foldable[List].foldLeft(List(1, 2, 3), 1) {_ * _}
+```scala mdoc
+import cats._, cats.syntax.all._
+
+Foldable[List].foldLeft(List(1, 2, 3), 1) {_ * _}
 ```
 
 `Foldable` はいくつかの便利な関数や演算子がついてきて、型クラスを駆使している。
@@ -82,8 +83,8 @@ scala> Foldable[List].foldLeft(List(1, 2, 3), 1) {_ * _}
 
 使ってみる。
 
-```console
-scala> Foldable[List].fold(List(1, 2, 3))(Monoid[Int])
+```scala mdoc
+Foldable[List].fold(List(1, 2, 3))(Monoid[Int])
 ```
 
 関数を受け取る変種として `foldMap` もある。
@@ -101,15 +102,16 @@ scala> Foldable[List].fold(List(1, 2, 3))(Monoid[Int])
 
 標準のコレクションライブラリが `foldMap` を実装しないため、演算子として使える。
 
-```console
-scala> List(1, 2, 3).foldMap(identity)(Monoid[Int])
+```scala mdoc
+List(1, 2, 3).foldMap(identity)(Monoid[Int])
 ```
 
 もう一つ便利なのは、これで値を newtype に変換することができることだ。
 
-```console
-scala> :paste
-class Conjunction(val unwrap: Boolean) extends AnyVal
+```scala mdoc
+// `class Conjunction(val unwrap: Boolean) extends AnyVal` doesn't work on mdoc
+class Conjunction(val unwrap: Boolean)
+
 object Conjunction {
   @inline def apply(b: Boolean): Conjunction = new Conjunction(b)
   implicit val conjunctionMonoid: Monoid[Conjunction] = new Monoid[Conjunction] {
@@ -122,8 +124,9 @@ object Conjunction {
       a1.unwrap == a2.unwrap
   }
 }
-scala> val x = List(true, false, true) foldMap {Conjunction(_)}
-scala> x.unwrap
+
+val x = List(true, false, true) foldMap {Conjunction(_)}
+x.unwrap
 ```
 
 `Conjunction(true)` と一つ一つ書きだして `|+|` でつなぐよりずっと楽だ。

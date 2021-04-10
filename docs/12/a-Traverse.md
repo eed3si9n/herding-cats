@@ -66,19 +66,20 @@ Cats' identity applicative functor is defined as follows:
 
 Here's how we can traverse over `List(1, 2, 3)` using `Id`.
 
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> List(1, 2, 3) traverse[Id, Int] { (x: Int) => x + 1 }
+List(1, 2, 3) traverse[Id, Int] { (x: Int) => x + 1 }
 ```
 
 > In the case of a monadic applicative functor, traversal specialises to monadic map, and has the same uses. In fact, traversal is really just a slight generalisation of monadic map.
 
 Let's try using this for `List`:
 
-```console
-scala> List(1, 2, 3) traverse { (x: Int) => (Some(x + 1): Option[Int]) }
-scala> List(1, 2, 3) traverse { (x: Int) => None }
+```scala mdoc
+List(1, 2, 3) traverse { (x: Int) => (Some(x + 1): Option[Int]) }
+
+List(1, 2, 3) traverse { (x: Int) => None }
 ```
 
 > For a Naperian applicative functor, traversal transposes results.
@@ -88,31 +89,35 @@ We're going to skip this one.
 > For a monoidal applicative functor, traversal accumulates values.
 > The function `reduce` performs that accumulation, given an argument that assigns a value to each element
 
-```console
-scala> def reduce[A, B, F[_]](fa: F[A])(f: A => B)
-         (implicit FF: Traverse[F], BB: Monoid[B]): B =
-         {
-           val g: A => Const[B, Unit] = { (a: A) => Const((f(a))) }
-           val x = FF.traverse[Const[B, ?], A, Unit](fa)(g)
-           x.getConst
-         }
+```scala mdoc
+def reduce[A, B, F[_]](fa: F[A])(f: A => B)
+  (implicit FF: Traverse[F], BB: Monoid[B]): B =
+  {
+    val g: A => Const[B, Unit] = { (a: A) => Const((f(a))) }
+    val x = FF.traverse[Const[B, *], A, Unit](fa)(g)
+    x.getConst
+  }
 ```
 
 Here's how we can use this:
 
-```console
-scala> reduce(List('a', 'b', 'c')) { c: Char => c.toInt }
+```scala mdoc
+reduce(List('a', 'b', 'c')) { c: Char => c.toInt }
 ```
 
-Using `-Ypartial-unification`, `traverse` is able to infer the types:
+Thanks to partial unification (default in Scala 2.13, and `-Ypartial-unification` in 2.12), `traverse` is able to infer the types:
 
-```console
-scala> def reduce[A, B, F[_]](fa: F[A])(f: A => B)
-         (implicit FF: Traverse[F], BB: Monoid[B]): B =
-         {
-           val x = fa traverse { (a: A) => Const[B, Unit]((f(a))) }
-           x.getConst
-         }
+```scala mdoc:reset:invisible
+import cats._, cats.data._, cats.syntax.all._
+```
+
+```scala mdoc
+def reduce[A, B, F[_]](fa: F[A])(f: A => B)
+  (implicit FF: Traverse[F], BB: Monoid[B]): B =
+  {
+    val x = fa traverse { (a: A) => Const[B, Unit]((f(a))) }
+    x.getConst
+  }
 ```
 
 We'll find out what this is about later.
@@ -183,21 +188,24 @@ Thus as the matter of course, `Traverse` implements a datatype-generic,
 because it simply flips `F[G[A]]` into `G[F[A]]`.
 You might have seen [this function][FutureSequence] for `Future` in the standard library.
 
-```console
-scala> import scala.concurrent.{ Future, ExecutionContext, Await }
-scala> import scala.concurrent.duration._
-scala> val x = {
-         implicit val ec = scala.concurrent.ExecutionContext.global
-         List(Future { 1 }, Future { 2 }).sequence
-       }
-scala> Await.result(x, 1 second)
+```scala mdoc
+import scala.concurrent.{ Future, ExecutionContext, Await }
+import scala.concurrent.duration._
+
+val x = {
+  implicit val ec = scala.concurrent.ExecutionContext.global
+  List(Future { 1 }, Future { 2 }).sequence
+}
+
+Await.result(x, 1 second)
 ```
 
 Another useseful thing might be to turn a `List` of `Either` into an `Either`.
 
-```console
-scala> List(Right(1): Either[String, Int]).sequence
-scala> List(Right(1): Either[String, Int], Left("boom"): Either[String, Int]).sequence
+```scala mdoc
+List(Right(1): Either[String, Int]).sequence
+
+List(Right(1): Either[String, Int], Left("boom"): Either[String, Int]).sequence
 ```
 
 Note that we no longer need `sequenceU`.

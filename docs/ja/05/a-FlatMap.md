@@ -38,9 +38,10 @@ class FlatMapOps[F[_], A](fa: F[A])(implicit F: FlatMap[F]) {
 
 これは `flatMap` 演算子とシンボルを使ったエイリアスである `>>=` を導入する。他の演算子に関しては後回しにしよう。とりあえず標準ライブラリで `flatMap` は慣れている:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> (Right(3): Either[String, Int]) flatMap { x => Right(x + 1) }
+```scala mdoc
+import cats._, cats.syntax.all._
+
+(Right(3): Either[String, Int]) flatMap { x => Right(x + 1) }
 ```
 
 #### Option から始める
@@ -48,26 +49,32 @@ scala> (Right(3): Either[String, Int]) flatMap { x => Right(x + 1) }
 本の通り、`Option` から始めよう。この節では Cats の型クラスを使っているのか標準ライブラリの実装なのかについてはうるさく言わないことにする。
 以下がファンクターとしての `Option`:
 
-```console
-scala> "wisdom".some map { _ + "!" }
-scala> none[String] map { _ + "!" }
+```scala mdoc
+"wisdom".some map { _ + "!" }
+
+none[String] map { _ + "!" }
 ```
 
 `Apply` としての `Option`:
 
-```console
-scala> ({(_: Int) + 3}.some) ap 3.some
-scala> none[String => String] ap "greed".some
-scala> ({(_: String).toInt}.some) ap none[String]
+```scala mdoc
+({(_: Int) + 3}.some) ap 3.some
+
+none[String => String] ap "greed".some
+
+({(_: String).toInt}.some) ap none[String]
 ```
 
 以下は `FlatMap` としての `Option`:
 
-```console
-scala> 3.some flatMap { (x: Int) => (x + 1).some }
-scala> "smile".some flatMap { (x: String) =>  (x + " :)").some }
-scala> none[Int] flatMap { (x: Int) => (x + 1).some }
-scala> none[String] flatMap { (x: String) =>  (x + " :)").some }
+```scala mdoc
+3.some flatMap { (x: Int) => (x + 1).some }
+
+"smile".some flatMap { (x: String) =>  (x + " :)").some }
+
+none[Int] flatMap { (x: Int) => (x + 1).some }
+
+none[String] flatMap { (x: String) =>  (x + " :)").some }
 ```
 
 期待通り、モナディックな値が `None` の場合は `None` が返ってきた。

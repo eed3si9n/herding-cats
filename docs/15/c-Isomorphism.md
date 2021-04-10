@@ -12,9 +12,9 @@ Lawvere:
 
 Unfortunately, Cats doesn't seem to have a datatype to represent isomorphisms, so we have to define one.
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._, cats.arrow.Arrow
-scala> :paste
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._, cats.arrow.Arrow
+
 object Isomorphisms {
   trait Isomorphism[Arrow[_, _], A, B] { self =>
     def to: Arrow[A, B]
@@ -28,17 +28,18 @@ import Isomorphisms._
 
 This is now we can define an isomorphism from `Family` to `Relic`.
 
-```console
-scala> :paste
+```scala mdoc
 sealed trait Family {}
 case object Mother extends Family {}
 case object Father extends Family {}
 case object Child extends Family {}
+
 sealed trait Relic {}
 case object Feather extends Relic {}
 case object Stone extends Relic {}
 case object Flower extends Relic {}
-val isoFamilyRelic = new (Family <=> Relic) {
+
+lazy val isoFamilyRelic = new (Family <=> Relic) {
   val to: Family => Relic = {
     case Mother => Feather
     case Father => Stone
@@ -66,10 +67,10 @@ We can express this using ScalaCheck as follows:
 scala> import org.scalacheck.{Prop, Arbitrary, Gen}
 import org.scalacheck.{Prop, Arbitrary, Gen}
 
-scala> import cats._, cats.data._, cats.implicits._
+scala> import cats._, cats.data._, cats.syntax.all._
 import cats._
 import cats.data._
-import cats.implicits._
+import cats.syntax.all._
 
 scala> def func1EqualsProp[A, B](f: A => B, g: A => B)
          (implicit ev1: Eq[B], ev2: Arbitrary[A]): Prop =

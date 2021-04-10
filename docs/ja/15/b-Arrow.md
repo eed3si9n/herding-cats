@@ -79,12 +79,16 @@ import simulacrum.typeclass
 
 これは `<<<` と `>>>` という2つの演算子を可能とする。
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> val f = (_:Int) + 1
-scala> val g = (_:Int) * 100
-scala> (f >>> g)(2)
-scala> (f <<< g)(2)
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
+lazy val f = (_:Int) + 1
+
+lazy val g = (_:Int) * 100
+
+(f >>> g)(2)
+
+(f <<< g)(2)
 ```
 
 ### Strong
@@ -120,11 +124,14 @@ import simulacrum.typeclass
 
 これは `first[C]` と `second[C]` というメソッドを可能とする。
 
-```console
-scala> val f_first = f.first[Int]
-scala> f_first((1, 1))
-scala> val f_second = f.second[Int]
-scala> f_second((1, 1))
+```scala mdoc
+lazy val f_first = f.first[Int]
+
+f_first((1, 1))
+
+lazy val f_second = f.second[Int]
+
+f_second((1, 1))
 ```
 
 ここで `f` は 1を加算する関数であるため、`f_first` と `f_second` が何をやっているかは明らかだと思う。
@@ -153,6 +160,6 @@ import simulacrum.typeclass
 
 これは `split` 演算子として使うことができる:
 
-```console
-scala> (f split g)((1, 1))
+```scala mdoc
+(f split g)((1, 1))
 ```

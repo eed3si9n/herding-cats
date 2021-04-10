@@ -8,10 +8,12 @@ out: SemigroupK.html
 
 [Semigroup][Semigroup] we saw on day 4 is a bread and butter of functional programming that shows up in many places.
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> List(1, 2, 3) |+| List(4, 5, 6)
-scala> "one" |+| "two"
+```scala mdoc
+import cats._, cats.syntax.all._
+
+List(1, 2, 3) |+| List(4, 5, 6)
+
+"one" |+| "two"
 ```
 
 There's a similar typeclass called `SemigroupK` for type constructors `F[_]`.
@@ -39,41 +41,38 @@ There's a similar typeclass called `SemigroupK` for type constructors `F[_]`.
 
 This enables `combineK` operator and its symbolic alias `<+>`. Let's try using this.
 
-```console
-scala> List(1, 2, 3) <+> List(4, 5, 6)
+```scala mdoc
+List(1, 2, 3) <+> List(4, 5, 6)
 ```
 
-Unlike `Semigroup`, `SemigroupK` works with any type parameter of `F[_]`.
+Unlike `Semigroup`, `SemigroupK` works regardless of the type parameter of `F[_]`.
 
 #### Option as SemigroupK
 
-`Option[A]` can form a `Semigroup` only when the type parameter `A` forms a `Semigroup`.
+`Option[A]` forms a `Semigroup` only when the type parameter `A` forms a `Semigroup`. Let's disrupt that by creating a datatype does not form a `Semigroup`:
 
-```console
-scala> case class Foo(x: String)
+```scala mdoc
+case class Foo(x: String)
 ```
 
 So this won't work:
 
-```scala
-scala> Foo("x").some |+| Foo("y").some
-<console>:33: error: value |+| is not a member of Option[Foo]
-       Foo("x").some |+| Foo("y").some
-                     ^
+```scala mdoc:fail
+Foo("x").some |+| Foo("y").some
 ```
 
 But this works fine:
 
-```console
-scala> Foo("x").some <+> Foo("y").some
+```scala mdoc
+Foo("x").some <+> Foo("y").some
 ```
 
 There's also a subtle difference in the behaviors of two typeclasses.
 
+```scala mdoc
+1.some |+| 2.some
 
-```console
-scala> 1.some |+| 2.some
-scala> 1.some <+> 2.some
+1.some <+> 2.some
 ```
 
 The `Semigroup` will combine the inner value of the `Option` whereas `SemigroupK` will just pick the first one.

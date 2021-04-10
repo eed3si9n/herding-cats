@@ -11,12 +11,18 @@ LYAHFGG:
 Cats で `Eq` 型クラスと同じものも `Eq` と呼ばれている。
 `Eq` は [non/algebra][algebra] から cats-kernel というサブプロジェクトに移行して、Cats の一部になった:
 
-```console:error
-scala> import cats._, cats.data._, cats.implicits._
-scala> 1 === 1
-scala> 1 === "foo"
-scala> 1 == "foo"
-scala> (Some(1): Option[Int]) =!= (Some(2): Option[Int])
+```scala mdoc
+import cats._, cats.syntax.all._
+
+1 === 1
+```
+
+```scala mdoc:fail
+1 === "foo"
+```
+
+```scala mdoc
+(Some(1): Option[Int]) =!= (Some(2): Option[Int])
 ```
 
 標準の `==` のかわりに、`Eq` は `===` と `=!=` 演算を可能とする。主な違いは `Int` と `String` と比較すると `===` はコンパイルに失敗することだ。

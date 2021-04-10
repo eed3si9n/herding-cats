@@ -1,10 +1,11 @@
   [Apply]: Apply.html
+  [Semigroupal]: Semigroupal.html
   [fafm]: http://learnyouahaskell.com/functors-applicative-functors-and-monoids
 
 ### Applicative
 
 **注意**: アプリカティブ・ファンクターに興味があってこのページに飛んできた人は、まずは
-[Apply][Apply] を読んでほしい。
+[Semigroupal][Semigroupal] と [Apply][Apply] を読んでほしい。
 
 [Functors, Applicative Functors and Monoids][fafm]:
 
@@ -33,17 +34,21 @@ LYAHFGG:
 
 `A` の値を受け取り `F[A]` を返すコンストラクタみたいだ。
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> Applicative[List].pure(1)
-scala> Applicative[Option].pure(1)
+```scala mdoc
+import cats._, cats.syntax.all._
+
+Applicative[List].pure(1)
+
+Applicative[Option].pure(1)
 ```
 
 これは、`Apply[F].ap` を書くときに `{{...}.some}` としなくて済むのが便利かも。
 
-```console
-scala> val F = Applicative[Option]
-scala> F.ap({ F.pure((_: Int) + 3) })(F.pure(9))
+```scala mdoc
+{
+  val F = Applicative[Option]
+  F.ap({ F.pure((_: Int) + 3) })(F.pure(9))
+}
 ```
 
 `Option` を抽象化したコードになった。
@@ -55,26 +60,28 @@ LYAHFGG:
 > では、「アプリカティブ値のリスト」を取って「リストを返り値として持つ1つのアプリカティブ値」を返す関数を実装してみましょう。これを `sequenceA` と呼ぶことにします。
 
 ```haskell
-sequenceA :: (Applicative f) => [f a] -> f [a]  
-sequenceA [] = pure []  
-sequenceA (x:xs) = (:) <\$> x <*> sequenceA xs  
+sequenceA :: (Applicative f) => [f a] -> f [a]
+sequenceA [] = pure []
+sequenceA (x:xs) = (:) <\$> x <*> sequenceA xs
 ```
 
 これを Cats でも実装できるか試してみよう!
 
-```console
-scala> def sequenceA[F[_]: Applicative, A](list: List[F[A]]): F[List[A]] = list match {
-         case Nil     => Applicative[F].pure(Nil: List[A])
-         case x :: xs => (x, sequenceA(xs)) mapN {_ :: _} 
-       }
+```scala mdoc
+def sequenceA[F[_]: Applicative, A](list: List[F[A]]): F[List[A]] = list match {
+  case Nil     => Applicative[F].pure(Nil: List[A])
+  case x :: xs => (x, sequenceA(xs)) mapN {_ :: _}
+}
 ```
 
 テストしてみよう:
 
-```console
-scala> sequenceA(List(1.some, 2.some))
-scala> sequenceA(List(3.some, none[Int], 1.some))
-scala> sequenceA(List(List(1, 2, 3), List(4, 5, 6)))
+```scala mdoc
+sequenceA(List(1.some, 2.some))
+
+sequenceA(List(3.some, none[Int], 1.some))
+
+sequenceA(List(List(1, 2, 3), List(4, 5, 6)))
 ```
 
 正しい答えが得られた。興味深いのは結局 `Applicative` が必要になったことと、
@@ -84,9 +91,11 @@ scala> sequenceA(List(List(1, 2, 3), List(4, 5, 6)))
 
 `Function1` の片側が `Int` に固定された例は、型解釈を付ける必要がある。
 
-```console
-scala> val f = sequenceA[Function1[Int, ?], Int](List((_: Int) + 3, (_: Int) + 2, (_: Int) + 1))
-scala> f(3)
+```scala mdoc
+{
+  val f = sequenceA[Function1[Int, *], Int](List((_: Int) + 3, (_: Int) + 2, (_: Int) + 1))
+  f(3)
+}
 ```
 
 #### Applicative則

@@ -15,30 +15,39 @@ out: Reader.html
 
 > In the chapter about applicatives, we saw that the function type, `(->) r` is an instance of `Functor`.
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> val f = (_: Int) * 2
-scala> val g = (_: Int) + 10
-scala> (g map f)(8)
+```scala mdoc
+import cats._, cats.syntax.all._
+
+val f = (_: Int) * 2
+
+val g = (_: Int) + 10
+
+(g map f)(8)
 ```
 
 > We've also seen that functions are applicative functors. They allow us to operate on the eventual results of functions as if we already had their results.
 
-```console
-scala> val h = (f |@| g) map {_ + _}
-scala> h(3)
+```scala mdoc
+{
+  val h = (f, g) mapN {_ + _}
+
+  h(3)
+}
 ```
 
 > Not only is the function type `(->) r a` functor and an applicative functor, but it's also a monad. Just like other monadic values that we've met so far, a function can also be considered a value with a context. The context for functions is that that value is not present yet and that we have to apply that function to something in order to get its result value.
 
 Let's try implementing the example:
 
-```console
-scala> val addStuff: Int => Int = for {
-         a <- (_: Int) * 2
-         b <- (_: Int) + 10
-       } yield a + b
-scala> addStuff(3)
+```scala mdoc
+{
+  val addStuff: Int => Int = for {
+    a <- (_: Int) * 2
+    b <- (_: Int) + 10
+  } yield a + b
+
+  addStuff(3)
+}
 ```
 
 > Both `(*2)` and `(+10)` get applied to the number `3` in this case. `return (a+b)` does as well, but it ignores it and always presents `a+b` as the result. For this reason, the function monad is also called the *reader* monad. All the functions read from a common source.
@@ -54,9 +63,9 @@ which I'm going to base my example on.
 
 Imagine we have a case class for a user, and a trait that abstracts the data store to get them.
 
-```console
-scala> :paste
+```scala mdoc
 case class User(id: Long, parentId: Long, name: String, email: String)
+
 trait UserRepo {
   def get(id: Long): User
   def find(name: String): User
@@ -65,8 +74,7 @@ trait UserRepo {
 
 Next we define a primitive reader for each operation defined in the `UserRepo` trait:
 
-```console
-scala> :paste
+```scala mdoc
 trait Users {
   def getUser(id: Long): UserRepo => User = {
     case repo => repo.get(id)
@@ -82,8 +90,27 @@ That looks like boilerplate. (I thought we are scrapping it.) Moving on.
 Based on the primitive readers, we can compose other readers,
 including the application.
 
-```console
-scala> :paste
+```scala mdoc:invisible
+object UserInfo extends Users {
+  def userInfo(name: String): UserRepo => Map[String, String] =
+    for {
+      user <- findUser(name)
+      boss <- getUser(user.parentId)
+    } yield Map(
+      "name" -> s"${user.name}",
+      "email" -> s"${user.email}",
+      "boss_name" -> s"${boss.name}"
+    )
+}
+trait Program {
+  def app: UserRepo => String =
+    for {
+      fredo <- UserInfo.userInfo("Fredo")
+    } yield fredo.toString
+}
+```
+
+```scala
 object UserInfo extends Users {
   def userInfo(name: String): UserRepo => Map[String, String] =
     for {
@@ -105,11 +132,11 @@ trait Program {
 
 To run this `app`, we need something that provides an implementation for `UserRepo`:
 
-```console
-scala> :paste
+```scala mdoc
 val testUsers = List(User(0, 0, "Vito", "vito@example.com"),
   User(1, 0, "Michael", "michael@example.com"),
   User(2, 0, "Fredo", "fredo@example.com"))
+
 object Main extends Program {
   def run: String = app(mkUserRepo)
   def mkUserRepo: UserRepo = new UserRepo {
@@ -117,6 +144,7 @@ object Main extends Program {
     def find(name: String): User = (testUsers find { _.name === name }).get
   }
 }
+
 Main.run
 ```
 
@@ -124,12 +152,49 @@ We got the boss man's name.
 
 We can try using `actM` instead of a `for` comprehension:
 
-```console
-scala> :paste
+```scala mdoc:reset:invisible
+import cats._, cats.syntax.all._
+
+case class User(id: Long, parentId: Long, name: String, email: String)
+
+trait UserRepo {
+  def get(id: Long): User
+  def find(name: String): User
+}
+
+trait Users {
+  def getUser(id: Long): UserRepo => User = {
+    case repo => repo.get(id)
+  }
+  def findUser(name: String): UserRepo => User = {
+    case repo => repo.find(name)
+  }
+}
+
+val testUsers = List(User(0, 0, "Vito", "vito@example.com"),
+  User(1, 0, "Michael", "michael@example.com"),
+  User(2, 0, "Fredo", "fredo@example.com"))
+
 object UserInfo extends Users {
   import example.MonadSyntax._
   def userInfo(name: String): UserRepo => Map[String, String] =
-    actM[UserRepo => ?, Map[String, String]] {
+    actM[UserRepo => *, Map[String, String]] {
+      val user = findUser(name).next
+      val boss = getUser(user.parentId).next
+      Map(
+        "name" -> s"${user.name}",
+        "email" -> s"${user.email}",
+        "boss_name" -> s"${boss.name}"
+      )
+    }
+}
+```
+
+```scala
+object UserInfo extends Users {
+  import example.MonadSyntax._
+  def userInfo(name: String): UserRepo => Map[String, String] =
+    actM[UserRepo => *, Map[String, String]] {
       val user = findUser(name).next
       val boss = getUser(user.parentId).next
       Map(
@@ -139,14 +204,18 @@ object UserInfo extends Users {
       )
     }
 }
+```
+
+```scala mdoc
 trait Program {
   import example.MonadSyntax._
   def app: UserRepo => String =
-    actM[UserRepo => ?, String] {
+    actM[UserRepo => *, String] {
       val fredo = UserInfo.userInfo("Fredo").next
       fredo.toString
     }
 }
+
 object Main extends Program {
   def run: String = app(mkUserRepo)
   def mkUserRepo: UserRepo = new UserRepo {
@@ -154,6 +223,7 @@ object Main extends Program {
     def find(name: String): User = (testUsers find { _.name === name }).get
   }
 }
+
 Main.run
 ```
 

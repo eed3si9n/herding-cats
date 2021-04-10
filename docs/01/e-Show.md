@@ -7,10 +7,12 @@ LYAHFGG:
 
 Cats' equivalent for the `Show` typeclass is `Show`:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> 3.show
-scala> "hello".show
+```scala mdoc
+import cats._, cats.syntax.all._
+
+3.show
+
+"hello".show
 ```
 
 Here's the typeclass contract:
@@ -26,9 +28,12 @@ already has `toString` on `Any`.
 `Any` also means anything would match the criteria, so you lose type safety.
 The `toString` could be junk supplied by some parent class:
 
-```console:error
-scala> (new {}).toString
-scala> (new {}).show
+```scala mdoc
+(new {}).toString
+```
+
+```scala mdoc:fail
+(new {}).show
 ```
 
 `object Show` provides two functions to create a `Show` instance:
@@ -54,13 +59,17 @@ object Show {
 
 Let's try using them:
 
-```console
-scala> :paste
+```scala mdoc
 case class Person(name: String)
 case class Car(model: String)
 
-scala> implicit val personShow = Show.show[Person](_.name)
-scala> Person("Alice").show
-scala> implicit val carShow = Show.fromToString[Car]
-scala> Car("CR-V")
+{
+  implicit val personShow = Show.show[Person](_.name)
+  Person("Alice").show
+}
+
+{
+  implicit val carShow = Show.fromToString[Car]
+  Car("CR-V")
+}
 ```

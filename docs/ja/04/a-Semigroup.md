@@ -28,10 +28,12 @@ LYAHFGG:
 
 確かめてみる:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> assert { (3 * 2) * (8 * 5) === 3 * (2 * (8 * 5)) }
-scala> assert { List("la") ++ (List("di") ++ List("da")) === (List("la") ++ List("di")) ++ List("da") }
+```scala mdoc
+import cats._, cats.syntax.all._
+
+assert { (3 * 2) * (8 * 5) === 3 * (2 * (8 * 5)) }
+
+assert { List("la") ++ (List("di") ++ List("da")) === (List("la") ++ List("di")) ++ List("da") }
 ```
 
 エラーがないから等価ということだ。
@@ -57,9 +59,10 @@ trait Semigroup[@sp(Int, Long, Float, Double) A] extends Any with Serializable {
 
 これは `combine` 演算子とそのシンボルを使ったエイリアスである `|+|` を可能とする。使ってみる。
 
-```console
-scala> List(1, 2, 3) |+| List(4, 5, 6)
-scala> "one" |+| "two"
+```scala mdoc
+List(1, 2, 3) |+| List(4, 5, 6)
+
+"one" |+| "two"
 ```
 
 #### Semigroup則
@@ -92,8 +95,8 @@ scala> rs1.all.check
 
 #### Semigroups としての List
 
-```console
-scala> List(1, 2, 3) |+| List(4, 5, 6)
+```scala mdoc
+List(1, 2, 3) |+| List(4, 5, 6)
 ```
 
 #### 積と和
@@ -104,14 +107,15 @@ semigroup のインスタンスを提供するという方法をとっている�
 
 これを演算子構文で書くのはトリッキーだ。
 
-```console
-scala> def doSomething[A: Semigroup](a1: A, a2: A): A =
-         a1 |+| a2
-scala> doSomething(3, 5)(Semigroup[Int])
+```scala mdoc
+def doSomething[A: Semigroup](a1: A, a2: A): A =
+  a1 |+| a2
+
+doSomething(3, 5)(Semigroup[Int])
 ```
 
 これなら、関数構文で書いたほうが楽かもしれない:
 
-```console
-scala> Semigroup[Int].combine(3, 5)
+```scala mdoc
+Semigroup[Int].combine(3, 5)
 ```

@@ -3,11 +3,19 @@ out: import-guide.html
 ---
 
   [ImplicitsSource]: $catsBaseUrl$/core/src/main/scala/cats/implicits/package.scala
+  [3043]: https://github.com/typelevel/cats/pull/3043
+  [Brown2019]: https://meta.plasm.us/posts/2019/09/30/implicit-scope-and-cats/
 
 ### import ガイド
 
 Cats は implicit を使い倒している。ライブラリを使う側としても、拡張する側としても何がどこから来てるかという一般的な勘を作っていくのは大切だ。
-ただし、Cats を始めたばかりの頃はとりあえず以下の import を使ってこのページは飛ばしても大丈夫だと思う:
+ただし、Cats を始めたばかりの頃はとりあえず以下の import を使ってこのページは飛ばしても大丈夫だと思う。ただし、Cats 2.2.0 以降である必要がある:
+
+```scala
+scala> import cats._, cats.data._, cats.syntax.all._
+```
+
+Cats 2.2.0 以前は:
 
 ```scala
 scala> import cats._, cats.data._, cats.implicits._
@@ -15,17 +23,15 @@ scala> import cats._, cats.data._, cats.implicits._
 
 ### implicit のまとめ
 
-Scala の import と implicit を手早く復習しよう! Scala では import は 2つの目的で使われる:
+Scala 2 の import と implicit を手早く復習しよう! Scala では import は 2つの目的で使われる:
 
 1. 値や型の名前をスコープに取り込むため。
 2. implicit をスコープに取り込むため。
 
-implicit には僕が考えられる限り 4つの使い方がある:
+ある型 `A` があるとき、implicit はコンパイラにその型に対応する項値をもらうための機構だ。これは色々な目的で使うことができるが、Cats では主に 2つの用法がある:
 
-1. 型クラスインスタンスを提供するため。
-2. メソッドや演算子を注入するため。(静的モンキーパッチ)
-3. 型制約を宣言するため。
-4. 型の情報をコンパイラから取得するため。
+1. _instances_; 型クラスインスタンスを提供するため。
+2. _syntax_; メソッドや演算子を注入するため。(メソッド拡張)
 
 implicit は以下の優先順位で選択される:
 
@@ -48,6 +54,19 @@ res0: cats.Functor[cats.Id] = cats.package\$\$anon\$1@3c201c09
 ```
 
 import は必要なしということで、うまくいった。つまり、`import cats._` の効果はあくまで便宜のためであって、省略可能だ。
+
+### 暗黙のスコープ
+
+2020年の3月に Travis Brown さんの [#3043][3043] がマージされて Cats 2.2.0 としてリリースされた。まとめると、この変更は標準ライブラリ型のための型クラスインスタンスを型クラスのコンパニオン・オブジェクトへと追加した。
+
+これによって構文スコープへと import する必要性が下がり、簡潔さとコンパイラへの負荷の低下という利点がある。例えば、Cat 2.4.x 系を使った場合、以下は一切 import 無しで動作する:
+
+```scala
+scala> cats.Functor[Option]
+val res1: cats.Functor[Option] = cats.instances.OptionInstances\$\$anon\$1@56a2a3bf
+```
+
+詳細は Travis さんの [Implicit scope and Cats][Brown2019] を参照。
 
 ### import cats.data._
 
@@ -135,22 +154,28 @@ trait AllSyntax
 
 #### 型クラスインスタンス
 
-型クラスはデータ型ごとに分かれている。以下が `Option` のための全ての型クラスインスタンスを導入する方法だ:
+前述の通り、Cats 2.2.0 以降は普通は何もしなくても型クラスのインスタンスを得ることができる。
 
-```console:new
-scala> {
-         import cats.instances.option._
-         cats.Monad[Option].pure(0)
-       }
+```scala mdoc
+cats.Monad[Option].pure(0)
+```
+
+何らかの理由で `Option` のための全ての型クラスインスタンスを導入する方法:
+
+```scala mdoc
+{
+  import cats.instances.option._
+  cats.Monad[Option].pure(0)
+}
 ```
 
 全てのインスタンスが欲しければ、以下が全て取り込む方法だ:
 
-```console
-scala> {
-         import cats.instances.all._
-         cats.Monoid[Int].empty
-       }
+```scala mdoc
+{
+  import cats.instances.all._
+  cats.Monoid[Int].empty
+}
 ```
 
 演算子の注入を一切行なっていないので、ヘルパー関数や型クラスインスタンスに定義された関数を使う必要がある (そっちの方が好みという人もいる)。
@@ -159,53 +184,50 @@ scala> {
 
 型クラスの syntax は型クラスごとに分かれている。以下が `Eq` のためのメソッドや演算子を注入する方法だ:
 
-```console
-scala> {
-          import cats.syntax.eq._
-          import cats.instances.all._
-          1 === 1
-       }
+```scala mdoc
+{
+  import cats.syntax.eq._
+  1 === 1
+}
 ```
 
 #### Cats データ型の syntax
 
 `Writer` のような Cats 独自のデータ型のための syntax も `cats.syntax` パッケージ以下にある:
 
-```console
-scala> {
-          import cats.syntax.writer._
-          import cats.instances.all._
-          1.tell
-       }
+```scala mdoc
+{
+  import cats.syntax.writer._
+  1.tell
+}
 ```
 
 #### 標準データ型の syntax
 
 標準データ型のための sytnax はデータ型ごとに分かれている。以下が `Option` のための演算子とヘルパー関数を注入する方法だ:
 
-```console
-scala> {
-          import cats.syntax.option._
-          import cats.instances.all._
-          1.some
-       }
+```scala mdoc
+{
+  import cats.syntax.option._
+  1.some
+}
 ```
 
 #### 全ての syntax
 
 以下は全ての syntax と型クラスインスタンスを取り込む方法だ。
 
-```console
-scala> {
-          import cats.syntax.all._
-          import cats.instances.all._
-          1.some
-       }
+```scala mdoc
+{
+  import cats.syntax.all._
+  import cats.instances.all._
+  1.some
+}
 ```
 
 これは `cats.implicits._` を import するのと同じだ。
 繰り返すが、これを読んで分からなかったら、まずは以下を使っていれば大丈夫だ:
 
 ```scala
-scala> import cats._, cats.data._, cats.implicits._
+scala> import cats._, cats.data._, cats.syntax.all._
 ```

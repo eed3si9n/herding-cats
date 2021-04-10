@@ -11,12 +11,18 @@ LYAHFGG:
 Cats' equivalent for the `Eq` typeclass is also called `Eq`.
 `Eq` was moved from [non/algebra][algebra] into cats-kernel subproject, and became part of Cats:
 
-```console:error
-scala> import cats._, cats.data._, cats.implicits._
-scala> 1 === 1
-scala> 1 === "foo"
-scala> 1 == "foo"
-scala> (Some(1): Option[Int]) =!= (Some(2): Option[Int])
+```scala mdoc
+import cats._, cats.syntax.all._
+
+1 === 1
+```
+
+```scala mdoc:fail
+1 === "foo"
+```
+
+```scala mdoc
+(Some(1): Option[Int]) =!= (Some(2): Option[Int])
 ```
 
 Instead of the standard `==`, `Eq` enables `===` and `=!=` syntax by declaring `eqv` method. The main difference is that `===` would fail compilation if you tried to compare `Int` and `String`.

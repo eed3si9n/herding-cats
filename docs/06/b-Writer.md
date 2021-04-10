@@ -16,32 +16,34 @@ out: Writer.html
 
 Let's follow the book and implement `applyLog` function:
 
-```console:new
-scala> def isBigGang(x: Int): (Boolean, String) =
-         (x > 9, "Compared gang size to 9.")
-scala> implicit class PairOps[A](pair: (A, String)) {
-         def applyLog[B](f: A => (B, String)): (B, String) = {
-           val (x, log) = pair
-           val (y, newlog) = f(x)
-           (y, log ++ newlog)
-         }
-       }
-scala> (3, "Smallish gang.") applyLog isBigGang
-```
+```scala mdoc
+def isBigGang(x: Int): (Boolean, String) =
+  (x > 9, "Compared gang size to 9.")
 
+implicit class PairOps[A](pair: (A, String)) {
+  def applyLog[B](f: A => (B, String)): (B, String) = {
+    val (x, log) = pair
+    val (y, newlog) = f(x)
+    (y, log ++ newlog)
+  }
+}
+
+(3, "Smallish gang.") applyLog isBigGang
+```
 
 Since method injection is a common use case for implicits, Scala 2.10 adds a syntax sugar called implicit class to make the promotion from a class to an enriched class easier.
 Here's how we can generalize the log to a `Semigroup`:
 
-```console
-scala> import cats._, cats.data._, cats.implicits._
-scala> implicit class PairOps[A, B: Semigroup](pair: (A, B)) {
-         def applyLog[C](f: A => (C, B)): (C, B) = {
-           val (x, log) = pair
-           val (y, newlog) = f(x)
-           (y, log |+| newlog)
-         }
-       }
+```scala mdoc:reset
+import cats._, cats.syntax.all._
+
+implicit class PairOps[A, B: Semigroup](pair: (A, B)) {
+  def applyLog[C](f: A => (C, B)): (C, B) = {
+    val (x, log) = pair
+    val (y, newlog) = f(x)
+    (y, log |+| newlog)
+  }
+}
 ```
 
 ### Writer
@@ -90,16 +92,20 @@ final case class WriterT[F[_], L, V](run: F[(L, V)]) {
 
 Here's how we can create `Writer` values:
 
-```console
-scala> val w = Writer("Smallish gang.", 3)
-scala> val v = Writer.value[String, Int](3)
-scala> val l = Writer.tell[String]("Log something")
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
+val w = Writer("Smallish gang.", 3)
+
+val v = Writer.value[String, Int](3)
+
+val l = Writer.tell[String]("Log something")
 ```
 
 To run the `Writer` datatype you can call its `run` method:
 
-```console
-scala> w.run
+```scala mdoc
+w.run
 ```
 
 ### Using for syntax with Writer
@@ -108,23 +114,36 @@ LYAHFGG:
 
 > Now that we have a `Monad` instance, we're free to use `do` notation for `Writer` values.
 
-```console
-scala> def logNumber(x: Int): Writer[List[String], Int] =
-         Writer(List("Got number: " + x.show), 3)
-scala> def multWithLog: Writer[List[String], Int] =
-         for {
-           a <- logNumber(3)
-           b <- logNumber(5)
-         } yield a * b
-scala> multWithLog.run
+```scala mdoc
+def logNumber(x: Int): Writer[List[String], Int] =
+  Writer(List("Got number: " + x.show), 3)
+
+def multWithLog: Writer[List[String], Int] =
+  for {
+    a <- logNumber(3)
+    b <- logNumber(5)
+  } yield a * b
+
+multWithLog.run
 ```
 
 ### Adding logging to program
 
 Here's the `gcd` example:
 
-```console
-scala> :paste
+```scala mdoc:invisible
+def gcd(a: Int, b: Int): Writer[List[String], Int] = {
+  if (b == 0) for {
+      _ <- Writer.tell(List("Finished with " + a.show))
+    } yield a
+  else
+    Writer.tell(List(s"${a.show} mod ${b.show} = ${(a % b).show}")) >>= { _ =>
+      gcd(b, a % b)
+    }
+}
+```
+
+```scala
 def gcd(a: Int, b: Int): Writer[List[String], Int] = {
   if (b == 0) for {
       _ <- Writer.tell(List("Finished with " + a.show))
@@ -134,7 +153,10 @@ def gcd(a: Int, b: Int): Writer[List[String], Int] = {
       gcd(b, a % b)
     }
 }
-scala> gcd(12, 16).run
+```
+
+```scala mdoc
+gcd(12, 16).run
 ```
 
 ### Inefficient List construction
@@ -150,8 +172,21 @@ Here's [the table of performance characteristics for major collections][performa
 
 Here's the Vector version of `gcd`:
 
-```console
-scala> :paste
+```scala mdoc:reset:invisible
+import cats._, cats.data._, cats.syntax.all._
+
+def gcd(a: Int, b: Int): Writer[Vector[String], Int] = {
+  if (b == 0) for {
+      _ <- Writer.tell(Vector("Finished with " + a.show))
+    } yield a
+  else
+    Writer.tell(Vector(s"${a.show} mod ${b.show} = ${(a % b).show}")) >>= { _ =>
+      gcd(b, a % b)
+    }
+}
+```
+
+```scala
 def gcd(a: Int, b: Int): Writer[Vector[String], Int] = {
   if (b == 0) for {
       _ <- Writer.tell(Vector("Finished with " + a.show))
@@ -161,15 +196,17 @@ def gcd(a: Int, b: Int): Writer[Vector[String], Int] = {
       gcd(b, a % b)
     }
 }
-scala> gcd(12, 16).run
+```
+
+```scala mdoc
+gcd(12, 16).run
 ```
 
 ### Comparing performance
 
 Like the book let's write a microbenchmark to compare the performance:
 
-```console
-scala> :paste
+```scala mdoc
 def vectorFinalCountDown(x: Int): Writer[Vector[String], Unit] = {
   import annotation.tailrec
   @tailrec def doFinalCountDown(x: Int, w: Writer[Vector[String], Unit]): Writer[Vector[String], Unit] = x match {

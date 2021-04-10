@@ -36,9 +36,10 @@ An interest aspect of abstract construction is that they can show up in differen
 
 Recall that we can encode **Set** using types and functions between them. In Scala, the uninhabited type might be `Nothing`, so we're saying that there is only one function between `Nothing` to `A`. According to [Milewski][products], there's a function in Haskell called `absurd`. Our implementation might look like this:
 
-```console
-scala> def absurd[A]: Nothing => A = { case _ => ??? }
-scala> absurd[Int]
+```scala mdoc
+def absurd[A]: Nothing => A = { case _ => ??? }
+
+absurd[Int]
 ```
 
 Given that there's no value in the domain of the function, the body should never be executed.
@@ -52,17 +53,19 @@ This kind of makes sense, since in a poset we need to preserve the structure usi
 
 A singleton set means it's a type that has only one possible value. An example of that in Scala would be `Unit`. There can be only one possible implementation from general `A` to `Unit`:
 
-```console
-scala> def unit[A](a: A): Unit = ()
-scala> unit(1)
+```scala mdoc
+def unit[A](a: A): Unit = ()
+
+unit(1)
 ```
 
 This makes `Unit` a terminal object in the category of **Sets**, but note that we can define singleton types all we want in Scala using `object`:
 
-```console
-scala> case object Single
-scala> def single[A](a: A): Single.type = Single
-scala> single("test")
+```scala mdoc
+case object Single
+def single[A](a: A): Single.type = Single
+
+single("test")
 ```
 
 As noted above, in a poset, an object is terminal iff it is the greatest element.

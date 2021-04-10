@@ -24,10 +24,12 @@ trait Group[@sp(Int, Long, Float, Double) A] extends Any with Monoid[A] {
 
 syntax がインポートされていてば、これは `inverse` メソッドを可能とする:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> 1.inverse
-scala> assert((1 |+| 1.inverse) === Monoid[Int].empty)
+```scala mdoc
+import cats._, cats.syntax.all._
+
+1.inverse
+
+assert((1 |+| 1.inverse) === Monoid[Int].empty)
 ```
 
 群 (group) と群の準同型写像 (group homomorphism、群の構造を保存する関数) の圏は **Grp** と表記される。

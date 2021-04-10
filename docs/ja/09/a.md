@@ -49,24 +49,19 @@ simulacrum のお陰で `flatten` はメソッドとしても導入されてい�
 `Option[A]` は既に `flatten` を実装するので、
 これを抽象型にするために抽象関数を書く必要がある。
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> def join[F[_]: FlatMap, A](fa: F[F[A]]): F[A] =
-         fa.flatten
-scala> join(1.some.some)
+```scala mdoc
+import cats._, cats.syntax.all._
+
+def join[F[_]: FlatMap, A](fa: F[F[A]]): F[A] =
+  fa.flatten
+
+join(1.some.some)
 ```
 
 どうせ関数にしてしまうのなら、関数構文をそのまま使えばいい。
 
-```console
-scala> FlatMap[Option].flatten(1.some.some)
-```
-
-`Xor` 値の `Xor` に対して `flatten` メソッドを使おうと思ったけど、うまくいかなかった:
-
-```console:error
-scala> val xorOfXor = Xor.right[String, Xor[String, Int]](Xor.right[String, Int](1))
-scala> xorOfXor.flatten
+```scala mdoc
+FlatMap[Option].flatten(1.some.some)
 ```
 
 #### filterM メソッド
@@ -97,11 +92,13 @@ Cats には `foldM` が無いみたいだったので、自分で定義してみ
 
 使ってみる。
 
-```console
-scala> def binSmalls(acc: Int, x: Int): Option[Int] =
-         if (x > 9) none[Int] else (acc + x).some
-scala> (Foldable[List].foldM(List(2, 8, 3, 1), 0) {binSmalls})
-scala> (Foldable[List].foldM(List(2, 11, 3, 1), 0) {binSmalls})
+```scala mdoc
+def binSmalls(acc: Int, x: Int): Option[Int] =
+  if (x > 9) none[Int] else (acc + x).some
+
+(Foldable[List].foldM(List(2, 8, 3, 1), 0) {binSmalls})
+
+(Foldable[List].foldM(List(2, 11, 3, 1), 0) {binSmalls})
 ```
 
 上の例では `binSmals` が 9 より多きい数を見つけると `None` を返す。

@@ -65,16 +65,18 @@ data Toy b next =
 
 とりあえずこれを素直に Scala に翻訳するとこうなる:
 
-```console:new
-scala> :paste
+```scala mdoc
 sealed trait Toy[+A, +Next]
+
 object Toy {
   case class Output[A, Next](a: A, next: Next) extends Toy[A, Next]
   case class Bell[Next](next: Next) extends Toy[Nothing, Next]
   case class Done() extends Toy[Nothing, Nothing]
 }
-scala> Toy.Output('A', Toy.Done())
-scala> Toy.Bell(Toy.Output('A', Toy.Done()))
+
+Toy.Output('A', Toy.Done())
+
+Toy.Bell(Toy.Output('A', Toy.Done()))
 ```
 
 #### CharToy
@@ -82,9 +84,9 @@ scala> Toy.Bell(Toy.Output('A', Toy.Done()))
 WFMM の DSL はアウトプット用のデータ型を型パラメータとして受け取るので、任意のアウトプット型を扱うことができる。
 上に `Toy` として示したように Scala も同じことができる。だけども、Scala の部分適用型の処理がヘボいため `Free` の説明としては不必要に複雑となってしまう。そのため、本稿では、以下のようにデータ型を `Char` に決め打ちしたものを使う:
 
-```console
-scala> :paste
+```scala mdoc
 sealed trait CharToy[+Next]
+
 object CharToy {
   case class CharOutput[Next](a: Char, next: Next) extends CharToy[Next]
   case class CharBell[Next](next: Next) extends CharToy[Next]
@@ -94,12 +96,16 @@ object CharToy {
   def bell[Next](next: Next): CharToy[Next] = CharBell(next)
   def done: CharToy[Nothing] = CharDone()
 }
-scala> { import CharToy._
-         output('A', done)
-       }
-scala> { import CharToy._
-         bell(output('A', done))
-       }
+
+{
+  import CharToy._
+  output('A', done)
+}
+
+{
+  import CharToy._
+  bell(output('A', done))
+}
 ```
 
 型を `CharToy` に統一するため、小文字の `output`、`bell`、`done` を加えた。
@@ -112,18 +118,22 @@ WFMM:
 
 `Fix` を定義しよう:
 
-```console
-scala> :paste
+```scala mdoc
 case class Fix[F[_]](f: F[Fix[F]])
+
 object Fix {
   def fix(toy: CharToy[Fix[CharToy]]) = Fix[CharToy](toy)
 }
-scala> { import Fix._, CharToy._
-         fix(output('A', fix(done)))
-       }
-scala> { import Fix._, CharToy._
-         fix(bell(fix(output('A', fix(done)))))
-       }
+
+{
+  import Fix._, CharToy._
+  fix(output('A', fix(done)))
+}
+
+{
+  import Fix._, CharToy._
+  fix(bell(fix(output('A', fix(done)))))
+}
 ```
 
 ここでも `fix` を提供して型推論が動作するようにした。
@@ -132,9 +142,9 @@ scala> { import Fix._, CharToy._
 
 これに例外処理を加えた `FixE` も実装してみる。`throw` と `catch` は予約語なので、`throwy`、`catchy` という名前に変える:
 
-```console
-scala> import cats._, cats.data._, cats.implicits._
-scala> :paste
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
 sealed trait FixE[F[_], E]
 object FixE {
   case class Fix[F[_], E](f: F[FixE[F, E]]) extends FixE[F, E]
@@ -155,20 +165,19 @@ object FixE {
 
 `CharToy` の `Functor` はこんな感じになった:
 
-```console
-scala> implicit val charToyFunctor: Functor[CharToy] = new Functor[CharToy] {
-         def map[A, B](fa: CharToy[A])(f: A => B): CharToy[B] = fa match {
-           case o: CharToy.CharOutput[A] => CharToy.CharOutput(o.a, f(o.next))
-           case b: CharToy.CharBell[A]   => CharToy.CharBell(f(b.next))
-           case CharToy.CharDone()       => CharToy.CharDone()
-         }
-       }
+```scala mdoc
+implicit val charToyFunctor: Functor[CharToy] = new Functor[CharToy] {
+  def map[A, B](fa: CharToy[A])(f: A => B): CharToy[B] = fa match {
+    case o: CharToy.CharOutput[A] => CharToy.CharOutput(o.a, f(o.next))
+    case b: CharToy.CharBell[A]   => CharToy.CharBell(f(b.next))
+    case CharToy.CharDone()       => CharToy.CharDone()
+  }
+}
 ```
 
 これがサンプルの使用例だ:
 
-```console
-scala> :paste
+```scala mdoc
 {
   import FixE._, CharToy._
   case class IncompleteException()
@@ -264,9 +273,21 @@ object Free {
 
 これらのデータ型を使うには `Free.liftF` を使う:
 
-```console
-scala> import cats.free.Free
-scala> :paste
+```scala mdoc:reset:invisible
+import cats._, cats.data._, cats.syntax.all._
+
+implicit val charToyFunctor: Functor[CharToy] = new Functor[CharToy] {
+  def map[A, B](fa: CharToy[A])(f: A => B): CharToy[B] = fa match {
+    case o: CharToy.CharOutput[A] => CharToy.CharOutput(o.a, f(o.next))
+    case b: CharToy.CharBell[A]   => CharToy.CharBell(f(b.next))
+    case CharToy.CharDone()       => CharToy.CharDone()
+  }
+}
+```
+
+```scala mdoc
+import cats.free.Free
+
 sealed trait CharToy[+Next]
 object CharToy {
   case class CharOutput[Next](a: Char, next: Next) extends CharToy[Next]
@@ -290,42 +311,49 @@ object CharToy {
 
 コマンドのシーケンスはこんな感じになる:
 
-```console
-scala> import CharToy._
-scala> val subroutine = output('A')
-scala> val program = for {
-         _ <- subroutine
-         _ <- bell
-         _ <- done
-       } yield ()
+```scala mdoc
+import CharToy._
+
+val subroutine = output('A')
+
+val program = for {
+  _ <- subroutine
+  _ <- bell
+  _ <- done
+} yield ()
 ```
 
 > 面白くなってきた。「まだ評価されていないもの」に対する `do` 記法を得られることができた。これは純粋なデータだ。
 
 次に、これが本当に純粋なデータであることを証明するために `showProgram` を定義する:
 
-```console
-scala> def showProgram[R: Show](p: Free[CharToy, R]): String =
-         p.fold({ r: R => "return " + Show[R].show(r) + "\n" },
-           {
-             case CharOutput(a, next) =>
-               "output " + Show[Char].show(a) + "\n" + showProgram(next)
-             case CharBell(next) =>
-               "bell " + "\n" + showProgram(next)
-             case CharDone() =>
-               "done\n"
-           })
-scala> showProgram(program)
+```scala mdoc
+def showProgram[R: Show](p: Free[CharToy, R]): String =
+  p.fold({ r: R => "return " + Show[R].show(r) + "\n" },
+    {
+      case CharOutput(a, next) =>
+        "output " + Show[Char].show(a) + "\n" + showProgram(next)
+      case CharBell(next) =>
+        "bell " + "\n" + showProgram(next)
+      case CharDone() =>
+        "done\n"
+    })
+
+showProgram(program)
 ```
 
 `Free` を使って生成したモナドがモナド則を満たしているか手で確かめてみる:
 
-```console
-scala> showProgram(output('A'))
-scala> showProgram(pure('A') flatMap output)
-scala> showProgram(output('A') flatMap pure)
-scala> showProgram((output('A') flatMap { _ => done }) flatMap { _ => output('C') })
-scala> showProgram(output('A') flatMap { _ => (done flatMap { _ => output('C') }) })
+```scala mdoc
+showProgram(output('A'))
+
+showProgram(pure('A') flatMap output)
+
+showProgram(output('A') flatMap pure)
+
+showProgram((output('A') flatMap { _ => done }) flatMap { _ => output('C') })
+
+showProgram(output('A') flatMap { _ => (done flatMap { _ => output('C') }) })
 ```
 
 うまくいった。`done` が abort的な意味論になっていることにも注目してほしい。

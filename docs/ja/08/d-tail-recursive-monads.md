@@ -14,7 +14,7 @@ out: tail-recursive-monads.html
 ### 末尾再帰モナド (FlatMap)
 
 2015年に PureScript でのスタック安全性の取り扱いに関して Phil Freeman ([@paf31][@paf31]) さんは [Stack Safety for Free][ssff] を書いた。
-PureScript は Java 同様に正格 (strict) な JavaScript にホストされている言語だ:
+PureScript は Scala 同様に正格 (strict) な JavaScript にホストされている言語だ:
 
 <blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">I&#39;ve written up some work on stack safe free monad transformers. Feedback would be very much appreciated <a href="http://t.co/1rH7OwaWpy">http://t.co/1rH7OwaWpy</a></p>&mdash; Phil Freeman (@paf31) <a href="https://twitter.com/paf31/status/630148424478781441">August 8, 2015</a></blockquote>
 <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
@@ -27,9 +27,9 @@ PureScript は Java 同様に正格 (strict) な JavaScript にホストされ�
 
 例えば、これは自己再帰の末尾再帰呼び出しの例だ。
 
-```console
-scala> import scala.annotation.tailrec
-scala> :paste
+```scala mdoc
+import scala.annotation.tailrec
+
 def pow(n: Long, exp: Long): Long =
   {
     @tailrec def go(acc: Long, p: Long): Long =
@@ -39,7 +39,8 @@ def pow(n: Long, exp: Long): Long =
       }
     go(1, exp)
   }
-scala> pow(2, 3)
+
+pow(2, 3)
 ```
 
 自己再帰じゃない例。スタックオーバーフローを起こしている。
@@ -67,21 +68,24 @@ java.lang.StackOverflowError
 
 次に、`pow` に [Writer][Writer] データ型を追加して、`LongProduct` モノイドを使って計算をさせてみたい。
 
-```console
-scala> import cats._, cats.data._, cats.implicits._
-scala> :paste
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
 case class LongProduct(value: Long)
+
 implicit val longProdMonoid: Monoid[LongProduct] = new Monoid[LongProduct] {
   def empty: LongProduct = LongProduct(1)
   def combine(x: LongProduct, y: LongProduct): LongProduct = LongProduct(x.value * y.value)
 }
+
 def powWriter(x: Long, exp: Long): Writer[LongProduct, Unit] =
   exp match {
     case 0 => Writer(LongProduct(1L), ())
     case m =>
       Writer(LongProduct(x), ()) >>= { _ => powWriter(x, exp - 1) }
   }
-scala> powWriter(2, 3).run
+
+powWriter(2, 3).run
 ```
 
 自己再帰じゃなくなったので、`exp` の値が大きいとスタックオーバーフローするようになってしまった。
@@ -133,21 +137,22 @@ Scala で同じ関数を書くとこうなる:
 
 例えば、`Writer` の `tailRecM` を以下のようにして取得できる:
 
-```console
-scala> def tailRecM[A, B] = FlatMap[Writer[Vector[String], ?]].tailRecM[A, B] _
+```scala mdoc
+def tailRecM[A, B] = FlatMap[Writer[Vector[String], *]].tailRecM[A, B] _
 ```
 
 スタックセーフな `powWriter` はこう書くことができる:
 
-```console
-scala> :paste
+```scala mdoc
 def powWriter2(x: Long, exp: Long): Writer[LongProduct, Unit] =
-  FlatMap[Writer[LongProduct, ?]].tailRecM(exp) {
+  FlatMap[Writer[LongProduct, *]].tailRecM(exp) {
     case 0L      => Writer.value[LongProduct, Either[Long, Unit]](Right(()))
     case m: Long => Writer.tell(LongProduct(x)) >>= { _ => Writer.value(Left(m - 1)) }
   }
-scala> powWriter2(2, 3).run
-scala> powWriter2(1, 10000).run
+
+powWriter2(2, 3).run
+
+powWriter2(1, 10000).run
 ```
 
 これは `FlatMap` 型クラスのユーザにとってはより大きな安全性を保証するものだが、

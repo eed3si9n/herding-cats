@@ -38,11 +38,11 @@ we actually know this is similar as `Free` datatype, but
 the semantics around `Functor` etc is going to different,
 so let's implement it from scratch:
 
-```console:new
-scala> :paste
+```scala mdoc
 sealed abstract class Fix[S[_], A] extends Serializable {
   def out: S[Fix[S, A]]
 }
+
 object Fix {
   case class In[S[_], A](out: S[Fix[S, A]]) extends Fix[S, A]
 }
@@ -52,27 +52,30 @@ Following `Free`, I am putting `S[_]` on the left, and `A` on the right.
 
 Let's try implementing the `List` first.
 
-```console
-scala> :paste
+```scala mdoc
 sealed trait ListF[+Next, +A]
+
 object ListF {
   case class NilF() extends ListF[Nothing, Nothing]
   case class ConsF[A, Next](a: A, n: Next) extends ListF[Next, A]
 }
-type GenericList[A] = Fix[ListF[+?, A], A]
+
+type GenericList[A] = Fix[ListF[+*, A], A]
+
 object GenericList {
-  def nil[A]: GenericList[A] = Fix.In[ListF[+?, A], A](ListF.NilF())
+  def nil[A]: GenericList[A] = Fix.In[ListF[+*, A], A](ListF.NilF())
   def cons[A](a: A, xs: GenericList[A]): GenericList[A] =
-    Fix.In[ListF[+?, A], A](ListF.ConsF(a, xs))
+    Fix.In[ListF[+*, A], A](ListF.ConsF(a, xs))
 }
-scala> import GenericList.{ cons, nil }
+
+import GenericList.{ cons, nil }
 ```
 
 Here's how we can use it:
 
 
-```console
-scala> cons(1, nil)
+```scala mdoc
+cons(1, nil)
 ```
 
 So far this is similar to what we saw with the free monad.
@@ -106,9 +109,9 @@ trait Bifunctor[F[_, _]] extends Serializable { self =>
 
 Here is the `Bifunctor` instance for `GenericList`.
 
-```console
-scala> import cats._, cats.data._, cats.implicits._
-scala> :paste
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
 implicit val listFBifunctor: Bifunctor[ListF] = new Bifunctor[ListF] {
   def bimap[S1, A1, S2, A2](fab: ListF[S1, A1])(f: S1 => S2, g: A1 => A2): ListF[S2, A2] =
     fab match {
@@ -125,28 +128,28 @@ implicit val listFBifunctor: Bifunctor[ListF] = new Bifunctor[ListF] {
 
 First, we can implement `map` in terms of `bimap`.
 
-```console
-scala> :paste
+```scala mdoc
 object DGP {
-  def map[F[_, _]: Bifunctor, A1, A2](fa: Fix[F[?, A1], A1])(f: A1 => A2): Fix[F[?, A2], A2] =
-    Fix.In[F[?, A2], A2](Bifunctor[F].bimap(fa.out)(map(_)(f), f))
+  def map[F[_, _]: Bifunctor, A1, A2](fa: Fix[F[*, A1], A1])(f: A1 => A2): Fix[F[*, A2], A2] =
+    Fix.In[F[*, A2], A2](Bifunctor[F].bimap(fa.out)(map(_)(f), f))
 }
-scala> DGP.map(cons(1, nil)) { _ + 1 }
+
+DGP.map(cons(1, nil)) { _ + 1 }
 ```
 
 The above definition of `map` is independent from `GenericList`, abstracted by `Bifunctor` and `Fix`.
 Another way of looking at it is that we can get `Functor` for free out of `Bifunctor` and `Fix`.
 
-```console
-scala> :paste
+```scala mdoc
 trait FixInstances {
-  implicit def fixFunctor[F[_, _]: Bifunctor]: Functor[Lambda[L => Fix[F[?, L], L]]] =
-    new Functor[Lambda[L => Fix[F[?, L], L]]] {
-      def map[A1, A2](fa: Fix[F[?, A1], A1])(f: A1 => A2): Fix[F[?, A2], A2] =
-        Fix.In[F[?, A2], A2](Bifunctor[F].bimap(fa.out)(map(_)(f), f))
+  implicit def fixFunctor[F[_, _]: Bifunctor]: Functor[Lambda[L => Fix[F[*, L], L]]] =
+    new Functor[Lambda[L => Fix[F[*, L], L]]] {
+      def map[A1, A2](fa: Fix[F[*, A1], A1])(f: A1 => A2): Fix[F[*, A2], A2] =
+        Fix.In[F[*, A2], A2](Bifunctor[F].bimap(fa.out)(map(_)(f), f))
     }
 }
-scala> {
+
+{
   val instances = new FixInstances {}
   import instances._
   import cats.syntax.functor._
@@ -160,21 +163,53 @@ Intense amount of type lambdas, but I think it's clear that I translated `DB.map
 
 We can also implement `fold`, also known as `cata` from catamorphism:
 
-```console
-scala> :paste
+```scala mdoc:reset:invisible
+import cats._, cats.data._, cats.syntax.all._
+sealed abstract class Fix[S[_], A] extends Serializable {
+  def out: S[Fix[S, A]]
+}
+object Fix {
+  case class In[S[_], A](out: S[Fix[S, A]]) extends Fix[S, A]
+}
+sealed trait ListF[+Next, +A]
+
+object ListF {
+  case class NilF() extends ListF[Nothing, Nothing]
+  case class ConsF[A, Next](a: A, n: Next) extends ListF[Next, A]
+}
+
+type GenericList[A] = Fix[ListF[+*, A], A]
+
+object GenericList {
+  def nil[A]: GenericList[A] = Fix.In[ListF[+*, A], A](ListF.NilF())
+  def cons[A](a: A, xs: GenericList[A]): GenericList[A] =
+    Fix.In[ListF[+*, A], A](ListF.ConsF(a, xs))
+}
+implicit val listFBifunctor: Bifunctor[ListF] = new Bifunctor[ListF] {
+  def bimap[S1, A1, S2, A2](fab: ListF[S1, A1])(f: S1 => S2, g: A1 => A2): ListF[S2, A2] =
+    fab match {
+      case ListF.NilF()         => ListF.NilF()
+      case ListF.ConsF(a, next) => ListF.ConsF(g(a), f(next))
+    }
+}
+import GenericList.{ cons, nil }
+```
+
+```scala mdoc
 object DGP {
   // catamorphism
-  def fold[F[_, _]: Bifunctor, A1, A2](fa: Fix[F[?, A1], A1])(f: F[A2, A1] => A2): A2 =
+  def fold[F[_, _]: Bifunctor, A1, A2](fa: Fix[F[*, A1], A1])(f: F[A2, A1] => A2): A2 =
     {
-      val g = (fa1: F[Fix[F[?, A1], A1], A1]) =>
+      val g = (fa1: F[Fix[F[*, A1], A1], A1]) =>
         Bifunctor[F].leftMap(fa1) { (fold(_)(f)) }
       f(g(fa.out))
     }
 }
-scala> DGP.fold[ListF, Int, Int](cons(2, cons(1, nil))) {
-         case ListF.NilF()      => 0
-         case ListF.ConsF(x, n) => x + n
-       }
+
+DGP.fold[ListF, Int, Int](cons(2, cons(1, nil))) {
+  case ListF.NilF()      => 0
+  case ListF.ConsF(x, n) => x + n
+}
 ```
 
 #### Deriving unfold from Bifunctor
@@ -184,32 +219,71 @@ scala> DGP.fold[ListF, Int, Int](cons(2, cons(1, nil))) {
 
 The `unfold` is also called `ana` from anamorphism:
 
-```console
-scala> :paste
+```scala mdoc:reset:invisible
+import cats._, cats.data._, cats.syntax.all._
+sealed abstract class Fix[S[_], A] extends Serializable {
+  def out: S[Fix[S, A]]
+}
+object Fix {
+  case class In[S[_], A](out: S[Fix[S, A]]) extends Fix[S, A]
+}
+trait FixInstances {
+  implicit def fixFunctor[F[_, _]: Bifunctor]: Functor[Lambda[L => Fix[F[*, L], L]]] =
+    new Functor[Lambda[L => Fix[F[*, L], L]]] {
+      def map[A1, A2](fa: Fix[F[*, A1], A1])(f: A1 => A2): Fix[F[*, A2], A2] =
+        Fix.In[F[*, A2], A2](Bifunctor[F].bimap(fa.out)(map(_)(f), f))
+    }
+}
+sealed trait ListF[+Next, +A]
+
+object ListF {
+  case class NilF() extends ListF[Nothing, Nothing]
+  case class ConsF[A, Next](a: A, n: Next) extends ListF[Next, A]
+}
+
+type GenericList[A] = Fix[ListF[+*, A], A]
+
+object GenericList {
+  def nil[A]: GenericList[A] = Fix.In[ListF[+*, A], A](ListF.NilF())
+  def cons[A](a: A, xs: GenericList[A]): GenericList[A] =
+    Fix.In[ListF[+*, A], A](ListF.ConsF(a, xs))
+}
+implicit val listFBifunctor: Bifunctor[ListF] = new Bifunctor[ListF] {
+  def bimap[S1, A1, S2, A2](fab: ListF[S1, A1])(f: S1 => S2, g: A1 => A2): ListF[S2, A2] =
+    fab match {
+      case ListF.NilF()         => ListF.NilF()
+      case ListF.ConsF(a, next) => ListF.ConsF(g(a), f(next))
+    }
+}
+import GenericList.{ cons, nil }
+```
+
+```scala mdoc
 object DGP {
   // catamorphism
-  def fold[F[_, _]: Bifunctor, A1, A2](fa: Fix[F[?, A1], A1])(f: F[A2, A1] => A2): A2 =
+  def fold[F[_, _]: Bifunctor, A1, A2](fa: Fix[F[*, A1], A1])(f: F[A2, A1] => A2): A2 =
     {
-      val g = (fa1: F[Fix[F[?, A1], A1], A1]) =>
+      val g = (fa1: F[Fix[F[*, A1], A1], A1]) =>
         Bifunctor[F].leftMap(fa1) { (fold(_)(f)) }
       f(g(fa.out))
     }
+
   // anamorphism
-  def unfold[F[_, _]: Bifunctor, A1, A2](x: A2)(f: A2 => F[A2, A1]): Fix[F[?, A1], A1] =
-    Fix.In[F[?, A1], A1](Bifunctor[F].leftMap(f(x))(unfold[F, A1, A2](_)(f)))
+  def unfold[F[_, _]: Bifunctor, A1, A2](x: A2)(f: A2 => F[A2, A1]): Fix[F[*, A1], A1] =
+    Fix.In[F[*, A1], A1](Bifunctor[F].leftMap(f(x))(unfold[F, A1, A2](_)(f)))
 }
 ```
 
 Here's how we can construct list of numbers counting down:
 
+```scala mdoc
+def pred(n: Int): GenericList[Int] =
+  DGP.unfold[ListF, Int, Int](n) {
+    case 0 => ListF.NilF()
+    case n => ListF.ConsF(n, n - 1)
+  }
 
-```console
-scala> def pred(n: Int): GenericList[Int] =
-         DGP.unfold[ListF, Int, Int](n) {
-           case 0 => ListF.NilF()
-           case n => ListF.ConsF(n, n - 1)
-         }
-scala> pred(4)
+pred(4)
 ```
 
 There are several more we can derive, too.
@@ -219,13 +293,13 @@ There are several more we can derive, too.
 The point of the datatype-generic programming is to abstract out the shape.
 Let's introduce some other datatype, like a binary `Tree`:
 
-```console
-scala> :paste
+```scala mdoc
 sealed trait TreeF[+Next, +A]
 object TreeF {
   case class EmptyF() extends TreeF[Nothing, Nothing]
   case class NodeF[Next, A](a: A, left: Next, right: Next) extends TreeF[Next, A]
 }
+
 type Tree[A] = Fix[TreeF[?, A], A]
 object Tree {
   def empty[A]: Tree[A] =
@@ -237,15 +311,14 @@ object Tree {
 
 Here's how to create this tree:
 
-```console
-scala> import Tree.{empty,node}
-scala> node(2, node(1, empty, empty), empty)
+```scala mdoc
+import Tree.{empty,node}
+node(2, node(1, empty, empty), empty)
 ```
 
 Now, all we have to do should be to define a `Bifunctor` instance:
 
-```console
-scala> :paste
+```scala mdoc
 implicit val treeFBifunctor: Bifunctor[TreeF] = new Bifunctor[TreeF] {
   def bimap[A, B, C, D](fab: TreeF[A, B])(f: A => C, g: B => D): TreeF[C, D] =
     fab match {
@@ -258,8 +331,8 @@ implicit val treeFBifunctor: Bifunctor[TreeF] = new Bifunctor[TreeF] {
 
 First, let's try `Functor`:
 
-```console
-scala> {
+```scala mdoc
+{
   val instances = new FixInstances {}
   import instances._
   import cats.syntax.functor._
@@ -269,28 +342,30 @@ scala> {
 
 Looking good. Next, let's try folding.
 
-```console
-scala> def sum(tree: Tree[Int]): Int =
-         DGP.fold[TreeF, Int, Int](tree) {
-           case TreeF.EmptyF()       => 0
-           case TreeF.NodeF(a, l, r) => a + l + r
-         }
-scala> sum(node(2, node(1, empty, empty), empty))
+```scala mdoc
+def sum(tree: Tree[Int]): Int =
+  DGP.fold[TreeF, Int, Int](tree) {
+    case TreeF.EmptyF()       => 0
+    case TreeF.NodeF(a, l, r) => a + l + r
+  }
+
+sum(node(2, node(1, empty, empty), empty))
 ```
 
 We got the `fold`.
 
 Here's a function named `grow` that generates a binary search tree from a list.
 
-```console
-scala> def grow[A: PartialOrder](xs: List[A]): Tree[A] =
-          DGP.unfold[TreeF, A, List[A]](xs) {
-            case Nil => TreeF.EmptyF()
-            case x :: xs =>
-              import cats.syntax.partialOrder._
-              TreeF.NodeF(x, xs filter {_ <= x}, xs filter {_ > x})
-          }
-scala> grow(List(3, 1, 4, 2))
+```scala mdoc
+def grow[A: PartialOrder](xs: List[A]): Tree[A] =
+   DGP.unfold[TreeF, A, List[A]](xs) {
+     case Nil => TreeF.EmptyF()
+     case x :: xs =>
+       import cats.syntax.partialOrder._
+       TreeF.NodeF(x, xs filter {_ <= x}, xs filter {_ > x})
+   }
+
+grow(List(3, 1, 4, 2))
 ```
 
 Looks like `unfold` is working too.

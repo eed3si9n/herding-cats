@@ -32,20 +32,26 @@ The goal is to automate the explicit passing of the states.
 To follow along the book, we'll use the stack example from the book.
 Here's an implementation without using `State`.
 
-```console:new
-scala> type Stack = List[Int]
-scala> def pop(s0: Stack): (Stack, Int) =
-         s0 match {
-           case x :: xs => (xs, x)
-           case Nil     => sys.error("stack is empty")
-         }
-scala> def push(s0: Stack, a: Int): (Stack, Unit) = (a :: s0, ())
-scala> def stackManip(s0: Stack): (Stack, Int) = {
-         val (s1, _) = push(s0, 3)
-         val (s2, a) = pop(s1)
-         pop(s2)
-       }
-scala> stackManip(List(5, 8, 2, 1))
+```scala mdoc
+import cats._, cats.syntax.all._
+
+type Stack = List[Int]
+
+def pop(s0: Stack): (Stack, Int) =
+  s0 match {
+    case x :: xs => (xs, x)
+    case Nil     => sys.error("stack is empty")
+  }
+
+def push(s0: Stack, a: Int): (Stack, Unit) = (a :: s0, ())
+
+def stackManip(s0: Stack): (Stack, Int) = {
+  val (s1, _) = push(s0, 3)
+  val (s2, a) = pop(s1)
+  pop(s2)
+}
+
+stackManip(List(5, 8, 2, 1))
 ```
 
 ### State and StateT datatype
@@ -124,33 +130,37 @@ one state, but not the second. [@retronym][@retronym] pointed me to
 
 Let's consider how to implement stack with `State`:
 
-```console:new
-scala> type Stack = List[Int]
-scala> import cats._, cats.data._, cats.implicits._
-scala> val pop = State[Stack, Int] {
-         case x :: xs => (xs, x)
-         case Nil     => sys.error("stack is empty")
-       }
-scala> def push(a: Int) = State[Stack, Unit] {
-         case xs => (a :: xs, ())
-       }
+```scala mdoc:reset
+type Stack = List[Int]
+
+import cats._, cats.data._, cats.syntax.all._
+
+val pop = State[Stack, Int] {
+  case x :: xs => (xs, x)
+  case Nil     => sys.error("stack is empty")
+}
+
+def push(a: Int) = State[Stack, Unit] {
+  case xs => (a :: xs, ())
+}
 ```
 
 These are the primitive programs. Now we can construct
 compound programs by composing the monad.
 
-```console
-scala> def stackManip: State[Stack, Int] = for {
-         _ <- push(3)
-         a <- pop
-         b <- pop
-       } yield(b)
-scala> stackManip.run(List(5, 8, 2, 1)).value
+```scala mdoc
+def stackManip: State[Stack, Int] = for {
+  _ <- push(3)
+  a <- pop
+  b <- pop
+} yield(b)
+
+stackManip.run(List(5, 8, 2, 1)).value
 ```
 
 The first `run` is for `StateT`, and the second is to `run` until the end `Eval`.
 
-Both `push` and `pop` are still purely functional, and we 
+Both `push` and `pop` are still purely functional, and we
 were able to eliminate explicitly passing the state object (`s0`, `s1`, ...).
 
 ### Getting and setting the state
@@ -202,27 +212,33 @@ Similarly, `State.set(s)` in this context means to overwrite the state with `s` 
 
 Let's try using them with the `stackyStack` example from the book:
 
-```console
-scala> def stackyStack: State[Stack, Unit] = for {
-         stackNow <- State.get[Stack]
-         r <- if (stackNow === List(1, 2, 3)) State.set[Stack](List(8, 3, 1))
-              else State.set[Stack](List(9, 2, 1))
-       } yield r
-scala> stackyStack.run(List(1, 2, 3)).value
+```scala mdoc:reset
+type Stack = List[Int]
+
+import cats._, cats.data._, cats.syntax.all._
+
+def stackyStack: State[Stack, Unit] = for {
+  stackNow <- State.get[Stack]
+  r <- if (stackNow === List(1, 2, 3)) State.set[Stack](List(8, 3, 1))
+       else State.set[Stack](List(9, 2, 1))
+} yield r
+
+stackyStack.run(List(1, 2, 3)).value
 ```
 
 We can also implement both `pop` and `push` in terms of `get` and `set`:
 
-```console
-scala> val pop: State[Stack, Int] = for {
-         s <- State.get[Stack]
-         (x :: xs) = s
-         _ <- State.set[Stack](xs)
-       } yield x
-scala> def push(x: Int): State[Stack, Unit] = for {
-         xs <- State.get[Stack]
-         r <- State.set(x :: xs)
-       } yield r
+```scala mdoc
+val pop: State[Stack, Int] = for {
+  s <- State.get[Stack]
+  (x :: xs) = s
+  _ <- State.set[Stack](xs)
+} yield x
+
+def push(x: Int): State[Stack, Unit] = for {
+  xs <- State.get[Stack]
+  r <- State.set(x :: xs)
+} yield r
 ```
 
 As you can see, the `State` monad on its own doesn't do much
@@ -231,7 +247,7 @@ but by chaining them we can remove some boilerplates.
 
 ### Extracting and modifying the state
 
-`State.extract(f)` and `State.modify(f)` are slightly more 
+`State.extract(f)` and `State.modify(f)` are slightly more
 advanced variants of `State.get` and `State.set(s)`.
 
 `State.extract(f)` applies the function `f: S => T` to `s`,

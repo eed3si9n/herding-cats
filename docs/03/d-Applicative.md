@@ -1,11 +1,11 @@
   [Apply]: Apply.html
-  [Cartesian]: Cartesian.html
+  [Semigroupal]: Semigroupal.html
   [fafm]: http://learnyouahaskell.com/functors-applicative-functors-and-monoids
 
 ### Applicative
 
 **Note**: If you jumped to this page because you're interested in applicative functors,
-you should definitely read [Cartesian][Cartesian] and [Apply][Apply] first.
+you should definitely read [Semigroupal][Semigroupal] and [Apply][Apply] first.
 
 [Functors, Applicative Functors and Monoids][fafm]:
 
@@ -34,17 +34,21 @@ LYAHFGG:
 
 It seems like it's basically a constructor that takes value `A` and returns `F[A]`.
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> Applicative[List].pure(1)
-scala> Applicative[Option].pure(1)
+```scala mdoc
+import cats._, cats.syntax.all._
+
+Applicative[List].pure(1)
+
+Applicative[Option].pure(1)
 ```
 
 This actually comes in handy using `Apply[F].ap` so we can avoid calling `{{...}.some}`.
 
-```console
-scala> val F = Applicative[Option]
-scala> F.ap({ F.pure((_: Int) + 3) })(F.pure(9))
+```scala mdoc
+{
+  val F = Applicative[Option]
+  F.ap({ F.pure((_: Int) + 3) })(F.pure(9))
+}
 ```
 
 We've abstracted `Option` away from the code.
@@ -56,26 +60,28 @@ LYAHFGG:
 > Let's try implementing a function that takes a list of applicatives and returns an applicative that has a list as its result value. We'll call it `sequenceA`.
 
 ```haskell
-sequenceA :: (Applicative f) => [f a] -> f [a]  
-sequenceA [] = pure []  
-sequenceA (x:xs) = (:) <\$> x <*> sequenceA xs  
+sequenceA :: (Applicative f) => [f a] -> f [a]
+sequenceA [] = pure []
+sequenceA (x:xs) = (:) <\$> x <*> sequenceA xs
 ```
 
 Let's try implementing this with Cats!
 
-```console
-scala> def sequenceA[F[_]: Applicative, A](list: List[F[A]]): F[List[A]] = list match {
-         case Nil     => Applicative[F].pure(Nil: List[A])
-         case x :: xs => (x, sequenceA(xs)) mapN {_ :: _} 
-       }
+```scala mdoc
+def sequenceA[F[_]: Applicative, A](list: List[F[A]]): F[List[A]] = list match {
+  case Nil     => Applicative[F].pure(Nil: List[A])
+  case x :: xs => (x, sequenceA(xs)) mapN {_ :: _}
+}
 ```
 
 Let's test it:
 
-```console
-scala> sequenceA(List(1.some, 2.some))
-scala> sequenceA(List(3.some, none[Int], 1.some))
-scala> sequenceA(List(List(1, 2, 3), List(4, 5, 6)))
+```scala mdoc
+sequenceA(List(1.some, 2.some))
+
+sequenceA(List(3.some, none[Int], 1.some))
+
+sequenceA(List(List(1, 2, 3), List(4, 5, 6)))
 ```
 
 We got the right answers. What's interesting here is that we did end up needing
@@ -86,9 +92,11 @@ We got the right answers. What's interesting here is that we did end up needing
 
 For `Function1` with `Int` fixed example, we need some type annotation:
 
-```console
-scala> val f = sequenceA[Function1[Int, ?], Int](List((_: Int) + 3, (_: Int) + 2, (_: Int) + 1))
-scala> f(3)
+```scala mdoc
+{
+  val f = sequenceA[Function1[Int, *], Int](List((_: Int) + 3, (_: Int) + 2, (_: Int) + 1))
+  f(3)
+}
 ```
 
 #### Applicative Laws

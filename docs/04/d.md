@@ -62,9 +62,10 @@ The equivalent in Cats is also called `Foldable`. Here's the [typeclass contract
 
 We can use this as follows:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> Foldable[List].foldLeft(List(1, 2, 3), 1) {_ * _}
+```scala mdoc
+import cats._, cats.syntax.all._
+
+Foldable[List].foldLeft(List(1, 2, 3), 1) {_ * _}
 ```
 
 `Foldable` comes with some useful functions/operators,
@@ -83,8 +84,8 @@ Let's try the `fold`. `Monoid[A]` gives us `empty` and `combine`, so that's enou
 
 Let's try this out.
 
-```console
-scala> Foldable[List].fold(List(1, 2, 3))(Monoid[Int])
+```scala mdoc
+Foldable[List].fold(List(1, 2, 3))(Monoid[Int])
 ```
 
 There's a variant called `foldMap` that accepts a function.
@@ -103,16 +104,17 @@ There's a variant called `foldMap` that accepts a function.
 Since the standard collection library doesn't implement `foldMap`,
 we can now use this as an operator.
 
-```console
-scala> List(1, 2, 3).foldMap(identity)(Monoid[Int])
+```scala mdoc
+List(1, 2, 3).foldMap(identity)(Monoid[Int])
 ```
 
 Another useful thing is that we can use this to convert
 the values into newtype.
 
-```console
-scala> :paste
-class Conjunction(val unwrap: Boolean) extends AnyVal
+```scala mdoc
+// `class Conjunction(val unwrap: Boolean) extends AnyVal` doesn't work on mdoc
+class Conjunction(val unwrap: Boolean)
+
 object Conjunction {
   @inline def apply(b: Boolean): Conjunction = new Conjunction(b)
   implicit val conjunctionMonoid: Monoid[Conjunction] = new Monoid[Conjunction] {
@@ -125,8 +127,9 @@ object Conjunction {
       a1.unwrap == a2.unwrap
   }
 }
-scala> val x = List(true, false, true) foldMap {Conjunction(_)}
-scala> x.unwrap
+
+val x = List(true, false, true) foldMap {Conjunction(_)}
+x.unwrap
 ```
 
 This surely beats writing `Conjunction(true)` for each of them and connecting them with `|+|`.

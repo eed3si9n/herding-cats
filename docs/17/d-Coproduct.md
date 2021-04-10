@@ -36,62 +36,70 @@ Similar to the way products related to product type encoded as `scala.Product`, 
 
 First way to encode *A + B* might be using sealed trait and case classes.
 
-```console
-scala> :paste
+```scala mdoc
 sealed trait XList[A]
+
 object XList {
   case class XNil[A]() extends XList[A]
   case class XCons[A](head: A, rest: XList[A]) extends XList[A]
 }
-scala> XList.XCons(1, XList.XNil[Int])
+
+XList.XCons(1, XList.XNil[Int])
 ```
 
 #### Either datatype as coproduct
 
 If we squint `Either` can be considered a union type. We can define a type alias called `|:` for `Either` as follows:
 
-```console
-scala> type |:[+A1, +A2] = Either[A1, A2]
+```scala mdoc
+type |:[+A1, +A2] = Either[A1, A2]
 ```
 
 Because Scala allows infix syntax for type constructors, we can write `Either[String, Int]` as `String |: Int`.
 
-```console
-scala> val x: String |: Int = Right(1)
+```scala mdoc
+val x: String |: Int = Right(1)
 ```
 
 Thus far I've only used normal Scala features only. Cats provides a typeclass called `cats.Inject` that represents injections *i<sub>1</sub>: A => A + B* and *i<sub>2</sub>: B => A + B*. You can use it to build up a coproduct without worrying about Left or Right.
 
-```console
-scala> import cats._, cats.data._, cats.implicits._
-scala> val a = Inject[String, String |: Int].inj("a")
-scala> val one = Inject[Int, String |: Int].inj(1)
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
+val a = Inject[String, String |: Int].inj("a")
+
+val one = Inject[Int, String |: Int].inj(1)
 ```
 
 To retrieve the value back you can call `prj`:
 
-```console
-scala> Inject[String, String |: Int].prj(a)
-scala> Inject[String, String |: Int].prj(one)
+```scala mdoc
+Inject[String, String |: Int].prj(a)
+
+Inject[String, String |: Int].prj(one)
 ```
 
 We can also make it look nice by using `apply` and `unapply`:
 
-```console
-scala> val StringInj = Inject[String, String |: Int]
-scala> val IntInj = Inject[Int, String |: Int]
-scala> val b = StringInj("b")
-scala> val two = IntInj(2)
-scala> two match {
-         case StringInj(x) => x
-         case IntInj(x)    => x.show + "!"
-       }
+```scala mdoc
+lazy val StringInj = Inject[String, String |: Int]
+
+lazy val IntInj = Inject[Int, String |: Int]
+
+val b = StringInj("b")
+
+val two = IntInj(2)
+
+two match {
+  case StringInj(x) => x
+  case IntInj(x)    => x.show + "!"
+}
 ```
 
 The reason I put colon in `|:` is to make it right-associative. This matters when you expand to three types:
 
-```console
-scala> val three = Inject[Int, String |: Int |: Boolean].inj(3)
+```scala mdoc
+val three = Inject[Int, String |: Int |: Boolean].inj(3)
 ```
 
 The return type is `String |: (Int |: Boolean)`.

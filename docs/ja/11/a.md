@@ -22,25 +22,25 @@ Jeremy Gibbons さんの 2006年の本
 
 > 全てのプログラマが最初に習うことの一つで、最も重要なテクニックは値をパラメータ化することだ。
 
-```console:new
-scala> def triangle4: Unit = {
-         println("*")
-         println("**")
-         println("***")
-         println("****")
-       }
+```scala mdoc
+def triangle4: Unit = {
+  println("*")
+  println("**")
+  println("***")
+  println("****")
+}
 ```
 
 4 を抽象化して、パラメータとして追い出すことができる:
 
-```console
-scala> def triangle(side: Int): Unit = {
-         (1 to side) foreach { row =>
-           (1 to row) foreach { col =>
-             println("*")
-           }
-         }
-       }
+```scala mdoc
+def triangle(side: Int): Unit = {
+  (1 to side) foreach { row =>
+    (1 to row) foreach { col =>
+      println("*")
+    }
+  }
+}
 ```
 
 #### 型によるジェネリシティ
@@ -49,8 +49,8 @@ scala> def triangle(side: Int): Unit = {
 **多相的なデータ型** (polymorphic datatype) だ。
 これは**パラメトリックな多相性** (parametric polymorphism) を可能とする。
 
-```console
-scala> def head[A](xs: List[A]): A = xs(0)
+```scala mdoc
+def head[A](xs: List[A]): A = xs(0)
 ```
 
 上の関数は全てのプロパー型に対して動作する。
@@ -61,17 +61,18 @@ scala> def head[A](xs: List[A]): A = xs(0)
 
 例えば、`foldLeft` を使って 2つのリストの追加である `append` を書くことができる:
 
-```console
-scala> def append[A](list: List[A], ys: List[A]): List[A] =
-         list.foldLeft(ys) { (acc, x) => x :: acc }
-scala> append(List(1, 2, 3), List(4, 5, 6))
+```scala mdoc
+def append[A](list: List[A], ys: List[A]): List[A] =
+  list.foldLeft(ys) { (acc, x) => x :: acc }
+
+append(List(1, 2, 3), List(4, 5, 6))
 ```
 
 数を足し合わせるのにも使うことができる:
 
-```console
-scala> def sum(list: List[Int]): Int =
-        list.foldLeft(0) { _ + _ }
+```scala mdoc
+def sum(list: List[Int]): Int =
+ list.foldLeft(0) { _ + _ }
 ```
 
 #### 構造によるジェネリシティ
@@ -82,21 +83,22 @@ input iterator や forward iterator といった**イテレータ**によって�
 
 型クラスという概念もここに当てはまる。
 
-```console
-scala> :paste
+```scala mdoc
 trait Read[A] {
   def reads(s: String): Option[A]
 }
+
 object Read extends ReadInstances {
   def read[A](f: String => Option[A]): Read[A] = new Read[A] {
     def reads(s: String): Option[A] = f(s)
   }
   def apply[A: Read]: Read[A] = implicitly[Read[A]]
 }
+
 trait ReadInstances {
-  implicit val stringRead: Read[String] =
+  implicit lazy val stringRead: Read[String] =
     Read.read[String] { Some(_) }
-  implicit val intRead: Read[Int] =
+  implicit lazy val intRead: Read[Int] =
     Read.read[Int] { s =>
       try {
         Some(s.toInt)
@@ -105,7 +107,8 @@ trait ReadInstances {
       }
     }
 }
-scala> Read[Int].reads("1")
+
+Read[Int].reads("1")
 ```
 
 型クラスは、型クラス・コントラクトとよばれる型が満たさなければいけない要請を表す。
@@ -132,8 +135,7 @@ Scala Collection ライブラリの中では、型が列挙する演算よりも
 
 ここに多相的なデータ型である二分木があるとする:
 
-```console
-scala> :paste
+```scala mdoc
 sealed trait Btree[A]
 object Btree {
   case class Tip[A](a: A) extends Btree[A]
@@ -143,12 +145,12 @@ object Btree {
 
 次に、似たようなプログラムを抽象化するために `foldB` を書いてみる:
 
-```console
-scala> def foldB[A, B](tree: Btree[A], b: (B, B) => B)(t: A => B): B =
-         tree match {
-           case Btree.Tip(a)      => t(a)
-           case Btree.Bin(xs, ys) => b(foldB(xs, b)(t), foldB(ys, b)(t))
-         }
+```scala mdoc
+def foldB[A, B](tree: Btree[A], b: (B, B) => B)(t: A => B): B =
+  tree match {
+    case Btree.Tip(a)      => t(a)
+    case Btree.Bin(xs, ys) => b(foldB(xs, b)(t), foldB(ys, b)(t))
+  }
 ```
 
 次の目標は `foldB` と `foldLeft` を抽象化することだ。
@@ -161,9 +163,9 @@ scala> def foldB[A, B](tree: Btree[A], b: (B, B) => B)(t: A => B): B =
 
 例えば、`fold` は以下のように表現できるらしい。
 
-```console
-scala> import cats._, cats.data._, cats.implicits._
-scala> :paste
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
 trait Fix[F[_,_], A]
 def cata[S[_,_]: Bifunctor, A, B](t: Fix[S, A])(f: S[A, B] => B): B = ???
 ```

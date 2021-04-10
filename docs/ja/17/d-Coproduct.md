@@ -36,62 +36,70 @@ out: Coproduct.html
 
 *A + B* をエンコードする最初の方法は sealed trait と case class を使う方法だ。
 
-```console
-scala> :paste
+```scala mdoc
 sealed trait XList[A]
+
 object XList {
   case class XNil[A]() extends XList[A]
   case class XCons[A](head: A, rest: XList[A]) extends XList[A]
 }
-scala> XList.XCons(1, XList.XNil[Int])
+
+XList.XCons(1, XList.XNil[Int])
 ```
 
 #### 余積としての Either データ型
 
 目をすくめて見ると `Either` を直和型だと考えることもできる。`Either` の型エイリアスとして `|:` を定義する:
 
-```console
-scala> type |:[+A1, +A2] = Either[A1, A2]
+```scala mdoc
+type |:[+A1, +A2] = Either[A1, A2]
 ```
 
 Scala は型コンストラクタに中置記法を使えるので、`Either[String, Int]` の代わりに `String |: Int` と書けるようになった。
 
-```console
-scala> val x: String |: Int = Right(1)
+```scala mdoc
+val x: String |: Int = Right(1)
 ```
 
 ここまでは普通の Scala 機能しか使っていない。Cats は単射 *i<sub>1</sub>: A => A + B* と *i<sub>2</sub>: B => A + B* を表す `cats.Injection` という型クラスを提供する。これを使うと Left と Right を気にせずに coproduct を作ることができる。
 
-```console
-scala> import cats._, cats.data._, cats.implicits._
-scala> val a = Inject[String, String |: Int].inj("a")
-scala> val one = Inject[Int, String |: Int].inj(1)
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
+val a = Inject[String, String |: Int].inj("a")
+
+val one = Inject[Int, String |: Int].inj(1)
 ```
 
 値を再取得するには `prj` を呼ぶ:
 
-```console
-scala> Inject[String, String |: Int].prj(a)
-scala> Inject[String, String |: Int].prj(one)
+```scala mdoc
+Inject[String, String |: Int].prj(a)
+
+Inject[String, String |: Int].prj(one)
 ```
 
 `apply` と `unapply` を使って書くときれいに見える:
 
-```console
-scala> val StringInj = Inject[String, String |: Int]
-scala> val IntInj = Inject[Int, String |: Int]
-scala> val b = StringInj("b")
-scala> val two = IntInj(2)
-scala> two match {
-         case StringInj(x) => x
-         case IntInj(x)    => x.show + "!"
-       }
+```scala mdoc
+lazy val StringInj = Inject[String, String |: Int]
+
+lazy val IntInj = Inject[Int, String |: Int]
+
+val b = StringInj("b")
+
+val two = IntInj(2)
+
+two match {
+  case StringInj(x) => x
+  case IntInj(x)    => x.show + "!"
+}
 ```
 
 `|:` にコロンを入れた理由は右結合にするためで、3つ以上の型を使うときに便利だからだ:
 
-```console
-scala> val three = Inject[Int, String |: Int |: Boolean].inj(3)
+```scala mdoc
+val three = Inject[Int, String |: Int |: Boolean].inj(3)
 ```
 
 見ての通り、戻り値の型は `String |: (Int |: Boolean)` となった。

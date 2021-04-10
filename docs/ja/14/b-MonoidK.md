@@ -31,10 +31,12 @@ out: MonoidK.html
 ここでの空の値の概念は `combineK` に対する左右単位元として定義される。
 `combine` と `combineK` の振る舞いが異なるため、`Monoid[F[A]].empty` と `MonoidK[F].empty[A]` も異なる値を取り得る。
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> Monoid[Option[Int]].empty
-scala> MonoidK[Option].empty[Int]
+```scala mdoc
+import cats._, cats.syntax.all._
+
+Monoid[Option[Int]].empty
+
+MonoidK[Option].empty[Int]
 ```
 
 `Option[Int]` に関しては、両方とも `None` みたいだ。

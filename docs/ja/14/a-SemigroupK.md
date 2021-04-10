@@ -8,10 +8,12 @@ out: SemigroupK.html
 
 4日目に出てきた [Semigroup][Semigroup] は関数型プログラミングの定番で、色んな所に出てくる。
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> List(1, 2, 3) |+| List(4, 5, 6)
-scala> "one" |+| "two"
+```scala mdoc
+import cats._, cats.syntax.all._
+
+List(1, 2, 3) |+| List(4, 5, 6)
+
+"one" |+| "two"
 ```
 
 似たもので `SemigroupK` という型コンストラクタ `F[_]` のための型クラスがある。
@@ -37,40 +39,38 @@ scala> "one" |+| "two"
 
 これは `combineK` 演算子とシンボルを使ったエイリアスである `<+>` をを可能とする。使ってみる。
 
-```console
-scala> List(1, 2, 3) <+> List(4, 5, 6)
+```scala mdoc
+List(1, 2, 3) <+> List(4, 5, 6)
 ```
 
-`Semigroup` と違って、`SemigroupK` は `F[_]` の型パラメータに何が入っていても大丈夫だ。
+`Semigroup` と違って、`SemigroupK` は `F[_]` の型パラメータが何であっても動作する。
 
 #### SemigroupK としての Option
 
-`Option[A]` は型パラメータ `A` が `Semigroup` である時に限って `Option[A]` も `Semigroup` を形成する。
+`Option[A]` は型パラメータ `A` が `Semigroup` である時に限って `Option[A]` も `Semigroup` を形成する。そこで `Semigroup` を形成しないデータ型を定義して邪魔してみよう:
 
-```console
-scala> case class Foo(x: String)
+```scala mdoc
+case class Foo(x: String)
 ```
 
-そのため、これはうまくいかない:
+これはうまくいかない:
 
-```scala
-scala> Foo("x").some |+| Foo("y").some
-<console>:33: error: value |+| is not a member of Option[Foo]
-       Foo("x").some |+| Foo("y").some
-                     ^
+```scala mdoc:fail
+Foo("x").some |+| Foo("y").some
 ```
 
 だけど、これは大丈夫:
 
-```console
-scala> Foo("x").some <+> Foo("y").some
+```scala mdoc
+Foo("x").some <+> Foo("y").some
 ```
 
 この 2つの型クラスの振る舞いは微妙に異なるので注意が必要だ。
 
-```console
-scala> 1.some |+| 2.some
-scala> 1.some <+> 2.some
+```scala mdoc
+1.some |+| 2.some
+
+1.some <+> 2.some
 ```
 
 `Semigroup` は `Option` の中身の値もつなげるが、`SemigroupK` の方は最初の選択する。

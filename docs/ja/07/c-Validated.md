@@ -37,23 +37,25 @@ object Validated extends ValidatedInstances with ValidatedFunctions{
 
 値はこのように作る:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> import Validated.{ valid, invalid }
-scala> valid[String, String]("event 1 ok")
-scala> invalid[String, String]("event 1 failed!")
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+import Validated.{ valid, invalid }
+
+valid[String, String]("event 1 ok")
+
+invalid[String, String]("event 1 failed!")
 ```
 
 `Validated` の違いはこれはモナドではなく、applicative functor を形成することだ。
 最初のイベントの結果を次へと連鎖するのでは無く、`Validated` は全イベントを検証する:
 
-```console
-scala> val result = (valid[String, String]("event 1 ok") |@|
-        invalid[String, String]("event 2 failed!") |@|
-        invalid[String, String]("event 3 failed!")) map {_ + _ + _}
+```scala mdoc
+val result = (valid[String, String]("event 1 ok"),
+  invalid[String, String]("event 2 failed!"),
+  invalid[String, String]("event 3 failed!")) mapN {_ + _ + _}
 ```
 
-最終結果は `Invalid(event 3 failed!event 2 failed!)` となった。
+最終結果は `Invalid(event 2 failed!event 3 failed!)` となった。
 計算途中でショートさせた `Xor` のモナドと違って、`Validated` は計算を続行して全ての失敗を報告する。
 これはおそらくオンラインのベーコンショップでユーザのインプットを検証するのに役立つと思う。
 
@@ -64,27 +66,28 @@ scala> val result = (valid[String, String]("event 1 ok") |@|
 ここで使われるのが `NonEmptyList` データ型だ。
 今のところは、必ず 1つ以上の要素が入っていることを保証するリストだと考えておけばいいと思う。
 
-```console
-scala> import cats.data.{ NonEmptyList => NEL }
-scala> NEL.of(1)
+```scala mdoc
+import cats.data.{ NonEmptyList => NEL }
+
+NEL.of(1)
 ```
 
 `NEL[A]` を invalid 側に使って失敗値の蓄積を行うことができる:
 
-```console
-scala> val result =
-         (valid[NEL[String], String]("event 1 ok") |@|
-           invalid[NEL[String], String](NEL.of("event 2 failed!")) |@|
-           invalid[NEL[String], String](NEL.of("event 3 failed!"))) map {_ + _ + _}
+```scala mdoc
+val result2 =
+  (valid[NEL[String], String]("event 1 ok"),
+    invalid[NEL[String], String](NEL.of("event 2 failed!")),
+    invalid[NEL[String], String](NEL.of("event 3 failed!"))) mapN {_ + _ + _}
 ```
 
 `Invalid` の中に全ての失敗メッセージが入っている。
 
 `fold` を使って値を取り出してみる:
 
-```console
-scala> val errs: NEL[String] = result.fold(
-         { l => l },
-         { r => sys.error("invalid is expected") }
-       )
+```scala mdoc
+val errs: NEL[String] = result2.fold(
+  { l => l },
+  { r => sys.error("invalid is expected") }
+)
 ```

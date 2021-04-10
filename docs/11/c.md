@@ -73,9 +73,10 @@ final case class Const[A, B](getConst: A) {
 In the above, the type parameter `A` represents the value,
 but `B` is a phantom type used to make `Functor` happy.
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> Const(1) map { (_: String) + "!" }
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
+Const(1) map { (_: String) + "!" }
 ```
 
 When `A` forms a `Semigroup`, an `Apply` is derived,
@@ -84,6 +85,6 @@ and when `A` form a `Monoid`, an `Applicative` is derived automatically.
 > Computations within this applicative functor accumulate some measure:
 > for the monoid of integers with addition, they count or sum...
 
-```console
-scala> Const(2).retag[String => String] ap Const(1).retag[String]
+```scala mdoc
+Const(2).retag[String => String] ap Const(1).retag[String]
 ```

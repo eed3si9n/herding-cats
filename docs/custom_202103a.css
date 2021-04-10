@@ -1,5 +1,14 @@
 /* floating image */
 
+body {
+  font-size: 110%;
+  font-family: "Palatino","Book Antiqua",Georgia,serif;
+}
+
+code {
+  color: black;
+}
+
 div.floatingimage {
   float: left;
   margin: 0px 20px 20px 0px;
@@ -11,12 +20,26 @@ div.floatingimage img {
 
 div.credit {
   color: #909090;
-  font-family: arial, helvetica, sans-serif;
+  font-family: helvetica, arial, sans-serif;
   font-size: 0.6em;
   margin: 0px;
   padding: 0px;
   line-height: 0.6em;
   text-align: right;
+}
+
+body.color_scheme-github code.prettyprint span.com {
+  color: #4d5555;
+}
+
+blockquote {
+  border-left: solid gray 1px;
+  padding-left: 1em;
+  font-family: Georgia;
+}
+
+ol.toc a {
+  color: #202020;
 }
 
 @media screen and (min-device-width: 800px), projection {

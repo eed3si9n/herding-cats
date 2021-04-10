@@ -3,11 +3,19 @@ out: import-guide.html
 ---
 
   [ImplicitsSource]: $catsBaseUrl$/core/src/main/scala/cats/implicits/package.scala
+  [3043]: https://github.com/typelevel/cats/pull/3043
+  [Brown2019]: https://meta.plasm.us/posts/2019/09/30/implicit-scope-and-cats/
 
 ### Import guide
 
 Cats makes heavy use of implicits. Both as a user and an extender of the library, it will be useful to have general idea on where things are coming from.
-If you're just starting out with Cats, you can use the following the imports and skip this page:
+If you're just starting out with Cats, you can use the following the imports and skip this page, assuming you're using Cats 2.2.0 and above:
+
+```scala
+scala> import cats._, cats.data._, cats.syntax.all._
+```
+
+Prior to Cats 2.2.0 it was:
 
 ```scala
 scala> import cats._, cats.data._, cats.implicits._
@@ -15,17 +23,15 @@ scala> import cats._, cats.data._, cats.implicits._
 
 ### Implicits review
 
-Let's quickly review Scala's imports and implicits! In Scala, imports are used for two purposes:
+Let's quickly review Scala 2's imports and implicits! In Scala, imports are used for two purposes:
 
 1. To include names of values and types into the scope.
 2. To include implicits into the scope.
 
-Implicits are for 4 purposes that I can think of:
+Given some type `A`, implicit is a mechanism to ask the compiler for a specific (term) value for the type. This can be used for different purposes, for Cats, the 2 main usages are:
 
-1. To provide typeclass instances.
-2. To inject methods and operators. (static monkey patching)
-3. To declare type constraints.
-4. To retrieve type information from compiler.
+1. _instances_; to provide typeclass instances.
+2. _syntax_; to inject methods and operators. (method extension)
 
 Implicits are selected in the following precedence:
 
@@ -48,6 +54,19 @@ res0: cats.Functor[cats.Id] = cats.package\$\$anon\$1@3c201c09
 ```
 
 No import needed, which is a good thing. So, the merit of `import cats._` is for convenience, and it's optional.
+
+### Implicit scope
+
+In March 2020, Travis Brown's [#3043][3043] was merged and was released as Cats 2.2.0. In short, this change added the typeclass instances of standard library types into the companion object of the typeclasses.
+
+This reduces the need for importing things into the lexical scope, which has the benefit of simplicity and apparently less work for the compiler. For instance, with Cats 2.4.x the following works without any imports:
+
+```scala
+scala> cats.Functor[Option]
+val res1: cats.Functor[Option] = cats.instances.OptionInstances\$\$anon\$1@56a2a3bf
+```
+
+See Travis's [Implicit scope and Cats][Brown2019] for more details.
 
 ### import cats.data._
 
@@ -135,22 +154,28 @@ If for whatever reason if you do not wish to import the entire `cats.implicits._
 
 #### typeclass instances
 
-Typeclass instances are broken down by the datatypes. Here's how to get all typeclass instances for `Option`:
+As I mentioned above, after Cats 2.2.0, you typically don't have to do anything to get the typeclass instances.
 
-```console:new
-scala> {
-         import cats.instances.option._
-         cats.Monad[Option].pure(0)
-       }
+```scala mdoc
+cats.Monad[Option].pure(0)
+```
+
+If you want to import typeclass instances for `Option` for some reason:
+
+```scala mdoc
+{
+  import cats.instances.option._
+  cats.Monad[Option].pure(0)
+}
 ```
 
 If you just want all instances, here's how to load them all:
 
-```console
-scala> {
-         import cats.instances.all._
-         cats.Monoid[Int].empty
-       }
+```scala mdoc
+{
+  import cats.instances.all._
+  cats.Monoid[Int].empty
+}
 ```
 
 Because we have not injected any operators, you would have to work more with helper functions and functions under typeclass instances, which could be exactly what you want.
@@ -159,53 +184,50 @@ Because we have not injected any operators, you would have to work more with hel
 
 Typeclass syntax are broken down by the typeclass. Here's how to get injected methods and operators for `Eq`s:
 
-```console
-scala> {
-          import cats.syntax.eq._
-          import cats.instances.all._
-          1 === 1
-       }
+```scala mdoc
+{
+  import cats.syntax.eq._
+  1 === 1
+}
 ```
 
 #### Cats datatype syntax
 
 Cats datatype syntax like `Writer` are also available under `cats.syntax` package:
 
-```console
-scala> {
-          import cats.syntax.writer._
-          import cats.instances.all._
-          1.tell
-       }
+```scala mdoc
+{
+  import cats.syntax.writer._
+  1.tell
+}
 ```
 
 #### standard datatype syntax
 
 Standard datatype syntax are broken down by the datatypes. Here's how to get injected methods and functions for `Option`:
 
-```console
-scala> {
-          import cats.syntax.option._
-          import cats.instances.all._
-          1.some
-       }
+```scala mdoc
+{
+  import cats.syntax.option._
+  1.some
+}
 ```
 
 #### all syntax
 
 Here's how to load all syntax and all instances.
 
-```console
-scala> {
-          import cats.syntax.all._
-          import cats.instances.all._
-          1.some
-       }
+```scala mdoc
+{
+  import cats.syntax.all._
+  import cats.instances.all._
+  1.some
+}
 ```
 
 This is the same as importing `cats.implicits._`.
 Again, if you are at all confused by this, just stick with the following first:
 
 ```scala
-scala> import cats._, cats.data._, cats.implicits._
+scala> import cats._, cats.data._, cats.syntax.all._
 ```

@@ -3,23 +3,63 @@
 
 > `List` に関しても一般化した関数を目指しましょう。... そのためには、`foldLeft` 演算に関して一般化します。
 
-```console
-scala> object FoldLeftList {
-         def foldLeft[A, B](xs: List[A], b: B, f: (B, A) => B) = xs.foldLeft(b)(f)
-       }
-scala> def sum[A: Monoid](xs: List[A]): A = {
-         val m = implicitly[Monoid[A]]
-         FoldLeftList.foldLeft(xs, m.mzero, m.mappend)
-       }
-scala> sum(List(1, 2, 3, 4))
-scala> sum(List("a", "b", "c"))
-scala> sum(List(1, 2, 3, 4))(multiMonoid)
+```scala mdoc:reset:invisible
+trait Monoid[A] {
+  def mappend(a1: A, a2: A): A
+  def mzero: A
+}
+object Monoid {
+  implicit val IntMonoid: Monoid[Int] = new Monoid[Int] {
+    def mappend(a: Int, b: Int): Int = a + b
+    def mzero: Int = 0
+  }
+  implicit val StringMonoid: Monoid[String] = new Monoid[String] {
+    def mappend(a: String, b: String): String = a + b
+    def mzero: String = ""
+  }
+}
+val multiMonoid: Monoid[Int] = new Monoid[Int] {
+  def mappend(a: Int, b: Int): Int = a * b
+  def mzero: Int = 1
+}
+```
+
+```scala mdoc
+object FoldLeftList {
+  def foldLeft[A, B](xs: List[A], b: B, f: (B, A) => B) = xs.foldLeft(b)(f)
+}
+def sum[A: Monoid](xs: List[A]): A = {
+  val m = implicitly[Monoid[A]]
+  FoldLeftList.foldLeft(xs, m.mzero, m.mappend)
+}
+
+sum(List(1, 2, 3, 4))
+
+sum(List("a", "b", "c"))
+
+sum(List(1, 2, 3, 4))(multiMonoid)
 ```
 
 > これで先ほどと同様の抽象化を行なって `FoldLeft` 型クラスを抜き出します。
 
-```console
-scala> :paste
+```scala mdoc:reset:invisible
+trait Monoid[A] {
+  def mappend(a1: A, a2: A): A
+  def mzero: A
+}
+object Monoid {
+  implicit val IntMonoid: Monoid[Int] = new Monoid[Int] {
+    def mappend(a: Int, b: Int): Int = a + b
+    def mzero: Int = 0
+  }
+  implicit val StringMonoid: Monoid[String] = new Monoid[String] {
+    def mappend(a: String, b: String): String = a + b
+    def mzero: String = ""
+  }
+}
+```
+
+```scala mdoc
 trait FoldLeft[F[_]] {
   def foldLeft[A, B](xs: F[A], b: B, f: (B, A) => B): B
 }
@@ -35,8 +75,9 @@ def sum[M[_]: FoldLeft, A: Monoid](xs: M[A]): A = {
   fl.foldLeft(xs, m.mzero, m.mappend)
 }
 
-scala> sum(List(1, 2, 3, 4))
-scala> sum(List("a", "b", "c"))
+sum(List(1, 2, 3, 4))
+
+sum(List("a", "b", "c"))
 ```
 
 これで `Int` と `List` の両方が `sum` から抜き出された。

@@ -15,9 +15,9 @@ One blog post that I occasionally see being mentioned as a poweful application o
 
 Here I'll use similar example as the Yoshida-san's.
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> :paste
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
 case class User(id: Long, name: String)
 
 // In actual code, probably more than 2 errors
@@ -26,6 +26,7 @@ object Error {
   final case class UserNotFound(userId: Long) extends Error
   final case class ConnectionError(message: String) extends Error
 }
+
 trait UserRepos[F[_]] {
   implicit def F: Monad[F]
   def userRepo: UserRepo
@@ -39,8 +40,7 @@ trait UserRepos[F[_]] {
 
 Let's start implementing the `UserRepos` module using `Future`.
 
-```console
-scala> :paste
+```scala mdoc
 import scala.concurrent.{ Future, ExecutionContext, Await }
 import scala.concurrent.duration.Duration
 
@@ -55,9 +55,11 @@ class UserRepos0(implicit ec: ExecutionContext) extends UserRepos[Future] {
 
 Here's how to use it:
 
-```console
-scala> val service = new UserRepos0()(ExecutionContext.global)
-scala> val xs = service.userRepo.followers(1L)
+```scala mdoc
+{
+  val service = new UserRepos0()(ExecutionContext.global)
+  service.userRepo.followers(1L)
+}
 ```
 
 Now we have an asynchronous result. Let's say during testing we would like it to be synchronous.
@@ -71,8 +73,7 @@ Now we have an asynchronous result. Let's say during testing we would like it to
 
 This is where Id datatype can be used.
 
-```console
-scala> :paste
+```scala mdoc
 class TestUserRepos extends UserRepos[Id] {
   override val F = implicitly[Monad[Id]]
   override val userRepo: UserRepo = new UserRepo0 {}
@@ -90,18 +91,18 @@ class TestUserRepos extends UserRepos[Id] {
 Here's how to use it:
 
 
-```console
-scala> val testRepo = new TestUserRepos {}
-scala> val ys = testRepo.userRepo.followers(1L)
+```scala mdoc
+val testRepo = new TestUserRepos {}
+
+val ys = testRepo.userRepo.followers(1L)
 ```
 
 #### Coding in abstract
 
 Now that we were able to abtract the type constructor of the followers, let's try implementing `isFriends` from day 10 that checks if two users follow each other.
 
-```console
-scala> :paste
-trait UserServices[F[_]] { this: UserRepos[F] =>
+```scala mdoc
+trait UserServices0[F[_]] { this: UserRepos[F] =>
   def userService: UserService = new UserService
   class UserService {
     def isFriends(user1: Long, user2: Long): F[Boolean] =
@@ -116,15 +117,16 @@ trait UserServices[F[_]] { this: UserRepos[F] =>
 
 Here's how to use it:
 
-```console
-scala> val testService = new TestUserRepos with UserServices[Id] {}
-scala> testService.userService.isFriends(0L, 1L)
+```scala mdoc
+{
+  val testService = new TestUserRepos with UserServices0[Id] {}
+  testService.userService.isFriends(0L, 1L)
+}
 ```
 
 The above demonstrates that `isFriends` can be written without knowing anything about `F[]` apart from the fact that it forms a `Monad`. It would be nice if I could use infix `flatMap` and `map` method while keeping `F` abstract. I tried creating `FlatMapOps(fa)` manually, but that resulted in abstract method error during runtime. The `actM` macro that we implemented on day 6 seems to work ok:
 
-```console
-scala> :paste
+```scala mdoc
 trait UserServices[F[_]] { this: UserRepos[F] =>
   def userService: UserService = new UserService
   class UserService {
@@ -137,18 +139,20 @@ trait UserServices[F[_]] { this: UserRepos[F] =>
       }
   }
 }
-scala> val testService = new TestUserRepos with UserServices[Id] {}
-scala> testService.userService.isFriends(0L, 1L)
+
+{
+  val testService = new TestUserRepos with UserServices[Id] {}
+  testService.userService.isFriends(0L, 1L)
+}
 ```
 
 #### UserRepos with EitherT
 
 We can also use this with the `EitherT` with `Future` to carry a custom error type.
 
-```console
-scala> :paste
-class UserRepos1(implicit ec: ExecutionContext) extends UserRepos[EitherT[Future, Error, ?]] {
-  override val F = implicitly[Monad[EitherT[Future, Error, ?]]]
+```scala mdoc
+class UserRepos1(implicit ec: ExecutionContext) extends UserRepos[EitherT[Future, Error, *]] {
+  override val F = implicitly[Monad[EitherT[Future, Error, *]]]
   override val userRepo: UserRepo = new UserRepo1 {}
   trait UserRepo1 extends UserRepo {
     def followers(userId: Long): EitherT[Future, Error, List[User]] =
@@ -164,18 +168,15 @@ class UserRepos1(implicit ec: ExecutionContext) extends UserRepos[EitherT[Future
 
 Here's how to use it:
 
-```console
-scala> val service1 = {
-  import ExecutionContext.Implicits._
-  new UserRepos1 with UserServices[EitherT[Future, Error, ?]] {}
-}
-scala> {
+```scala mdoc
+{
   import scala.concurrent.duration._
-  Await.result(service1.userService.isFriends(0L, 1L).value, 1 second)
-}
-scala> {
-  import scala.concurrent.duration._
-  Await.result(service1.userService.isFriends(0L, 2L).value, 1 second)
+  val service = {
+    import ExecutionContext.Implicits._
+    new UserRepos1 with UserServices[EitherT[Future, Error, *]] {}
+  }
+
+  Await.result(service.userService.isFriends(0L, 1L).value, 1 second)
 }
 ```
 

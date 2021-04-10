@@ -11,11 +11,12 @@ Nick さん曰く:
 
 > この関数 `head` は `A` のリストを取って `A` を返します。`A` が何であるかはかまいません。`Int` でもいいし、`String` でもいいし、`Orange` でも `Car` でもいいです。どの `A` でも動作し、存在可能な全ての `A` に対してこの関数は定義されています。
 
-```console:new
-scala> def head[A](xs: List[A]): A = xs(0)
-scala> head(1 :: 2 :: Nil)
-scala> case class Car(make: String)
-scala> head(Car("Civic") :: Car("CR-V") :: Nil)
+```scala mdoc:reset
+def head[A](xs: List[A]): A = xs(0)
+head(1 :: 2 :: Nil)
+
+case class Car(make: String)
+head(Car("Civic") :: Car("CR-V") :: Nil)
 ```
 
 [Haskell wiki](http://www.haskell.org/haskellwiki/Polymorphism) 曰く:
@@ -26,18 +27,18 @@ scala> head(Car("Civic") :: Car("CR-V") :: Nil)
 
 ここで、型 `A` の 2つの値を足す `plus` という関数を考える:
 
-```scala
-scala> def plus[A](a1: A, a2: A): A = ???
-plus: [A](a1: A, a2: A)A
+```scala mdoc
+def plus[A](a1: A, a2: A): A = ???
 ```
 
 型 `A` によって、足すことの定義を別々に提供する必要がある。これを実現する方法の一つが派生型 (subtyping) だ。
 
-```console
-scala> trait PlusIntf[A] {
-         def plus(a2: A): A
-       }
-scala> def plusBySubtype[A <: PlusIntf[A]](a1: A, a2: A): A = a1.plus(a2)
+```scala mdoc
+trait PlusIntf[A] {
+  def plus(a2: A): A
+}
+
+def plusBySubtype[A <: PlusIntf[A]](a1: A, a2: A): A = a1.plus(a2)
 ```
 
 これで `A` の型によって異なる `plus` の定義を提供できるようにはなった。しかし、この方法はデータ型の定義時に `Plus` を mixin する必要があるため柔軟性に欠ける。例えば、`Int` や `String` には使うことができない。
@@ -46,11 +47,12 @@ scala> def plusBySubtype[A <: PlusIntf[A]](a1: A, a2: A): A = a1.plus(a2)
 
 Scala における3つ目の方法は trait への暗黙の変換か暗黙のパラメータ (implicit parameter) を使うことだ。
 
-```console
-scala> trait CanPlus[A] {
-         def plus(a1: A, a2: A): A
-       }
-scala> def plus[A: CanPlus](a1: A, a2: A): A = implicitly[CanPlus[A]].plus(a1, a2)
+```scala mdoc
+trait CanPlus[A] {
+  def plus(a1: A, a2: A): A
+}
+
+def plus[A: CanPlus](a1: A, a2: A): A = implicitly[CanPlus[A]].plus(a1, a2)
 ```
 
 これは以下の意味においてまさにアドホックだと言える
