@@ -31,10 +31,12 @@ This adds `empty[A]` function to the contract.
 The notion of emptiness here is defined in terms of the left and right identity laws with regards to `combineK`.
 Given that `combine` and `combineK` behave differently, `Monoid[F[A]].empty` and `MonoidK[F].empty[A]` could also be different.
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> Monoid[Option[Int]].empty
-scala> MonoidK[Option].empty[Int]
+```scala mdoc
+import cats._, cats.syntax.all._
+
+Monoid[Option[Int]].empty
+
+MonoidK[Option].empty[Int]
 ```
 
 In case of `Option[Int]` they happened to be both `None`.

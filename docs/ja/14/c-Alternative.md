@@ -52,9 +52,9 @@ Justin Le ([@mstk][@mstk]) さんが 2013年に書いた　[「オオカミ、�
 
 > ある農家の人が持ち物のオオカミ、ヤギ、キャベツを連れて川を渡ろうとしている。ところが、ボートには自分以外もう一つのものしか運ぶことができない。オオカミとヤギを放ったらかしにすると、ヤギが食べられてしまう。ヤギとキャベツを放ったらかしにすると、キャベツが食べられてしまう。損害が無いように持ち物を川の向こうまで渡らせるにはどうすればいいだろうか?
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> :paste
+```scala mdoc
+import cats._, cats.syntax.all._
+
 sealed trait Character
 case object Farmer extends Character
 case object Wolf extends Character
@@ -69,7 +69,7 @@ sealed trait Position
 case object West extends Position
 case object East extends Position
 
-implicit val moveShow = Show.show[Move](_ match {
+implicit lazy val moveShow = Show.show[Move](_ match {
   case Move(Farmer)  => "F"
   case Move(Wolf)    => "W"
   case Move(Goat)    => "G"
@@ -77,28 +77,30 @@ implicit val moveShow = Show.show[Move](_ match {
 })
 ```
 
-#### makeNMoves
+#### makeNMoves0
 
 `n` 回の動きはこのように表現できる。
 
-```console
-scala> val possibleMoves = List(Farmer, Wolf, Goat, Cabbage) map {Move(_)}
-scala> :paste
-def makeMove(ps: List[List[Move]]): List[List[Move]] =
-  (ps |@| possibleMoves) map { (p, m) =>  List(m) <+> p }
-def makeNMoves(n: Int): List[List[Move]] =
+```scala mdoc
+val possibleMoves = List(Farmer, Wolf, Goat, Cabbage) map {Move(_)}
+
+def makeMove0(ps: List[List[Move]]): List[List[Move]] =
+  (ps , possibleMoves) mapN { (p, m) =>  List(m) <+> p }
+
+def makeNMoves0(n: Int): List[List[Move]] =
   n match {
     case 0 => Nil
-    case 1 => makeMove(List(Nil))
-    case n => makeMove(makeNMoves(n - 1))
+    case 1 => makeMove0(List(Nil))
+    case n => makeMove0(makeNMoves0(n - 1))
   }
 ```
 
 テストしてみる:
 
-```console
-scala> makeNMoves(1)
-scala> makeNMoves(2)
+```scala mdoc
+makeNMoves0(1)
+
+makeNMoves0(2)
 ```
 
 #### isSolution
@@ -108,8 +110,7 @@ scala> makeNMoves(2)
 
 `Alternative` にあるものだけで `filter` を定義できる:
 
-```console
-scala> :paste
+```scala mdoc
 def filterA[F[_]: Alternative, A](fa: F[A])(cond: A => Boolean): F[A] =
   {
     var acc = Alternative[F].empty[A]
@@ -119,6 +120,7 @@ def filterA[F[_]: Alternative, A](fa: F[A])(cond: A => Boolean): F[A] =
     }
     acc
   }
+
 def positionOf(p: List[Move], c: Character): Position =
   {
     def positionFromCount(n: Int): Position = {
@@ -131,18 +133,19 @@ def positionOf(p: List[Move], c: Character): Position =
     }
   }
 
-scala> val p = List(Move(Goat), Move(Farmer), Move(Wolf), Move(Goat))
-scala> positionOf(p, Farmer)
-scala> positionOf(p, Wolf)
+val p = List(Move(Goat), Move(Farmer), Move(Wolf), Move(Goat))
+
+positionOf(p, Farmer)
+
+positionOf(p, Wolf)
 ```
 
 全ての位置が `East` であるかは以下のようにチェックできる:
 
-```console
-scala> :paste
+```scala mdoc
 def isSolution(p: List[Move]) =
   {
-    val pos = (List(p) |@| possibleMoves) map { (p, m) => positionOf(p, m.x) }
+    val pos = (List(p), possibleMoves) mapN { (p, m) => positionOf(p, m.x) }
     (filterA(pos)(_ == West)).isEmpty
   }
 ```
@@ -151,16 +154,16 @@ def isSolution(p: List[Move]) =
 
 > 合法な動きとはどういうことだろう? とりあえず、農家の人が川の同じ岸にいる必要がある。
 
-```console
-scala> def moveLegal(p: List[Move], m: Move): Boolean =
-         positionOf(p, Farmer) == positionOf(p, m.x)
-scala> moveLegal(p, Move(Wolf))
+```scala mdoc
+def moveLegal(p: List[Move], m: Move): Boolean =
+  positionOf(p, Farmer) == positionOf(p, m.x)
+
+moveLegal(p, Move(Wolf))
 ```
 
 > 誰も何も食べなければ、計画は安全だと言える。つまり、オオカミとヤギ、もしくはヤギとキャベツが同じ岸にいる場合は農家の人も一緒にいる必要がある。
 
-```console
-scala> :paste
+```scala mdoc
 def safePlan(p: List[Move]): Boolean =
   {
     val posGoat = positionOf(p, Goat)
@@ -173,20 +176,21 @@ def safePlan(p: List[Move]): Boolean =
 
 これらの関数を使って `makeMove` を再実装できる:
 
-```console
-scala> :paste
+```scala mdoc
 def makeMove(ps: List[List[Move]]): List[List[Move]] =
-  (ps |@| possibleMoves) map { (p, m) =>
-  if (!moveLegal(p, m)) Nil
-  else if (!safePlan(List(m) <+> p)) Nil
-  else List(m) <+> p
-}
+  (ps, possibleMoves) mapN { (p, m) =>
+    if (!moveLegal(p, m)) Nil
+    else if (!safePlan(List(m) <+> p)) Nil
+    else List(m) <+> p
+  }
+
 def makeNMoves(n: Int): List[List[Move]] =
   n match {
     case 0 => Nil
     case 1 => makeMove(List(Nil))
     case n => makeMove(makeNMoves(n - 1))
   }
+
 def findSolution(n: Int): Unit =
   filterA(makeNMoves(n))(isSolution) map { p =>
     println(p map {_.show})
@@ -195,20 +199,12 @@ def findSolution(n: Int): Unit =
 
 パズルを解いてみる:
 
-```scala
-scala> findSolution(6)
+```scala mdoc
+findSolution(6)
 
-scala> findSolution(7)
-List(G, F, C, G, W, F, G)
-List(G, F, W, G, C, F, G)
+findSolution(7)
 
-scala> findSolution(8)
-List(G, F, C, G, W, F, G)
-List(G, F, W, G, C, F, G)
-List(G, F, C, G, W, F, G)
-List(G, F, W, G, C, F, G)
-List(G, F, C, G, W, F, G)
-List(G, F, W, G, C, F, G)
+findSolution(8)
 ```
 
 うまくいった。今日はここまで。

@@ -53,9 +53,9 @@ We can try implementing this using `Alternative`.
 
 > A farmer has a wolf, a goat, and a cabbage that he wishes to transport across a river. Unfortunately, his boat can carry only one thing at a time with him. He can’t leave the wolf alone with the goat, or the wolf will eat the goat. He can’t leave the goat alone with the cabbage, or the goat will eat the cabbage. How can he properly transport his belongings to the other side one at a time, without any disasters?
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> :paste
+```scala mdoc
+import cats._, cats.syntax.all._
+
 sealed trait Character
 case object Farmer extends Character
 case object Wolf extends Character
@@ -70,7 +70,7 @@ sealed trait Position
 case object West extends Position
 case object East extends Position
 
-implicit val moveShow = Show.show[Move](_ match {
+implicit lazy val moveShow = Show.show[Move](_ match {
   case Move(Farmer)  => "F"
   case Move(Wolf)    => "W"
   case Move(Goat)    => "G"
@@ -78,29 +78,30 @@ implicit val moveShow = Show.show[Move](_ match {
 })
 ```
 
-#### makeNMoves
+#### makeNMoves0
 
 Here's making `n` moves
 
-```console
-scala> val possibleMoves = List(Farmer, Wolf, Goat, Cabbage) map {Move(_)}
-scala> :paste
-def makeMove(ps: List[List[Move]]): List[List[Move]] =
-  (ps |@| possibleMoves) map { (p, m) =>  List(m) <+> p }
-def makeNMoves(n: Int): List[List[Move]] =
+```scala mdoc
+val possibleMoves = List(Farmer, Wolf, Goat, Cabbage) map {Move(_)}
+
+def makeMove0(ps: List[List[Move]]): List[List[Move]] =
+  (ps , possibleMoves) mapN { (p, m) =>  List(m) <+> p }
+
+def makeNMoves0(n: Int): List[List[Move]] =
   n match {
     case 0 => Nil
-    case 1 => makeMove(List(Nil))
-    case n => makeMove(makeNMoves(n - 1))
+    case 1 => makeMove0(List(Nil))
+    case n => makeMove0(makeNMoves0(n - 1))
   }
 ```
 
 We can test this as follows:
 
+```scala mdoc
+makeNMoves0(1)
 
-```console
-scala> makeNMoves(1)
-scala> makeNMoves(2)
+makeNMoves0(2)
 ```
 
 #### isSolution
@@ -110,8 +111,7 @@ scala> makeNMoves(2)
 
 We can define `filter` using just what's available in `Alternative`:
 
-```console
-scala> :paste
+```scala mdoc
 def filterA[F[_]: Alternative, A](fa: F[A])(cond: A => Boolean): F[A] =
   {
     var acc = Alternative[F].empty[A]
@@ -121,6 +121,7 @@ def filterA[F[_]: Alternative, A](fa: F[A])(cond: A => Boolean): F[A] =
     }
     acc
   }
+
 def positionOf(p: List[Move], c: Character): Position =
   {
     def positionFromCount(n: Int): Position = {
@@ -133,18 +134,19 @@ def positionOf(p: List[Move], c: Character): Position =
     }
   }
 
-scala> val p = List(Move(Goat), Move(Farmer), Move(Wolf), Move(Goat))
-scala> positionOf(p, Farmer)
-scala> positionOf(p, Wolf)
+val p = List(Move(Goat), Move(Farmer), Move(Wolf), Move(Goat))
+
+positionOf(p, Farmer)
+
+positionOf(p, Wolf)
 ```
 
 Here's how we can check all positions are `East`:
 
-```console
-scala> :paste
+```scala mdoc
 def isSolution(p: List[Move]) =
   {
-    val pos = (List(p) |@| possibleMoves) map { (p, m) => positionOf(p, m.x) }
+    val pos = (List(p), possibleMoves) mapN { (p, m) => positionOf(p, m.x) }
     (filterA(pos)(_ == West)).isEmpty
   }
 ```
@@ -153,16 +155,16 @@ def isSolution(p: List[Move]) =
 
 > What makes a move legal? Well, the farmer has to be on the same side as whatever is being moved.
 
-```console
-scala> def moveLegal(p: List[Move], m: Move): Boolean =
-         positionOf(p, Farmer) == positionOf(p, m.x)
-scala> moveLegal(p, Move(Wolf))
+```scala mdoc
+def moveLegal(p: List[Move], m: Move): Boolean =
+  positionOf(p, Farmer) == positionOf(p, m.x)
+
+moveLegal(p, Move(Wolf))
 ```
 
 > The plan is safe if nothing can eat anything else. That means if the wolf and goat or goat and cabbage sit on the same bank, so too must the farmer.
 
-```console
-scala> :paste
+```scala mdoc
 def safePlan(p: List[Move]): Boolean =
   {
     val posGoat = positionOf(p, Goat)
@@ -175,20 +177,21 @@ def safePlan(p: List[Move]): Boolean =
 
 Using these functions we can now re-implement `makeMove`:
 
-```console
-scala> :paste
+```scala mdoc
 def makeMove(ps: List[List[Move]]): List[List[Move]] =
-  (ps |@| possibleMoves) map { (p, m) =>
-  if (!moveLegal(p, m)) Nil
-  else if (!safePlan(List(m) <+> p)) Nil
-  else List(m) <+> p
-}
+  (ps, possibleMoves) mapN { (p, m) =>
+    if (!moveLegal(p, m)) Nil
+    else if (!safePlan(List(m) <+> p)) Nil
+    else List(m) <+> p
+  }
+
 def makeNMoves(n: Int): List[List[Move]] =
   n match {
     case 0 => Nil
     case 1 => makeMove(List(Nil))
     case n => makeMove(makeNMoves(n - 1))
   }
+
 def findSolution(n: Int): Unit =
   filterA(makeNMoves(n))(isSolution) map { p =>
     println(p map {_.show})
@@ -197,20 +200,12 @@ def findSolution(n: Int): Unit =
 
 Let's try solving the puzzle:
 
-```scala
-scala> findSolution(6)
+```scala mdoc
+findSolution(6)
 
-scala> findSolution(7)
-List(G, F, C, G, W, F, G)
-List(G, F, W, G, C, F, G)
+findSolution(7)
 
-scala> findSolution(8)
-List(G, F, C, G, W, F, G)
-List(G, F, W, G, C, F, G)
-List(G, F, C, G, W, F, G)
-List(G, F, W, G, C, F, G)
-List(G, F, C, G, W, F, G)
-List(G, F, W, G, C, F, G)
+findSolution(8)
 ```
 
 It worked. That's all for today.
