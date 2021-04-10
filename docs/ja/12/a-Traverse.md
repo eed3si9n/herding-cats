@@ -68,9 +68,10 @@ Cats に恒等アプリカティブ・ファンクターは以下のように定
 
 `Id` を使って、`List(1, 2, 3)` を走査 (traverse) してみる。
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> List(1, 2, 3) traverse[Id, Int] { (x: Int) => x + 1 }
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
+List(1, 2, 3) traverse[Id, Int] { (x: Int) => x + 1 }
 ```
 
 > モナディックなアプリカティブ・ファンクターの場合、traversal はモナディックな map に特化し、同じ用例となる。
@@ -78,9 +79,10 @@ scala> List(1, 2, 3) traverse[Id, Int] { (x: Int) => x + 1 }
 
 `List` を使って試してみる:
 
-```console
-scala> List(1, 2, 3) traverse { (x: Int) => (Some(x + 1): Option[Int]) }
-scala> List(1, 2, 3) traverse { (x: Int) => None }
+```scala mdoc
+List(1, 2, 3) traverse { (x: Int) => (Some(x + 1): Option[Int]) }
+
+List(1, 2, 3) traverse { (x: Int) => None }
 ```
 
 > Naperian なアプリカティブ・ファンクターの場合は、traversal は結果を転置する。
@@ -90,31 +92,35 @@ scala> List(1, 2, 3) traverse { (x: Int) => None }
 > モノイダルなアプリカティブ・ファンクターの場合は、traversal は値を累積する。
 > `reduce` 関数は各要素に値を割り当てる関数を受け取って、累積する。
 
-```console
-scala> def reduce[A, B, F[_]](fa: F[A])(f: A => B)
-         (implicit FF: Traverse[F], BB: Monoid[B]): B =
-         {
-           val g: A => Const[B, Unit] = { (a: A) => Const((f(a))) }
-           val x = FF.traverse[Const[B, ?], A, Unit](fa)(g)
-           x.getConst
-         }
+```scala mdoc
+def reduce[A, B, F[_]](fa: F[A])(f: A => B)
+  (implicit FF: Traverse[F], BB: Monoid[B]): B =
+  {
+    val g: A => Const[B, Unit] = { (a: A) => Const((f(a))) }
+    val x = FF.traverse[Const[B, *], A, Unit](fa)(g)
+    x.getConst
+  }
 ```
 
 これはこのように使う:
 
-```console
-scala> reduce(List('a', 'b', 'c')) { c: Char => c.toInt }
+```scala mdoc
+reduce(List('a', 'b', 'c')) { c: Char => c.toInt }
 ```
 
-Using `-Ypartial-unification`, `traverse` is able to infer the types:
+部分的ユニフィケーション (Scala 2.13 ではデフォルト、Scala 2.12 では `-Ypartial-unification`) のおかげで、`traverse` は型推論を行うことができる:
 
-```console
-scala> def reduce[A, B, F[_]](fa: F[A])(f: A => B)
-         (implicit FF: Traverse[F], BB: Monoid[B]): B =
-         {
-           val x = fa traverse { (a: A) => Const[B, Unit]((f(a))) }
-           x.getConst
-         }
+```scala mdoc:reset:invisible
+import cats._, cats.data._, cats.syntax.all._
+```
+
+```scala mdoc
+def reduce[A, B, F[_]](fa: F[A])(f: A => B)
+  (implicit FF: Traverse[F], BB: Monoid[B]): B =
+  {
+    val x = fa traverse { (a: A) => Const[B, Unit]((f(a))) }
+    x.getConst
+  }
 ```
 
 これに関してはまた後で。
@@ -184,21 +190,24 @@ def traverse[G[_]: Applicative, A, B](as: List[A])(f: A => G[B]): G[List[B]]
 `F[G[A]]` を `G[F[A]]` にひっくり返しただけなので、コンセプトとして覚えやすい。
 標準ライブラリの `Future` に入ってる[この関数][FutureSequence]として見たことがあるかもしれない。
 
-```console
-scala> import scala.concurrent.{ Future, ExecutionContext, Await }
-scala> import scala.concurrent.duration._
-scala> val x = {
-         implicit val ec = scala.concurrent.ExecutionContext.global
-         List(Future { 1 }, Future { 2 }).sequence
-       }
-scala> Await.result(x, 1 second)
+```scala mdoc
+import scala.concurrent.{ Future, ExecutionContext, Await }
+import scala.concurrent.duration._
+
+val x = {
+  implicit val ec = scala.concurrent.ExecutionContext.global
+  List(Future { 1 }, Future { 2 }).sequence
+}
+
+Await.result(x, 1 second)
 ```
 
 `Either` の `List` をまとめて `Either` にするとか便利かもしれない。
 
-```console
-scala> List(Right(1): Either[String, Int]).sequence
-scala> List(Right(1): Either[String, Int], Left("boom"): Either[String, Int]).sequence
+```scala mdoc
+List(Right(1): Either[String, Int]).sequence
+
+List(Right(1): Either[String, Int], Left("boom"): Either[String, Int]).sequence
 ```
 
 `sequenceU` を使う必要が無くなったことに注意してほしい。

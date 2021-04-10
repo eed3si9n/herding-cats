@@ -13,19 +13,20 @@ EIP:
 
 Cats を用いて実装するとこうなる:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> def contents[F[_], A](fa: F[A])(implicit FF: Traverse[F]): Const[List[A], F[Unit]] =
-         {
-           val contentsBody: A => Const[List[A], Unit] = { (a: A) => Const(List(a)) }
-           FF.traverse(fa)(contentsBody)
-         }
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
+def contents[F[_], A](fa: F[A])(implicit FF: Traverse[F]): Const[List[A], F[Unit]] =
+  {
+    val contentsBody: A => Const[List[A], Unit] = { (a: A) => Const(List(a)) }
+    FF.traverse(fa)(contentsBody)
+  }
 ```
 
 これで `Traverse` をサポートする任意のデータ型から `List` を得られるようになった。
 
-```console
-scala> contents(Vector(1, 2, 3)).getConst
+```scala mdoc
+contents(Vector(1, 2, 3)).getConst
 ```
 
 これが逆順になっているのは果たして正しいのか、ちょっと定かではない。
@@ -35,18 +36,18 @@ scala> contents(Vector(1, 2, 3)).getConst
 
 恒等アプリカティブ・ファンクターとは `Id[_]` のことだというのは既にみた通り。
 
-```console
-scala> def shape[F[_], A](fa: F[A])(implicit FF: Traverse[F]): Id[F[Unit]] =
-         {
-           val shapeBody: A => Id[Unit] = { (a: A) => () }
-           FF.traverse(fa)(shapeBody)
-         }
+```scala mdoc
+def shape[F[_], A](fa: F[A])(implicit FF: Traverse[F]): Id[F[Unit]] =
+  {
+    val shapeBody: A => Id[Unit] = { (a: A) => () }
+    FF.traverse(fa)(shapeBody)
+  }
 ```
 
 `Vector(1, 2, 3)` の形はこうなる:
 
-```console
-scala> shape(Vector(1, 2, 3))
+```scala mdoc
+shape(Vector(1, 2, 3))
 ```
 
 EIP:
@@ -56,12 +57,15 @@ EIP:
 
 次に、EIP はアプリカティブ合成を説明するために `shape` と `contents` を以下のように組み合わせている:
 
-```console
-scala> def decompose[F[_], A](fa: F[A])(implicit FF: Traverse[F]) =
-         Tuple2K[Const[List[A], ?], Id, F[Unit]](contents(fa), shape(fa))
-scala> val d = decompose(Vector(1, 2, 3))
-scala> d.first
-scala> d.second
+```scala mdoc
+def decompose[F[_], A](fa: F[A])(implicit FF: Traverse[F]) =
+  Tuple2K[Const[List[A], *], Id, F[Unit]](contents(fa), shape(fa))
+
+val d = decompose(Vector(1, 2, 3))
+
+d.first
+
+d.second
 ```
 
 問題は `traverse` が 2回走っていることだ。
@@ -71,18 +75,28 @@ scala> d.second
 
 これを `AppFunc` で書いてみよう。
 
-```console
-scala> import cats.data.Func.appFunc
-scala> def contentsBody[A]: AppFunc[Const[List[A], ?], A, Unit] =
-         appFunc[Const[List[A], ?], A, Unit] { (a: A) => Const(List(a)) }
-scala> def shapeBody[A]: AppFunc[Id, A, Unit] =
-         appFunc { (a: A) => ((): Id[Unit]) }
-scala> def decompose[F[_], A](fa: F[A])(implicit FF: Traverse[F]) =
-         (contentsBody[A] product shapeBody[A]).traverse(fa)
-scala> val d = decompose(Vector(1, 2, 3))
-scala> d.first
-scala> d.second
+```scala mdoc:reset:invisible
+import cats._, cats.data._, cats.syntax.all._
+```
+
+```scala mdoc
+import cats.data.Func.appFunc
+
+def contentsBody[A]: AppFunc[Const[List[A], *], A, Unit] =
+  appFunc[Const[List[A], *], A, Unit] { (a: A) => Const(List(a)) }
+
+def shapeBody[A]: AppFunc[Id, A, Unit] =
+  appFunc { (a: A) => ((): Id[Unit]) }
+
+def decompose[F[_], A](fa: F[A])(implicit FF: Traverse[F]) =
+  (contentsBody[A] product shapeBody[A]).traverse(fa)
+
+val d = decompose(Vector(1, 2, 3))
+
+d.first
+
+d.second
 ```
 
 `decompose`　の戻り値の型が少しごちゃごちゃしてきたが、`AppFunc` によって推論されている:
-`Tuple2K[[X_kp1]Const[List[A], X_kp1], Id, F[Unit]]`.
+`Tuple2K[Const[List[Int], β1], Id[A], Vector[Unit]]`.

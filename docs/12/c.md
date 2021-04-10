@@ -24,9 +24,10 @@ This was fixed by Miles Sabin in [scala#5102](https://github.com/scala/scala/pul
 
 Here's an example that Daniel uses:
 
-```console
-scala> def foo[F[_], A](fa: F[A]): String = fa.toString
-scala> foo { x: Int => x * 2 }
+```scala mdoc
+def foo[F[_], A](fa: F[A]): String = fa.toString
+
+foo { x: Int => x * 2 }
 ```
 
 The above did not compile before.
@@ -34,3 +35,5 @@ The above did not compile before.
 > The reason it does not compile is because `Function1` takes two type parameters, whereas `F[_]` only takes one.
 
 With `-Ypartial-unification` it will now compile, but it's important to understand that the compiler will now assume that the type constructors can be partially applied from left to right. In short, this will reward right-biased datatypes like `Either`, but you could end up with wrong answer if the datatype is left-biased.
+
+In 2019, Scala 2.13.0 was released with partial unification enabled by default.
