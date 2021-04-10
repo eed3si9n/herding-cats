@@ -37,9 +37,10 @@ out: initial.html
 
 **Sets** は型とその間の関数によってエンコードできることを思い出してほしい。Scala で空の型と言えば `Nothing` ということになるかもしれない。つまり、`Nothing` から `A` に対して、ただ1つの関数しか得られないということだ。[Milewski][products]氏によると、Haskell には `absurd` という関数がある。実装してみるとこういうふうになるかもしれない:
 
-```console
-scala> def absurd[A]: Nothing => A = { case _ => ??? }
-scala> absurd[Int]
+```scala mdoc
+def absurd[A]: Nothing => A = { case _ => ??? }
+
+absurd[Int]
 ```
 
 この関数のドメインには値が無いので、本文は絶対に実行されないはずだ。
@@ -52,17 +53,19 @@ poset では ≤ の構造を保存しなければいけないので、何とな
 
 単集合は、型に 1つの値しかないことを意味する。Scala だと、`Unit` がその一例となる。一般的な `A` から `Unit` に対する関数は唯一の実装となる:
 
-```console
-scala> def unit[A](a: A): Unit = ()
-scala> unit(1)
+```scala mdoc
+def unit[A](a: A): Unit = ()
+
+unit(1)
 ```
 
 これにより `Unit` は、**Sets**圏における終対象となるが、Scala では `object` と書くだけでいくらでもシングルトン型を定義できる:
 
-```console
-scala> case object Single
-scala> def single[A](a: A): Single.type = Single
-scala> single("test")
+```scala mdoc
+case object Single
+def single[A](a: A): Single.type = Single
+
+single("test")
 ```
 
 上に書いてあるとおり、poset では最大の要素を持つ場合に終対象となる。
