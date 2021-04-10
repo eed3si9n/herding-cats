@@ -75,9 +75,10 @@ final case class Const[A, B](getConst: A) {
 上のコードの型パラメータ `A` は値を表すが、
 `B` は `Functor` の型合わせのみに使われる phantom 型だ。
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> Const(1) map { (_: String) + "!" }
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
+Const(1) map { (_: String) + "!" }
 ```
 
 `A` が　`Semigroup` を形成するとき、`Apply` を導き出すことができ、
@@ -86,6 +87,6 @@ scala> Const(1) map { (_: String) + "!" }
 > このアプリカティブ・ファンクター間での計算は何らかの結果を累積する。
 > 整数と加算のモノイドの場合は、カウントや和となる...
 
-```console
-scala> Const(2).retag[String => String] ap Const(1).retag[String]
+```scala mdoc
+Const(2).retag[String => String] ap Const(1).retag[String]
 ```

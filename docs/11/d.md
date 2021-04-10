@@ -53,10 +53,12 @@ private[data] sealed trait Tuple2KFunctor[F[_], G[_]] extends Functor[λ[α => T
 
 Here's how to use it:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> val x = Tuple2K(List(1), 1.some)
-scala> Functor[Lambda[X => Tuple2K[List, Option, X]]].map(x) { _ + 1 }
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
+val x = Tuple2K(List(1), 1.some)
+
+Functor[Lambda[X => Tuple2K[List, Option, X]]].map(x) { _ + 1 }
 ```
 
 First, we are defining a pair-like datatype called `Tuple2K`, which prepresents a product of typeclass instances.
@@ -88,10 +90,14 @@ private[data] sealed trait Tuple2KApply[F[_], G[_]] extends Apply[λ[α => Tuple
 
 Here's the usage:
 
-```console
-scala> val x = Tuple2K(List(1), (Some(1): Option[Int]))
-scala> val f = Tuple2K(List((_: Int) + 1), (Some((_: Int) * 3): Option[Int => Int]))
-scala> Apply[Lambda[X => Tuple2K[List, Option, X]]].ap(f)(x)
+```scala mdoc
+{
+  val x = Tuple2K(List(1), (Some(1): Option[Int]))
+
+  val f = Tuple2K(List((_: Int) + 1), (Some((_: Int) * 3): Option[Int => Int]))
+
+  Apply[Lambda[X => Tuple2K[List, Option, X]]].ap(f)(x)
+}
 ```
 
 The product of `Apply` passed in separate functions to each side.
@@ -117,8 +123,8 @@ private[data] sealed trait Tuple2KApplicative[F[_], G[_]] extends Applicative[λ
 
 Here's a simple usage:
 
-```console
-scala> Applicative[Lambda[X => Tuple2K[List, Option, X]]].pure(1)
+```scala mdoc
+Applicative[Lambda[X => Tuple2K[List, Option, X]]].pure(1)
 ```
 
 We were able to create `Tuple2K(List(1), Some(1))` by calling `pure(1)`.
@@ -159,17 +165,16 @@ There's `compose` method in the typeclass instance:
 
 Let's try this out.
 
-
-```console
-scala> Applicative[List].compose[Option].pure(1)
+```scala mdoc
+Applicative[List].compose[Option].pure(1)
 ```
 
 So much nicer.
 
 #### Product of applicative functions
 
-For some reason people seem to overlook is that Gibbons also introduces
-applicative function composition operators.
+For some reason, people seem to overlook that Gibbons also introduces
+applicative function composition operators in EIP.
 An applicative function is a function in the form of `A => F[B]` where `F` forms an `Applicative`.
 This is similar to `Kleisli` composition of monadic functions, but *better*.
 
@@ -228,11 +233,16 @@ sealed abstract class AppFunc[F[_], A, B] extends Func[F, A, B] { self =>
 
 Here's how we can use it:
 
-```console
-scala> val f = Func.appFunc { x: Int => List(x.toString + "!") }
-scala> val g = Func.appFunc { x: Int => (Some(x.toString + "?"): Option[String]) }
-scala> val h = f product g
-scala> h.run(1)
+```scala mdoc
+{
+  val f = Func.appFunc { x: Int => List(x.toString + "!") }
+
+  val g = Func.appFunc { x: Int => (Some(x.toString + "?"): Option[String]) }
+
+  val h = f product g
+
+  h.run(1)
+}
 ```
 
 As you can see two applicative functions are running side by side.
@@ -256,11 +266,16 @@ Here's `andThen` and `compose`:
     g.compose(self)
 ```
 
-```console
-scala> val f = Func.appFunc { x: Int => List(x.toString + "!") }
-scala> val g = Func.appFunc { x: String => (Some(x + "?"): Option[String]) }
-scala> val h = f andThen g
-scala> h.run(1)
+```scala mdoc
+{
+  val f = Func.appFunc { x: Int => List(x.toString + "!") }
+
+  val g = Func.appFunc { x: String => (Some(x + "?"): Option[String]) }
+
+  val h = f andThen g
+
+  h.run(1)
+}
 ```
 
 EIP:
@@ -268,7 +283,4 @@ EIP:
 > The two operators [snip] allow us to combine idiomatic computations in two different ways;
 > we call them *parallel* and *sequential* composition, respectively.
 
-Even though we had to introduce a new datatype `Prod`,
-the combining applicative computation is an abstract concept for all `Applicative`.
-
-We'll continue from here.
+The combining applicative computation is an abstract concept for all `Applicative`. We'll continue from here.

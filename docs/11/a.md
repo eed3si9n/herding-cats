@@ -21,25 +21,25 @@ I found a nice overview.
 > One of the first and most fundamental techniques that any programmer learns
 > is how to parametrize computations by values
 
-```console:new
-scala> def triangle4: Unit = {
-         println("*")
-         println("**")
-         println("***")
-         println("****")
-       }
+```scala mdoc
+def triangle4: Unit = {
+  println("*")
+  println("**")
+  println("***")
+  println("****")
+}
 ```
 
 We can abstract out 4 into a parameter:
 
-```console
-scala> def triangle(side: Int): Unit = {
-         (1 to side) foreach { row =>
-           (1 to row) foreach { col =>
-             println("*")
-           }
-         }
-       }
+```scala mdoc
+def triangle(side: Int): Unit = {
+  (1 to side) foreach { row =>
+    (1 to row) foreach { col =>
+      println("*")
+    }
+  }
+}
 ```
 
 #### Genericity by type
@@ -47,8 +47,8 @@ scala> def triangle(side: Int): Unit = {
 `List[A]` is a *polymorphic datatype* parametrized by another type,
 the type of list elements. This enables *parametric polymorphism*.
 
-```console
-scala> def head[A](xs: List[A]): A = xs(0)
+```scala mdoc
+def head[A](xs: List[A]): A = xs(0)
 ```
 
 The above function would work for all proper types.
@@ -59,17 +59,18 @@ The above function would work for all proper types.
 
 For example `foldLeft` can be used to `append` two lists:
 
-```console
-scala> def append[A](list: List[A], ys: List[A]): List[A] =
-         list.foldLeft(ys) { (acc, x) => x :: acc }
-scala> append(List(1, 2, 3), List(4, 5, 6))
+```scala mdoc
+def append[A](list: List[A], ys: List[A]): List[A] =
+  list.foldLeft(ys) { (acc, x) => x :: acc }
+
+append(List(1, 2, 3), List(4, 5, 6))
 ```
 
 Or it can also be used to add numbers:
 
-```console
-scala> def sum(list: List[Int]): Int =
-        list.foldLeft(0) { _ + _ }
+```scala mdoc
+def sum(list: List[Int]): Int =
+ list.foldLeft(0) { _ + _ }
 ```
 
 #### Genericity by structure
@@ -82,21 +83,22 @@ such as input iterators and forward iterators.
 
 The notion of the typeclass fits in here too.
 
-```console
-scala> :paste
+```scala mdoc
 trait Read[A] {
   def reads(s: String): Option[A]
 }
+
 object Read extends ReadInstances {
   def read[A](f: String => Option[A]): Read[A] = new Read[A] {
     def reads(s: String): Option[A] = f(s)
   }
   def apply[A: Read]: Read[A] = implicitly[Read[A]]
 }
+
 trait ReadInstances {
-  implicit val stringRead: Read[String] =
+  implicit lazy val stringRead: Read[String] =
     Read.read[String] { Some(_) }
-  implicit val intRead: Read[Int] =
+  implicit lazy val intRead: Read[Int] =
     Read.read[Int] { s =>
       try {
         Some(s.toInt)
@@ -105,7 +107,8 @@ trait ReadInstances {
       }
     }
 }
-scala> Read[Int].reads("1")
+
+Read[Int].reads("1")
 ```
 
 The typeclass captures the requirements required of types, called typeclass contract.
@@ -136,8 +139,7 @@ This could include code generation and macros.
 
 Let's say there's a polymorphic datatype of binary trees:
 
-```console
-scala> :paste
+```scala mdoc
 sealed trait Btree[A]
 object Btree {
   case class Tip[A](a: A) extends Btree[A]
@@ -147,12 +149,12 @@ object Btree {
 
 Let's write `foldB` as a way of abstracting similar programs.
 
-```console
-scala> def foldB[A, B](tree: Btree[A], b: (B, B) => B)(t: A => B): B =
-         tree match {
-           case Btree.Tip(a)      => t(a)
-           case Btree.Bin(xs, ys) => b(foldB(xs, b)(t), foldB(ys, b)(t))
-         }
+```scala mdoc
+def foldB[A, B](tree: Btree[A], b: (B, B) => B)(t: A => B): B =
+  tree match {
+    case Btree.Tip(a)      => t(a)
+    case Btree.Bin(xs, ys) => b(foldB(xs, b)(t), foldB(ys, b)(t))
+  }
 ```
 
 The next goal is to abstract `foldB` and `foldLeft`.
@@ -164,9 +166,9 @@ The next goal is to abstract `foldB` and `foldLeft`.
 
 For example, `fold` apparently could be expressed as
 
-```console
-scala> import cats._, cats.data._, cats.implicits._
-scala> :paste
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
 trait Fix[F[_,_], A]
 def cata[S[_,_]: Bifunctor, A, B](t: Fix[S, A])(f: S[A, B] => B): B = ???
 ```

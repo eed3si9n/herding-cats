@@ -54,10 +54,12 @@ private[data] sealed trait Tuple2KFunctor[F[_], G[_]] extends Functor[λ[α => T
 
 使ってみる:
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> val x = Tuple2K(List(1), 1.some)
-scala> Functor[Lambda[X => Tuple2K[List, Option, X]]].map(x) { _ + 1 }
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
+val x = Tuple2K(List(1), 1.some)
+
+Functor[Lambda[X => Tuple2K[List, Option, X]]].map(x) { _ + 1 }
 ```
 
 まず、ペアのようなデータ型 `Tuple2K` を定義して、型クラスインスタンスの積を表す。
@@ -89,10 +91,14 @@ private[data] sealed trait Tuple2KApply[F[_], G[_]] extends Apply[λ[α => Tuple
 
 これが用例:
 
-```console
-scala> val x = Tuple2K(List(1), (Some(1): Option[Int]))
-scala> val f = Tuple2K(List((_: Int) + 1), (Some((_: Int) * 3): Option[Int => Int]))
-scala> Apply[Lambda[X => Tuple2K[List, Option, X]]].ap(f)(x)
+```scala mdoc
+{
+  val x = Tuple2K(List(1), (Some(1): Option[Int]))
+
+  val f = Tuple2K(List((_: Int) + 1), (Some((_: Int) * 3): Option[Int => Int]))
+
+  Apply[Lambda[X => Tuple2K[List, Option, X]]].ap(f)(x)
+}
 ```
 
 `Apply` の積は左右で別の関数を渡している。
@@ -118,8 +124,8 @@ private[data] sealed trait Tuple2KApplicative[F[_], G[_]] extends Applicative[λ
 
 簡単な用例:
 
-```console
-scala> Applicative[Lambda[X => Tuple2K[List, Option, X]]].pure(1)
+```scala mdoc
+Applicative[Lambda[X => Tuple2K[List, Option, X]]].pure(1)
 ```
 
 `pure(1)` を呼び出すことで `Tuple2K(List(1), Some(1))` を生成することができた。
@@ -160,8 +166,8 @@ scala> Applicative[Lambda[X => Tuple2K[List, Option, X]]].pure(1)
 
 使ってみよう。
 
-```console
-scala> Applicative[List].compose[Option].pure(1)
+```scala mdoc
+Applicative[List].compose[Option].pure(1)
 ```
 
 断然使い勝手が良い。
@@ -228,11 +234,16 @@ sealed abstract class AppFunc[F[_], A, B] extends Func[F, A, B] { self =>
 
 使ってみる:
 
-```console
-scala> val f = Func.appFunc { x: Int => List(x.toString + "!") }
-scala> val g = Func.appFunc { x: Int => (Some(x.toString + "?"): Option[String]) }
-scala> val h = f product g
-scala> h.run(1)
+```scala mdoc
+{
+  val f = Func.appFunc { x: Int => List(x.toString + "!") }
+
+  val g = Func.appFunc { x: Int => (Some(x.toString + "?"): Option[String]) }
+
+  val h = f product g
+
+  h.run(1)
+}
 ```
 
 2つのアプリカティブ・ファンクターが並んで実行されているのが分かると思う。
@@ -256,11 +267,16 @@ scala> h.run(1)
     g.compose(self)
 ```
 
-```console
-scala> val f = Func.appFunc { x: Int => List(x.toString + "!") }
-scala> val g = Func.appFunc { x: String => (Some(x + "?"): Option[String]) }
-scala> val h = f andThen g
-scala> h.run(1)
+```scala mdoc
+{
+  val f = Func.appFunc { x: Int => List(x.toString + "!") }
+
+  val g = Func.appFunc { x: String => (Some(x + "?"): Option[String]) }
+
+  val h = f andThen g
+
+  h.run(1)
+}
 ```
 
 EIP:
@@ -268,7 +284,4 @@ EIP:
 > これらの 2つの演算子はアプリカティブ計算を2つの異なる方法で組み合わせる。
 > これらをそれぞれ**並行合成**、**逐次合成**と呼ぶ。
 
-新しいデータ型である `Prod` を作る必要があったけども、
-アプリカティブ計算の組み合わせは `Applicative` の全てに適用できる抽象的な概念だ。
-
-続きはまた後で。
+アプリカティブ計算の組み合わせは `Applicative` の全てに適用できる抽象的な概念だ。続きはまた後で。
