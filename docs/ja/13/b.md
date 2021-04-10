@@ -80,16 +80,21 @@ object Eval extends EvalInstances {
 
 最も便利なのは、`Eval.later` で、これは名前渡しのパラメータを `lazy val` で捕獲している。
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> var g: Int = 0
-scala> val x = Eval.later {
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
+var g: Int = 0
+
+val x = Eval.later {
   g = g + 1
   g
 }
-scala> g = 2
-scala> x.value
-scala> x.value
+
+g = 2
+
+x.value
+
+x.value
 ```
 
 `value` はキャッシュされているため、2回目の評価は走らない。
@@ -98,26 +103,30 @@ scala> x.value
 
 `Eval.now` は即座に評価され結果はフィールドにて捕獲されるため、これも 2回目の評価は走らない。
 
-```console
-scala> val y = Eval.now {
+```scala mdoc
+val y = Eval.now {
   g = g + 1
   g
 }
-scala> y.value
-scala> y.value
+
+y.value
+
+y.value
 ```
 
 #### Eval.always
 
 `Eval.always` はキャッシュしない。
 
-```console
-scala> val z = Eval.always {
+```scala mdoc
+val z = Eval.always {
   g = g + 1
   g
 }
-scala> z.value
-scala> z.value
+
+z.value
+
+z.value
 ```
 
 #### スタックセーフな遅延演算
@@ -162,8 +171,7 @@ java.lang.StackOverflowError
 
 安全版を書いてみるとこうなった:
 
-```console
-scala> :paste
+```scala mdoc
 object OddEven1 {
   def odd(n: Int): Eval[String] = Eval.defer {even(n - 1)}
   def even(n: Int): Eval[String] =
@@ -172,7 +180,8 @@ object OddEven1 {
       case _    => Eval.defer { odd(n - 1) }
     }
 }
-scala> OddEven1.even(200000).value
+
+OddEven1.even(200000).value
 ```
 
 初期の Cats のバージョンだと上のコードでもスタックオーバーフローが発生していたが、David Gregory さんが [#769][769] で修正してくれたので、このままで動作するようになったみたいだ。
