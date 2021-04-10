@@ -26,12 +26,12 @@ Conceptual Mathematics (以下 Lawvere) の和訳が無いみたいなので、�
 
 これは Scala だと 2通りの方法で表現できると思う。まずは `a: Set[Person]` という値を使った方法:
 
-```console:new
-scala> :paste
+```scala mdoc
 sealed trait Person {}
 case object John extends Person {}
 case object Mary extends Person {}
 case object Sam extends Person {}
+
 val a: Set[Person] = Set[Person](John, Mary, Sam)
 ```
 
@@ -47,14 +47,14 @@ val a: Set[Person] = Set[Person](John, Mary, Sam)
 
 好みの朝食の射を実装してみよう。
 
-```console
-scala> :paste
+```scala mdoc
 sealed trait Breakfast {}
 case object Eggs extends Breakfast {}
 case object Oatmeal extends Breakfast {}
 case object Toast extends Breakfast {}
 case object Coffee extends Breakfast {}
-val favoriteBreakfast: Person => Breakfast = {
+
+lazy val favoriteBreakfast: Person => Breakfast = {
   case John => Eggs
   case Mary => Coffee
   case Sam  => Coffee
@@ -68,12 +68,12 @@ val favoriteBreakfast: Person => Breakfast = {
 
 射が `Function1[A, B]` よりも一般的なものだということは分かるが、この圏の場合はこれで十分なので良しとする。これが `favoritePerson` の実装となる:
 
-```console
-scala> val favoritePerson: Person => Person = {
-         case John => Mary
-         case Mary => John
-         case Sam  => Mary
-       }
+```scala mdoc
+lazy val favoritePerson: Person => Person = {
+  case John => Mary
+  case Mary => John
+  case Sam  => Mary
+}
 ```
 
 > ドメインとコドメインが同一の対象の射を**自己準同型射** (endomorphism) と呼ぶ。
@@ -86,8 +86,8 @@ scala> val favoritePerson: Person => Person = {
 
 恒等射は射であるため、集合そのものというよりは集合の要素にはたらく。そのため、`scala.Predef.identity` を使うことができる。
 
-```console
-scala> identity(John)
+```scala mdoc
+identity(John)
 ```
 
 上の 3つの内部図式に対応した**外部図式** (external diagram) を見てみよう。 <br> ![external diagrams](../files/day15-d-external-diagrams.png)
@@ -98,9 +98,8 @@ scala> identity(John)
 
 Scala なら `scala.Function1` の `andThen` か `compose` を使うことができる。
 
-```scala
-scala> val favoritePersonsBreakfast = favoriteBreakfast compose favoritePerson
-favoritePersonsBreakfast: Person => Breakfast = <function1>
+```scala mdoc
+lazy val favoritePersonsBreakfast = favoriteBreakfast compose favoritePerson
 ```
 
 これが内部図式だ: <br> ![composition of arrows](../files/day15-e-composition-of-maps.png)
@@ -141,10 +140,11 @@ Lawvere:
 
 誤解していることを恐れずに言えば、Lawvere は要素という概念を射の特殊なケースとして再定義しているように思える。単集合 (singleton) の別名に unit set というものがあって、Scala では `(): Unit` となる。つまり、値は `Unit => X` の糖衣構文だと言っているのに類似している。
 
-```console
-scala> val johnPoint: Unit => Person = { case () => John }
-scala> val johnFav = favoriteBreakfast compose johnPoint
-scala> johnFav(())
+```scala mdoc
+lazy val johnPoint: Unit => Person = { case () => John }
+lazy val johnFav = favoriteBreakfast compose johnPoint
+
+johnFav(())
 ```
 
 関数型プログラミングをサポートする言語における第一級関数は、関数を値として扱うことで高階関数を可能とする。圏論は逆方向に統一して値を関数として扱っている。

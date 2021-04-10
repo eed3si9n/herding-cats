@@ -25,12 +25,12 @@ Lawvere:
 
 There are two ways that I can think of to express this in Scala. One is by using a value `a: Set[Person]`:
 
-```console:new
-scala> :paste
+```scala mdoc
 sealed trait Person {}
 case object John extends Person {}
 case object Mary extends Person {}
 case object Sam extends Person {}
+
 val a: Set[Person] = Set[Person](John, Mary, Sam)
 ```
 
@@ -46,14 +46,14 @@ Another way of looking at it, is that `Person` as the type is a finite set alrea
 
 Let's try implementing the favorite breakfast arrow.
 
-```console
-scala> :paste
+```scala mdoc
 sealed trait Breakfast {}
 case object Eggs extends Breakfast {}
 case object Oatmeal extends Breakfast {}
 case object Toast extends Breakfast {}
 case object Coffee extends Breakfast {}
-val favoriteBreakfast: Person => Breakfast = {
+
+lazy val favoriteBreakfast: Person => Breakfast = {
   case John => Eggs
   case Mary => Coffee
   case Sam  => Coffee
@@ -67,12 +67,12 @@ Note here that an "object" in this category is `Set[Person]` or `Person`, but th
 
 I get that a map can be more general than `Function1[A, B]` but it's ok for this category. Here's the implementation of `favoritePerson`:
 
-```console
-scala> val favoritePerson: Person => Person = {
-         case John => Mary
-         case Mary => John
-         case Sam  => Mary
-       }
+```scala mdoc
+lazy val favoritePerson: Person => Person = {
+  case John => Mary
+  case Mary => John
+  case Sam  => Mary
+}
 ```
 
 > An arrow in which the domain and codomain are the same object is called an *endomorphism*.
@@ -85,8 +85,8 @@ The "identity arrow on A" is denoted as 1<sub>A</sub>. <br> ![identity arrow](fi
 
 Again, identity is an arrow, so it works on an element in the set, not the set itself. So in this case we can just use `scala.Predef.identity`.
 
-```console
-scala> identity(John)
+```scala mdoc
+identity(John)
 ```
 
 Here are the *external diagrams* corresponding to the three internal diagrams from the above. <br> ![external diagrams](files/day15-d-external-diagrams.png)
@@ -97,8 +97,8 @@ This reiterates the point that _in the category of finite sets_, the "objects" t
 
 We can do this in scala using `scala.Function1`'s `andThen` or `compose`.
 
-```console
-scala> val favoritePersonsBreakfast = favoriteBreakfast compose favoritePerson
+```scala mdoc
+lazy val favoritePersonsBreakfast = favoriteBreakfast compose favoritePerson
 ```
 
 Here's the internal diagram: <br> ![composition of maps](files/day15-e-composition-of-maps.png)
@@ -139,10 +139,11 @@ Lawvere:
 
 If I understand what's going on, it seems like Lawvere is redefining the concept of the element as a special case of arrow. Another name for singleton is unit set, and in Scala it is `(): Unit`. So it's analogous to saying that values are sugar for `Unit => X`.
 
-```console
-scala> val johnPoint: Unit => Person = { case () => John }
-scala> val johnFav = favoriteBreakfast compose johnPoint
-scala> johnFav(())
+```scala mdoc
+lazy val johnPoint: Unit => Person = { case () => John }
+lazy val johnFav = favoriteBreakfast compose johnPoint
+
+johnFav(())
 ```
 
 Session 2 and 3 contain nice review of Article I, so you should read them if you own the book.

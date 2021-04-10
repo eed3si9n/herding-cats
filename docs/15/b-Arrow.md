@@ -80,12 +80,16 @@ import simulacrum.typeclass
 
 This enables two operators `<<<` and `>>>`.
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._
-scala> val f = (_:Int) + 1
-scala> val g = (_:Int) * 100
-scala> (f >>> g)(2)
-scala> (f <<< g)(2)
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._
+
+lazy val f = (_:Int) + 1
+
+lazy val g = (_:Int) * 100
+
+(f >>> g)(2)
+
+(f <<< g)(2)
 ```
 
 ### Strong
@@ -121,11 +125,14 @@ import simulacrum.typeclass
 
 This enables two methods `first[C]` and `second[C]`.
 
-```console
-scala> val f_first = f.first[Int]
-scala> f_first((1, 1))
-scala> val f_second = f.second[Int]
-scala> f_second((1, 1))
+```scala mdoc
+lazy val f_first = f.first[Int]
+
+f_first((1, 1))
+
+lazy val f_second = f.second[Int]
+
+f_second((1, 1))
 ```
 
 Given that `f` here is a function to add one, I think it's clear what `f_first` and `f_second` are doing.
@@ -154,6 +161,6 @@ import simulacrum.typeclass
 
 We can use it as `split` operator:
 
-```console
-scala> (f split g)((1, 1))
+```scala mdoc
+(f split g)((1, 1))
 ```

@@ -11,9 +11,9 @@ Lawvere:
 
 残念ながら Cats には同型射を表すデータ型が無いため、自前で定義する必要がある。
 
-```console:new
-scala> import cats._, cats.data._, cats.implicits._, cats.arrow.Arrow
-scala> :paste
+```scala mdoc
+import cats._, cats.data._, cats.syntax.all._, cats.arrow.Arrow
+
 object Isomorphisms {
   trait Isomorphism[Arrow[_, _], A, B] { self =>
     def to: Arrow[A, B]
@@ -27,17 +27,18 @@ import Isomorphisms._
 
 `Family` から `Relic` への同型射は以下のように定義できる。
 
-```console
-scala> :paste
+```scala mdoc
 sealed trait Family {}
 case object Mother extends Family {}
 case object Father extends Family {}
 case object Child extends Family {}
+
 sealed trait Relic {}
 case object Feather extends Relic {}
 case object Stone extends Relic {}
 case object Flower extends Relic {}
-val isoFamilyRelic = new (Family <=> Relic) {
+
+lazy val isoFamilyRelic = new (Family <=> Relic) {
   val to: Family => Relic = {
     case Mother => Feather
     case Father => Stone
