@@ -81,7 +81,7 @@ first(List("a", "b", "c"))
 
 #### Higher-Rank Polymorphism in Scala
 
-In July of 2010, Rúnar ([@runarorama][@runarorama]) wrote a blog post [Higher-Rank Polymorphism in Scala][higher-rank], describing the concept of rank-2 polymorphism. First, here'a an ordinary (rank-1) polymorphic function:
+In July of 2010, Rúnar ([@runarorama][@runarorama]) wrote a blog post [Higher-Rank Polymorphism in Scala][higher-rank], describing the concept of rank-2 polymorphism. First, here's an ordinary (rank-1) polymorphic function:
 
 ```scala mdoc
 def pureList[A](a: A): List[A] = List(a)
